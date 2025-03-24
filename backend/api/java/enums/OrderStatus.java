@@ -7,6 +7,7 @@ package enums;
 public enum OrderStatus {
     PENDING,
     ACCEPTED,
+    CANCELLED,
     DELIVERING,
     COMPLETED
 }

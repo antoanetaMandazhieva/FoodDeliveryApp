@@ -38,6 +38,5 @@ build/
 .DS_Store
 
 .idea/
-*.iml
+*.iml/
 out/
-target/
