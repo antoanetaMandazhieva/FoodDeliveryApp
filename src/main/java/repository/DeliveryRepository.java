@@ -1,7 +1,6 @@
 package repository;
 
-import enums.DeliveryStatus;
-import model.Delivery;
+import entity.Order;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,7 +9,7 @@ import java.util.List;
 public class DeliveryRepository {
     private static volatile DeliveryRepository instance;
 
-    private List<Delivery> deliveries;
+    private List<Order> deliveries;
 
     private DeliveryRepository() {
         this.deliveries = new ArrayList<>();
@@ -28,13 +27,13 @@ public class DeliveryRepository {
         return instance;
     }
 
-    public void addDelivery(Delivery delivery) {
+    public void addDelivery(Order delivery) {
         this.deliveries.add(delivery);
     }
 
-    public Delivery getById(long id) {
+    public Order getById(long id) {
 
-        Delivery delivery = this.deliveries.stream()
+        Order delivery = this.deliveries.stream()
                 .filter(d -> d.getId() == id)
                 .findFirst()
                 .orElse(null);
@@ -46,19 +45,19 @@ public class DeliveryRepository {
         return delivery;
     }
 
-    public void removeDelivery(Delivery delivery) {
+    /*public void removeDelivery(Order delivery) {
         // TODO
-        /**
+        *//**
          * Estimated time AND Delivery time LOGIC!
-         */
+         *//*
         if (delivery.getStatus() == DeliveryStatus.DELIVERED || delivery.getStatus() == DeliveryStatus.FAILED) {
             this.deliveries.remove(delivery);
         }
-    }
+    }*/
 
 
 
-    public List<Delivery> getAllDeliveries() {
+    public List<Order> getAllDeliveries() {
         return Collections.unmodifiableList(this.deliveries);
     }
 }

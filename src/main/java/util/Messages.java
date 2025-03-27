@@ -19,4 +19,6 @@ public class Messages {
 
     public final static String INVALID_PHONE_NUMBER = "Invalid number.";
 
+    public final static String INVALID_RATING = "Invalid rating.";
+
 }
