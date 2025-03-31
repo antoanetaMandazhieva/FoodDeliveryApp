@@ -2,23 +2,9 @@ package entity;
 
 import jakarta.persistence.*;
 
-/**
- * Засега се оставя връзката между {@code Restaurant} и {@code Order} да е еднопосочна, което означава, че в даден етап,
- * когато даден Ресторант иска да достъпи поръчките си ще стане
- * чрез JPQL заявка, а не директно през класа!
- * <p>
- * Важно!!!
- * Това остава така засега само заради по-трудното му управление, но в даден етап може да се промени, ако е нужно.
- * </p>
- *
- * Засега се оставя връзката между {@code Restaurant} и {@code Product} да е еднопосочна, което означава, че в даден етап,
- * когато даден Ресторант иска да достъпи продуктите си ще стане
- * чрез JPQL заявка, а не директно през класа!
- * <p>
- * Важно!!!
- * Това остава така засега само заради по-трудното му управление, но в даден етап може да се промени, ако е нужно.
- * </p>
- */
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "Restaurants")
@@ -31,19 +17,35 @@ public class Restaurant extends IdEntity {
     @JoinColumn(name = "address_id", nullable = false)
     private Address address;
 
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Order> orders;
+
+    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Product> products;
+
     @Column(name = "is_active", columnDefinition = "BOOLEAN DEFAULT TRUE")
     private boolean isActive;
 
-    public Restaurant() {}
+    public Restaurant() {
+        this.isActive = true;
+        this.orders = new HashSet<>();
+        this.products = new HashSet<>();
+    }
 
-    public Restaurant(String name, Address address) {
+    public Restaurant(String name, Address address, boolean isActive) {
         this.name = name;
         this.address = address;
-        this.isActive = true;
+        this.isActive = isActive;
+        this.orders = new HashSet<>();
+        this.products = new HashSet<>();
     }
 
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Address getAddress() {
@@ -60,5 +62,47 @@ public class Restaurant extends IdEntity {
 
     public void setActive(boolean active) {
         isActive = active;
+    }
+
+    public void addAddress(Address address) {
+        if (this.address == null) {
+            this.address = address;
+            address.setRestaurant(this);
+        }
+    }
+
+    public void removeAddress() {
+        if (this.address != null) {
+            this.address.setRestaurant(null);
+            this.address = null;
+        }
+    }
+
+    public Set<Order> getOrders() {
+        return Collections.unmodifiableSet(this.orders);
+    }
+
+    public void addOrder(Order order) {
+        this.orders.add(order);
+        order.setRestaurant(this);
+    }
+
+    public void removeOrder(Order order) {
+        this.orders.remove(order);
+        order.setRestaurant(null);
+    }
+
+    public Set<Product> getProducts() {
+        return Collections.unmodifiableSet(this.products);
+    }
+
+    public void addProduct(Product product) {
+        this.products.add(product);
+        product.setRestaurant(this);
+    }
+
+    public void removeProduct(Product product) {
+        this.products.remove(product);
+        product.setRestaurant(null);
     }
 }

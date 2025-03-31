@@ -1,24 +1,40 @@
 package entity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
 
-
-/**
- * Засега се оставя връзката между {@code Supplier} и {@code Order} да е еднопосочна, което означава, че в даден етап,
- * когато даден Доставчик иска да достъпи поръчките си ще стане
- * чрез JPQL заявка, а не директно през класа!
- * <p>
- * Важно!!!
- * Това остава така засега само заради по-трудното му управление, но в даден етап може да се промени, ако е нужно.
- */
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @DiscriminatorValue("SUPPLIER")
 public class Supplier extends User {
 
+    @OneToMany(mappedBy = "supplier", targetEntity = Order.class, cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Order> supplierOrders;
 
 
+    public Supplier() {
+        super();
+        this.supplierOrders = new HashSet<>();
+    }
+
+    public Set<Order> getSupplierOrders() {
+        return Collections.unmodifiableSet(this.supplierOrders);
+    }
+
+    public void addSupplierOrder(Order order) {
+        this.supplierOrders.add(order);
+        order.setSupplier(this);
+    }
+
+    public void removeSupplierOrder(Order order) {
+        this.supplierOrders.remove(order);
+        order.setSupplier(null);
+    }
 
     /*public void changeStatus(Order delivery) {
         DeliveryStatus status = delivery.getStatus();

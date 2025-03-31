@@ -25,6 +25,10 @@ public class Bonus extends IdEntity {
         return user;
     }
 
+    public void setUser(User user) {
+        this.user = user;
+    }
+
     public BigDecimal getAmount() {
         return amount;
     }

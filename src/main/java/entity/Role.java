@@ -14,11 +14,19 @@ public class Role extends IdEntity {
     @Column(length = 20, nullable = false, unique = true)
     private String name;
 
-    @ManyToMany(mappedBy = "roles", targetEntity = User.class)
+    @OneToMany(mappedBy = "role", targetEntity = User.class)
     private Set<User> users;
 
     public Role() {
         this.users = new HashSet<>();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Set<User> getUsers() {
@@ -29,21 +37,7 @@ public class Role extends IdEntity {
         this.users.add(user);
     }
 
-    public boolean removeUsers(User user) {
-        return this.users.remove(user);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || this.getClass() != o.getClass()) return false;
-
-        Role role = (Role) o;
-        return this.getId() == role.getId();
-    }
-
-    @Override
-    public int hashCode()  {
-        return Long.hashCode(this.getId());
+    public void removeUser(User user) {
+        this.users.remove(user);
     }
 }

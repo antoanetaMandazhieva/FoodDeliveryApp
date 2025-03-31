@@ -15,11 +15,11 @@ public class RestaurantReview extends IdEntity {
     @JoinColumn(name = "reviewer_id", nullable = false)
     private User reviewer;
 
-    @Basic
+    @Column(nullable = false)
     private int rating;
 
     @Column(name = "review_time")
-    private LocalDateTime createdAt;
+    private LocalDateTime reviewTime;
 
     @ManyToOne
     @JoinColumn(name = "restaurant_id", nullable = false)
@@ -49,13 +49,14 @@ public class RestaurantReview extends IdEntity {
         this.rating = rating;
     }
 
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
+    public LocalDateTime getReviewTime() {
+        return reviewTime;
     }
+
 
     @PrePersist
     protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
+        this.reviewTime = LocalDateTime.now();
     }
 
     public Restaurant getRestaurant() {

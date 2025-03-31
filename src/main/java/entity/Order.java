@@ -1,5 +1,6 @@
 package entity;
 
+import enums.Status;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -27,8 +28,7 @@ public class Order extends IdEntity {
     @Column(precision = 10, scale = 2, nullable = false)
     private BigDecimal totalPrice;
 
-    @ManyToOne
-    @JoinColumn(name = "status_id", nullable = false)
+    @Enumerated(EnumType.STRING)
     private Status status;
 
     @Column(name = "estimated_time")
@@ -47,14 +47,17 @@ public class Order extends IdEntity {
 
 
     public Order () {
+        this.totalPrice = BigDecimal.ZERO;
         this.products = new HashSet<>();
+        this.status = Status.PENDING;
+
     }
 
     public User getClient() {
         return client;
     }
 
-    public void setClient(Client client) {
+    public void setClient(User client) {
         this.client = client;
     }
 
@@ -78,8 +81,10 @@ public class Order extends IdEntity {
         return totalPrice;
     }
 
-    public void setTotalPrice(BigDecimal totalPrice) {
-        this.totalPrice = totalPrice;
+    public void calculateTotalPrice() {
+        this.totalPrice = this.products.stream()
+                .map(Product::getPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     public Status getStatus() {
@@ -112,9 +117,11 @@ public class Order extends IdEntity {
 
     public void addProduct(Product product) {
         this.products.add(product);
+        calculateTotalPrice();
     }
 
-    public boolean removeProduct(Product product) {
-        return this.products.remove(product);
+    public void removeProduct(Product product) {
+        this.products.remove(product);
+        calculateTotalPrice();
     }
 }

@@ -15,7 +15,7 @@ public class SupplierReview extends IdEntity {
     @JoinColumn(name = "reviewer_id", nullable = false)
     private User reviewer;
 
-    @Basic
+    @Column(nullable = false)
     private int rating;
 
     @Column(name = "review_time")
@@ -26,7 +26,6 @@ public class SupplierReview extends IdEntity {
     private Supplier supplier;
 
     public SupplierReview() {}
-
 
     public User getReviewer() {
         return reviewer;

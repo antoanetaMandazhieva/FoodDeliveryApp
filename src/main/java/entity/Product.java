@@ -1,19 +1,13 @@
 package entity;
 
+import enums.Category;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 
-/**
- * <p>Може да се добави:</p>
- * <p>@OneToMany(mappedBy = "product")
- * private Set<OrderedItem> orderedItems = new HashSet<>();</p>
- * <p>Но само ако ще е нужна двупосочност.</p>
- */
-
 @Entity
 @Table(name = "Products")
-public class Product extends IdEntity{
+public class Product extends IdEntity {
 
     @Column(length = 50, nullable = false)
     private String name;
@@ -21,8 +15,7 @@ public class Product extends IdEntity{
     @Column(precision = 10, scale = 2, nullable = false)
     private BigDecimal price;
 
-    @ManyToOne
-    @JoinColumn(name = "category_id", nullable = false)
+    @Enumerated(EnumType.STRING)
     private Category category;
 
     @ManyToOne
@@ -33,6 +26,7 @@ public class Product extends IdEntity{
     private boolean isAvailable;
 
     public Product() {
+        this.price = BigDecimal.ZERO;
         this.isAvailable = true;
     }
 
@@ -82,19 +76,5 @@ public class Product extends IdEntity{
 
     public void setAvailable(boolean available) {
         isAvailable = available;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || this.getClass() != o.getClass()) return false;
-
-        Product product = (Product) o;
-        return this.getId() == product.getId();
-    }
-
-    @Override
-    public int hashCode() {
-        return Long.hashCode(getId());
     }
 }

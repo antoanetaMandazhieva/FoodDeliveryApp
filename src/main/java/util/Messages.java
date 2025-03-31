@@ -13,9 +13,7 @@ public class Messages {
 
     public final static String INVALID_NAME = "Invalid name.";
 
-    public final static String INVALID_DATE_IN_THE_FUTURE = "Date of birth cannot be in the future.";
-
-    public final static String MORE_THAN_100_YEARS = "Date of birth is unreasonably far in the past.";
+    public final static String INVALID_DATE = "Invalid date of birth.";
 
     public final static String INVALID_PHONE_NUMBER = "Invalid number.";
 

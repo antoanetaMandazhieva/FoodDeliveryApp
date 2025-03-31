@@ -5,6 +5,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 
+import java.util.Objects;
+
 /** <h4>
  * Клас, който се наследява от всички Entity-та, които се пазят в таблица.
  * </h4>
@@ -24,5 +26,18 @@ public class IdEntity {
 
     public long getId() {
         return id;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) return true;
+        if (object == null || getClass() != object.getClass()) return false;
+        IdEntity idEntity = (IdEntity) object;
+        return id == idEntity.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Long.hashCode(id);
     }
 }

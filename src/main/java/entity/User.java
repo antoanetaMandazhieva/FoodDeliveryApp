@@ -4,25 +4,13 @@ import enums.Gender;
 import jakarta.persistence.*;
 import org.mindrot.jbcrypt.BCrypt;
 
-import java.text.SimpleDateFormat;
+import java.time.DateTimeException;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
 import static util.Messages.*;
-
-/**
- * Засега се оставя връзката между {@code User} и {@code Bonus} да е еднопосочна, което означава, че в даден етап,
- * когато дадена потребител иска да достъпи бонусите си ще стане
- * чрез JPQL заявка, а не директно през класа!
- * <p>
- * Важно!!!
- * Това остава така засега само заради по-трудното му управление, но в даден етап може да се промени, ако е нужно.
- * </p>
- */
 
 @Entity
 @Table(name = "Users")
@@ -30,15 +18,13 @@ import static util.Messages.*;
 @DiscriminatorColumn(name = "user_type", discriminatorType = DiscriminatorType.STRING)
 public abstract class User extends IdEntity {
 
-    private final static SimpleDateFormat SDF = new SimpleDateFormat("yyyy-MM-dd");
-
     @Column(length = 50, nullable = false, unique = true)
     private String email;
 
-    @Column(length = 50, nullable = false)
+    @Column(length = 60, nullable = false)
     private String password;
 
-    @Column(length = 50, nullable = false)
+    @Column(length = 50, nullable = false, unique = true)
     private String username;
 
     @Column(length = 50, nullable = false)
@@ -54,8 +40,14 @@ public abstract class User extends IdEntity {
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", targetEntity = Address.class, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Address> addresses;
+
+    @OneToMany(mappedBy = "user", targetEntity = Bonus.class, cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Bonus> bonuses;
+
+    @OneToMany(mappedBy = "client", targetEntity = Order.class, cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Order> orders;
 
     @Column(name = "phone_num", nullable = false)
     private String phoneNumber;
@@ -63,22 +55,20 @@ public abstract class User extends IdEntity {
     @Column(name = "is_active", columnDefinition = "BOOLEAN DEFAULT TRUE")
     private boolean isActive;
 
-    @ManyToMany
-    @JoinTable(
-            name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
-    )
-    private Set<Role> roles;
+    @ManyToOne
+    @JoinColumn(name = "role_id")
+    private Role role;
 
     public User () {
         this.isActive = true;
-        this.roles = new HashSet<>();
+        this.addresses = new HashSet<>();
+        this.bonuses = new HashSet<>();
+        this.orders = new HashSet<>();
     }
 
     public User(String email, String password, String username,
-                String name, String surname, Gender gender, LocalDate dateOfBirth,
-                Set<Address> addresses, String phoneNumber) {
+                String name, String surname, Gender gender, int day, int month, int year,
+                String phoneNumber) {
 
         setEmail(email);
         setPassword(password);
@@ -86,11 +76,12 @@ public abstract class User extends IdEntity {
         setName(name);
         setSurname(surname);
         setGender(gender);
-        setDateOfBirth(dateOfBirth);
-        setAddresses(addresses);
+        setDateOfBirth(day, month, year);
         setPhoneNumber(phoneNumber);
         this.isActive = true;
-        this.roles = new HashSet<>();
+        this.addresses = new HashSet<>();
+        this.bonuses = new HashSet<>();
+        this.orders = new HashSet<>();
     }
 
     public String getEmail() {
@@ -98,7 +89,7 @@ public abstract class User extends IdEntity {
     }
 
     public void setEmail(String email) {
-        if (!email.matches( "^[a-zA-Z0-9+&*-]+(?:\\.[a-zA-Z0-9+&-]+)@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$")) {
+        if (!email.matches("^[a-zA-Z0-9+&*-]+\\.[a-zA-Z0-9+&-]+@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$")) {
             throw new IllegalArgumentException(INVALID_EMAIL);
         }
 
@@ -157,26 +148,24 @@ public abstract class User extends IdEntity {
         return dateOfBirth;
     }
 
-    public void setDateOfBirth(LocalDate dateOfBirth) {
-        LocalDate today = LocalDate.now();
-        if (dateOfBirth.isAfter(today)) {
-            throw new IllegalArgumentException(INVALID_DATE_IN_THE_FUTURE);
+    public void setDateOfBirth(int day, int month, int year) {
+        try {
+            this.dateOfBirth = LocalDate.of(year, month, day);
+        } catch (DateTimeException e) {
+            throw new IllegalArgumentException(INVALID_DATE);
         }
-
-        LocalDate earliestValidDate = today.minusYears(100);
-        if (dateOfBirth.isBefore(earliestValidDate)) {
-            throw new IllegalArgumentException(MORE_THAN_100_YEARS);
-        }
-
-        this.dateOfBirth = dateOfBirth;
     }
 
     public Set<Address> getAddresses() {
-        return addresses;
+        return Collections.unmodifiableSet(this.addresses);
     }
 
-    public void setAddresses(Set<Address> addresses) {
-        this.addresses = addresses;
+    public Set<Bonus> getBonuses() {
+        return Collections.unmodifiableSet(this.bonuses);
+    }
+
+    public Set<Order> getOrders() {
+        return Collections.unmodifiableSet(this.orders);
     }
 
     public String getPhoneNumber() {
@@ -199,8 +188,12 @@ public abstract class User extends IdEntity {
         isActive = active;
     }
 
-    public Set<Role> getRoles() {
-        return Collections.unmodifiableSet(this.roles);
+    public Role getRole() {
+        return this.role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
     }
 
     private void validateName(String name) {
@@ -213,16 +206,33 @@ public abstract class User extends IdEntity {
         return BCrypt.hashpw(password, BCrypt.gensalt());
     }
 
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || this.getClass() != o.getClass()) return false;
-
-        User user = (User) o;
-        return this.getId() == user.getId();
+    public void addAddress(Address address) {
+        this.addresses.add(address);
+        address.setUser(this);
     }
 
-    @Override
-    public int hashCode()  {
-        return Long.hashCode(this.getId());
+    public void removeAddress(Address address) {
+        this.addresses.remove(address);
+        address.setUser(null);
+    }
+
+    public void addBonus(Bonus bonus) {
+        this.bonuses.add(bonus);
+        bonus.setUser(this);
+    }
+
+    public void removeBonus(Bonus bonus) {
+        this.bonuses.remove(bonus);
+        bonus.setUser(null);
+    }
+
+    public void addOrder(Order order) {
+        this.orders.add(order);
+        order.setClient(this);
+    }
+
+    public void removeOrder(Order order) {
+        this.orders.remove(order);
+        order.setClient(null);
     }
 }

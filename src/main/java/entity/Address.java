@@ -2,16 +2,6 @@ package entity;
 
 import jakarta.persistence.*;
 
-/**
- * Засега се оставя връзката между {@code Address} и {@code Restaurant} да е еднопосочна, което означава, че в даден етап,
- *  * когато даден Адрес иска да достъпи Ресторанта си ще стане
- *  * чрез JPQL заявка, а не директно през класа!
- *  * <p>
- *  * Важно!!!
- *  * Това остава така засега само заради по-трудното му управление, но в даден етап може да се промени, ако е нужно.
- *  * </p>
- */
-
 @Entity
 @Table(name = "Addresses")
 public class Address extends IdEntity {
@@ -29,16 +19,23 @@ public class Address extends IdEntity {
     private String country;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private User user;
 
-    public Address() {}
+    @OneToOne(mappedBy = "address", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Restaurant restaurant;
 
-    public Address(String street, String city, String postalCode, String country) {
+    public Address() {
+        this.user = new Client();
+    }
+
+    public Address(String street, String city, String postalCode, String country, User user, Restaurant restaurant) {
         this.street = street;
         this.city = city;
         this.postalCode = postalCode;
         this.country = country;
+        this.user = user;
+        this.restaurant = restaurant;
     }
 
     public String getStreet() {
@@ -73,13 +70,33 @@ public class Address extends IdEntity {
         this.country = country;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || this.getClass() != o.getClass()) return false;
-
-        Address address = (Address) o;
-        return this.getId() == address.getId();
+    public User getUser() {
+        return user;
     }
 
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Restaurant getRestaurant() {
+        return restaurant;
+    }
+
+    public void setRestaurant(Restaurant restaurant) {
+        this.restaurant = restaurant;
+    }
+
+    public void addRestaurant(Restaurant restaurant) {
+        if (this.restaurant == null) {
+            this.restaurant = restaurant;
+            this.restaurant.setAddress(this);
+        }
+    }
+
+    public void removeRestaurant() {
+        if (this.restaurant != null) {
+            this.restaurant.setAddress(null);
+            this.restaurant = null;
+        }
+    }
 }
