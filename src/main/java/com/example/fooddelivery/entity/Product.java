@@ -15,12 +15,19 @@ public class Product extends IdEntity {
     @Column(precision = 10, scale = 2, nullable = false)
     private BigDecimal price;
 
+    @Basic
+    private String description;
+
     @Enumerated(EnumType.STRING)
     private Category category;
 
     @ManyToOne
-    @JoinColumn(name = "restaurant_id", nullable = false)
+    @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;
+
+    @ManyToOne
+    @JoinColumn(name = "cuisine_id")
+    private Cuisine cuisine;
 
     @Column(name = "is_available", columnDefinition = "BOOLEAN DEFAULT TRUE")
     private boolean isAvailable;
@@ -30,9 +37,10 @@ public class Product extends IdEntity {
         this.isAvailable = true;
     }
 
-    public Product(String name, BigDecimal price, Category category, Restaurant restaurant) {
+    public Product(String name, BigDecimal price, String description, Category category, Restaurant restaurant) {
         this.name = name;
         this.price = price;
+        this.description = description;
         this.category = category;
         this.restaurant = restaurant;
         this.isAvailable = true;
@@ -76,5 +84,21 @@ public class Product extends IdEntity {
 
     public void setAvailable(boolean available) {
         isAvailable = available;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Cuisine getCuisine() {
+        return cuisine;
+    }
+
+    public void setCuisine(Cuisine cuisine) {
+        this.cuisine = cuisine;
     }
 }

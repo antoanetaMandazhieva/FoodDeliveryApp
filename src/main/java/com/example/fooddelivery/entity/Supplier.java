@@ -1,5 +1,6 @@
 package com.example.fooddelivery.entity;
 
+import com.example.fooddelivery.enums.Gender;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -21,6 +22,15 @@ public class Supplier extends User {
         super();
         this.supplierOrders = new HashSet<>();
     }
+
+    public Supplier(String email, String password, String username,
+                  String name, String surname, Gender gender, int day, int month, int year,
+                  String phoneNumber) {
+
+        super(email, password, username, name, surname, gender, day, month, year, phoneNumber);
+        this.supplierOrders = new HashSet<>();
+    }
+
 
     public Set<Order> getSupplierOrders() {
         return Collections.unmodifiableSet(this.supplierOrders);

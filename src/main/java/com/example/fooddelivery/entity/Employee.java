@@ -5,16 +5,16 @@ import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 
 @Entity
-@DiscriminatorValue("ADMIN")
-public class Admin extends User {
+@DiscriminatorValue("EMPLOYEE")
+public class Employee extends User {
 
-    public Admin() {
+    public Employee() {
         super();
     }
 
-    public Admin(String email, String password, String username,
-                  String name, String surname, Gender gender, int day, int month, int year,
-                  String phoneNumber) {
+    public Employee(String email, String password, String username,
+                 String name, String surname, Gender gender, int day, int month, int year,
+                 String phoneNumber) {
 
         super(email, password, username, name, surname, gender, day, month, year, phoneNumber);
     }

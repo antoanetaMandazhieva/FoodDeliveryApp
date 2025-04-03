@@ -45,7 +45,6 @@ public class Order extends IdEntity {
     )
     private Set<Product> products;
 
-
     public Order () {
         this.totalPrice = BigDecimal.ZERO;
         this.products = new HashSet<>();
