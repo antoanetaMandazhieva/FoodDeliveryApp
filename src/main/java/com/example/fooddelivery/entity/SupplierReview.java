@@ -23,7 +23,7 @@ public class SupplierReview extends IdEntity {
 
     @ManyToOne
     @JoinColumn(name = "supplier_id", nullable = false)
-    private Supplier supplier;
+    private User supplier;
 
     public SupplierReview() {}
 
@@ -56,11 +56,11 @@ public class SupplierReview extends IdEntity {
         this.createdAt = LocalDateTime.now();
     }
 
-    public Supplier getSupplier() {
+    public User getSupplier() {
         return supplier;
     }
 
-    public void setSupplier(Supplier supplier) {
+    public void setSupplier(User supplier) {
         this.supplier = supplier;
     }
 }

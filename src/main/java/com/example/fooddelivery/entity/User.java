@@ -16,7 +16,7 @@ import static com.example.fooddelivery.util.Messages.*;
 @Table(name = "Users")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "user_type", discriminatorType = DiscriminatorType.STRING)
-public abstract class User extends IdEntity {
+public class User extends IdEntity {
 
     @Column(length = 50, nullable = false, unique = true)
     private String email;
@@ -67,7 +67,7 @@ public abstract class User extends IdEntity {
     }
 
     public User(String email, String password, String username,
-                String name, String surname, Gender gender, int day, int month, int year,
+                String name, String surname, Gender gender, LocalDate dateOfBirth,
                 String phoneNumber) {
 
         setEmail(email);
@@ -76,7 +76,7 @@ public abstract class User extends IdEntity {
         setName(name);
         setSurname(surname);
         setGender(gender);
-        setDateOfBirth(day, month, year);
+        setDateOfBirth(dateOfBirth);
         setPhoneNumber(phoneNumber);
         this.isActive = true;
         this.addresses = new HashSet<>();
@@ -148,12 +148,14 @@ public abstract class User extends IdEntity {
         return dateOfBirth;
     }
 
-    public void setDateOfBirth(int day, int month, int year) {
-        try {
-            this.dateOfBirth = LocalDate.of(year, month, day);
-        } catch (DateTimeException e) {
-            throw new IllegalArgumentException(INVALID_DATE);
-        }
+    public void setDateOfBirth(LocalDate dateOfBirth) {
+//        try {
+//            this.dateOfBirth = LocalDate.of(year, month, day);
+//        } catch (DateTimeException e) {
+//            throw new IllegalArgumentException(INVALID_DATE);
+//        }
+
+        this.dateOfBirth = dateOfBirth;
     }
 
     public Set<Address> getAddresses() {

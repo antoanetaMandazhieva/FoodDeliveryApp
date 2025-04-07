@@ -21,6 +21,11 @@ public class Role extends IdEntity {
         this.users = new HashSet<>();
     }
 
+    public Role(String name) {
+        this.name = name;
+        this.users = new HashSet<>();
+    }
+
     public String getName() {
         return name;
     }
@@ -35,9 +40,11 @@ public class Role extends IdEntity {
 
     public void addUser(User user) {
         this.users.add(user);
+        user.setRole(this);
     }
 
     public void removeUser(User user) {
         this.users.remove(user);
+        user.setRole(null);
     }
 }

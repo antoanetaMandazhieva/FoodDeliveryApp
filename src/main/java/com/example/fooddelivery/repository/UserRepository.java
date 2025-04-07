@@ -19,4 +19,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     void updateUserType(@Param("userId") Long userId, @Param("newType") String newType);
 
     Optional<User> findByUsername(String username);
+
+
 }
