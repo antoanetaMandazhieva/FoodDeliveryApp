@@ -17,10 +17,10 @@ public class Restaurant extends IdEntity {
     @JoinColumn(name = "address_id", nullable = false)
     private Address address;
 
-    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "restaurant", targetEntity = Order.class, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Order> orders;
 
-    @OneToMany(mappedBy = "restaurant", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "restaurant", targetEntity = Product.class, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Product> products;
 
     @ManyToMany(mappedBy = "restaurants", targetEntity = Cuisine.class, cascade = CascadeType.ALL)
@@ -102,13 +102,15 @@ public class Restaurant extends IdEntity {
     }
 
     public void addProduct(Product product) {
-        this.products.add(product);
-        product.setRestaurant(this);
+        if (product != null && this.products.add(product)) {
+            product.setRestaurant(this);
+        }
     }
 
     public void removeProduct(Product product) {
-        this.products.remove(product);
-        product.setRestaurant(null);
+        if (product != null && this.products.remove(product)) {
+            product.setRestaurant(null);
+        }
     }
 
     public Set<Cuisine> getCuisines() {
@@ -116,10 +118,14 @@ public class Restaurant extends IdEntity {
     }
 
     public void addCuisine(Cuisine cuisine) {
-        this.cuisines.add(cuisine);
+        if (cuisine != null && this.cuisines.add(cuisine)) {
+            cuisine.addRestaurant(this);
+        }
     }
 
     public void removeCuisine(Cuisine cuisine) {
-        this.cuisines.remove(cuisine);
+        if (cuisine != null && this.cuisines.remove(cuisine)) {
+            cuisine.removeRestaurant(this);
+        }
     }
 }

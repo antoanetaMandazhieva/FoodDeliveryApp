@@ -25,17 +25,13 @@ public class Address extends IdEntity {
     @OneToOne(mappedBy = "address", cascade = CascadeType.ALL, orphanRemoval = true)
     private Restaurant restaurant;
 
-    public Address() {
-        this.user = new Client();
-    }
+    public Address() {}
 
-    public Address(String street, String city, String postalCode, String country, User user, Restaurant restaurant) {
+    public Address(String street, String city, String postalCode, String country) {
         this.street = street;
         this.city = city;
         this.postalCode = postalCode;
         this.country = country;
-        this.user = user;
-        this.restaurant = restaurant;
     }
 
     public String getStreet() {

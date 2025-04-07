@@ -1,10 +1,10 @@
 package com.example.fooddelivery.entity;
 
-import com.example.fooddelivery.enums.Status;
+import com.example.fooddelivery.enums.OrderStatus;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -18,24 +18,21 @@ public class Order extends IdEntity {
     private User client;
 
     @ManyToOne
-    @JoinColumn(name = "restaurant_id", nullable = false)
-    private Restaurant restaurant;
+    @JoinColumn(name = "supplier_id")
+    private User supplier;
 
     @ManyToOne
-    @JoinColumn(name = "supplier_id", nullable = false)
-    private Supplier supplier;
+    @JoinColumn(name = "restaurant_id", nullable = false)
+    private Restaurant restaurant;
 
     @Column(precision = 10, scale = 2, nullable = false)
     private BigDecimal totalPrice;
 
     @Enumerated(EnumType.STRING)
-    private Status status;
+    private OrderStatus orderStatus;
 
-    @Column(name = "estimated_time")
-    private LocalTime estimatedTime;
-
-    @Column(name = "delivery_time", columnDefinition = "TIME DEFAULT NULL")
-    private LocalTime deliveryTime;
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
     @ManyToMany
     @JoinTable(
@@ -48,7 +45,7 @@ public class Order extends IdEntity {
     public Order () {
         this.totalPrice = BigDecimal.ZERO;
         this.products = new HashSet<>();
-        this.status = Status.PENDING;
+        this.orderStatus = OrderStatus.PENDING;
 
     }
 
@@ -68,11 +65,11 @@ public class Order extends IdEntity {
         this.restaurant = restaurant;
     }
 
-    public Supplier getSupplier() {
+    public User getSupplier() {
         return supplier;
     }
 
-    public void setSupplier(Supplier supplier) {
+    public void setSupplier(User supplier) {
         this.supplier = supplier;
     }
 
@@ -86,28 +83,25 @@ public class Order extends IdEntity {
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    public Status getStatus() {
-        return status;
+    public OrderStatus getOrderStatus() {
+        return orderStatus;
     }
 
-    public void setStatus(Status status) {
-        this.status = status;
+    public void setOrderStatus(OrderStatus orderStatus) {
+        this.orderStatus = orderStatus;
     }
 
-    public LocalTime getEstimatedTime() {
-        return estimatedTime;
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = LocalDateTime.now();
     }
 
-    public void setEstimatedTime(LocalTime estimatedTime) {
-        this.estimatedTime = estimatedTime;
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 
-    public LocalTime getDeliveryTime() {
-        return deliveryTime;
-    }
-
-    public void setDeliveryTime(LocalTime deliveryTime) {
-        this.deliveryTime = deliveryTime;
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
     }
 
     public Set<Product> getProducts() {
@@ -116,11 +110,5 @@ public class Order extends IdEntity {
 
     public void addProduct(Product product) {
         this.products.add(product);
-        calculateTotalPrice();
-    }
-
-    public void removeProduct(Product product) {
-        this.products.remove(product);
-        calculateTotalPrice();
     }
 }

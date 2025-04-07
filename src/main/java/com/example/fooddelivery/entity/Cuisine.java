@@ -29,6 +29,11 @@ public class Cuisine extends IdEntity {
         this.products = new HashSet<>();
     }
 
+    public Cuisine(String name) {
+        this.name = name;
+        this.restaurants = new HashSet<>();
+        this.products = new HashSet<>();
+    }
 
     public String getName() {
         return name;
@@ -62,11 +67,9 @@ public class Cuisine extends IdEntity {
 
     public void addRestaurant(Restaurant restaurant) {
         this.restaurants.add(restaurant);
-        restaurant.addCuisine(this);
     }
 
     public void removeRestaurant(Restaurant restaurant) {
         this.restaurants.remove(restaurant);
-        restaurant.removeCuisine(this);
     }
 }
