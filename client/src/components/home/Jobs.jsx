@@ -30,7 +30,7 @@ const Jobs = () => {
             {/* top */}
 
             <div id='jobs-top' className='aspect-1440/270 bg-ivory w-full relative'>
-                <svg className='max-md:min-h-[78px] absolute z-0' viewBox="0 0 1440 270" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg preserveAspectRatio='none' className='h-full w-full absolute z-0' viewBox="0 0 1440 270" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M1441 270C1394.95 270 1118.42 270 720.5 270C322.579 270 178.771 270 0 270C0 201.301 322.579 0 720.5 0C1118.42 0 1441 201.301 1441 270Z" fill="#7BAAA0"/>
                 </svg>
                 <div className='flex flex-col justify-center items-center pt-2'>

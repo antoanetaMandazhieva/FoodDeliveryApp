@@ -19,7 +19,8 @@ const Hero = () => {
     return (
         <section className='relative aspect-[1439/687] w-full bg-ivory pb-0 mb-0'>
             <svg
-                className='absolute z-0 bottom-0'
+                preserveAspectRatio='none'
+                className='h-full w-full absolute z-0 bottom-0'
                 viewBox='0 0 1439 687'
                 fill='none'
                 xmlns='http://www.w3.org/2000/svg'
