@@ -11,6 +11,7 @@ import com.example.fooddelivery.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -113,6 +114,11 @@ public class RestaurantServiceImpl implements RestaurantService {
         return restaurants.stream()
                 .map(RestaurantMapper::mapToDto)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Restaurant> getTopRatedRestaurants(int limit) {
+        return restaurantRepository.findTopByOrderByAverageRatingDesc(PageRequest.of(0, limit));
     }
 
     private Restaurant getRestaurantById(Long restaurantId) {

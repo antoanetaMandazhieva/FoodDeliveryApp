@@ -4,6 +4,7 @@ import com.example.fooddelivery.enums.Gender;
 import jakarta.persistence.*;
 import org.mindrot.jbcrypt.BCrypt;
 
+import java.math.BigDecimal;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.util.Collections;
@@ -149,11 +150,6 @@ public class User extends IdEntity {
     }
 
     public void setDateOfBirth(LocalDate dateOfBirth) {
-//        try {
-//            this.dateOfBirth = LocalDate.of(year, month, day);
-//        } catch (DateTimeException e) {
-//            throw new IllegalArgumentException(INVALID_DATE);
-//        }
 
         this.dateOfBirth = dateOfBirth;
     }

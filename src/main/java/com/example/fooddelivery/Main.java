@@ -21,11 +21,6 @@ import org.springframework.stereotype.Component;
 import com.example.fooddelivery.service.user.UserService;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Set;
-
 @Component
 public class Main implements CommandLineRunner {
 

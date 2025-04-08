@@ -1,5 +1,6 @@
 package com.example.fooddelivery.service.user;
 
+import com.example.fooddelivery.dto.order.OrderResponseDto;
 import com.example.fooddelivery.dto.user.UserDto;
 import com.example.fooddelivery.dto.user.UserProfileDto;
 
@@ -19,4 +20,8 @@ public interface UserService {
     void changeUserRole(Long adminId, Long userId, String newRole) throws AccessDeniedException;
 
     Long getUserIdFromUsername(String username);
+
+    List<OrderResponseDto> getOrdersByClientUsername(String clientUsername);
+
+    List<OrderResponseDto> getOrdersBySupplierUsername(String supplierUsername);
 }

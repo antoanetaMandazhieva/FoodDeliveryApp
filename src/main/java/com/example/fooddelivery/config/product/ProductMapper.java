@@ -1,13 +1,12 @@
 package com.example.fooddelivery.config.product;
 
-import com.example.fooddelivery.config.common.Mapper;
 import com.example.fooddelivery.dto.product.ProductDto;
 import com.example.fooddelivery.entity.Product;
 import org.modelmapper.ModelMapper;
 
 public class ProductMapper {
 
-    private static final ModelMapper mapper = Mapper.getInstance();
+    private static final ModelMapper mapper = new ModelMapper();
 
     public static ProductDto mapToProductDto(Product product) {
         ProductDto productDto = mapper.map(product, ProductDto.class);

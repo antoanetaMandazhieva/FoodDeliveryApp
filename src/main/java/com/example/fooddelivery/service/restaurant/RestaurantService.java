@@ -20,4 +20,6 @@ public interface RestaurantService {
     void removeProductFromRestaurant(Long restaurantId, Long productId);
 
     List<RestaurantDto> getRestaurantsByCuisine(Long cuisineId);
+
+    public List<Restaurant> getTopRatedRestaurants(int limit);
 }

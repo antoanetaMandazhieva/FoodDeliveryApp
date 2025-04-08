@@ -1,22 +1,19 @@
 package com.example.fooddelivery.dto.order;
 
-import com.example.fooddelivery.dto.product.ProductDto;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.Set;
 
-public class OrderDto {
+public class OrderResponseDto {
 
     private Long id;
-    private String clientName;
+    private String clientAddress;
+    private String clientPhone;
     private String restaurantName;
-    private String supplierName;
-    private Set<ProductDto> products;
     private BigDecimal totalPrice;
     private String orderStatus;
     private LocalDateTime createdAt;
+
+
 
     public Long getId() {
         return id;
@@ -26,12 +23,20 @@ public class OrderDto {
         this.id = id;
     }
 
-    public String getClientName() {
-        return clientName;
+    public String getClientAddress() {
+        return clientAddress;
     }
 
-    public void setClientName(String clientName) {
-        this.clientName = clientName;
+    public void setClientAddress(String clientAddress) {
+        this.clientAddress = clientAddress;
+    }
+
+    public String getClientPhone() {
+        return clientPhone;
+    }
+
+    public void setClientPhone(String clientPhone) {
+        this.clientPhone = clientPhone;
     }
 
     public String getRestaurantName() {
@@ -40,22 +45,6 @@ public class OrderDto {
 
     public void setRestaurantName(String restaurantName) {
         this.restaurantName = restaurantName;
-    }
-
-    public String getSupplierName() {
-        return supplierName;
-    }
-
-    public void setSupplierName(String supplierName) {
-        this.supplierName = supplierName;
-    }
-
-    public Set<ProductDto> getProducts() {
-        return products;
-    }
-
-    public void setProducts(Set<ProductDto> products) {
-        this.products = products;
     }
 
     public BigDecimal getTotalPrice() {

@@ -8,8 +8,8 @@ public class Mapper {
 
     private Mapper() {}
 
-    public static ModelMapper getInstance() {
 
+    public static ModelMapper getInstance() {
         if (instance == null) {
             instance = new ModelMapper();
         }

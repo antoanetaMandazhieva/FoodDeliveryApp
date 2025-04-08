@@ -1,10 +1,13 @@
 package com.example.fooddelivery.service.user;
 
+import com.example.fooddelivery.config.order.OrderMapper;
 import com.example.fooddelivery.config.user.UserMapper;
+import com.example.fooddelivery.dto.order.OrderResponseDto;
 import com.example.fooddelivery.dto.user.UserDto;
 import com.example.fooddelivery.dto.user.UserProfileDto;
 import com.example.fooddelivery.entity.Role;
 import com.example.fooddelivery.entity.User;
+import com.example.fooddelivery.repository.OrderRepository;
 import com.example.fooddelivery.repository.RoleRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
@@ -21,10 +24,12 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final OrderRepository orderRepository;
 
-    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository) {
+    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, OrderRepository orderRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.orderRepository = orderRepository;
     }
 
     @Override
@@ -99,5 +104,27 @@ public class UserServiceImpl implements UserService {
         return userRepository.findByUsername(username)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"))
                 .getId();
+    }
+
+    @Override
+    public List<OrderResponseDto> getOrdersByClientUsername(String clientUsername) {
+        User client = userRepository.findByUsername(clientUsername)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        return orderRepository.findByClientId(client.getId())
+                .stream()
+                .map(OrderMapper::toResponseDto)
+                .toList();
+    }
+
+    @Override
+    public List<OrderResponseDto> getOrdersBySupplierUsername(String supplierUsername) {
+        User supplier = userRepository.findByUsername(supplierUsername)
+                .orElseThrow(() -> new EntityNotFoundException("Supplier not found"));
+
+        return orderRepository.findBySupplierId(supplier.getId())
+                .stream()
+                .map(OrderMapper::toResponseDto)
+                .toList();
     }
 }

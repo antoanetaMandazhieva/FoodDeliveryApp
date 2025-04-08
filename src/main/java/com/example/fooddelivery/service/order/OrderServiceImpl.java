@@ -3,6 +3,7 @@ package com.example.fooddelivery.service.order;
 import com.example.fooddelivery.config.order.OrderMapper;
 import com.example.fooddelivery.dto.order.OrderCreateDto;
 import com.example.fooddelivery.dto.order.OrderDto;
+import com.example.fooddelivery.dto.order.OrderResponseDto;
 import com.example.fooddelivery.entity.Order;
 import com.example.fooddelivery.entity.Product;
 import com.example.fooddelivery.entity.Restaurant;
@@ -12,6 +13,7 @@ import com.example.fooddelivery.repository.OrderRepository;
 import com.example.fooddelivery.repository.ProductRepository;
 import com.example.fooddelivery.repository.RestaurantRepository;
 import com.example.fooddelivery.repository.UserRepository;
+import com.example.fooddelivery.service.bonus.BonusService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,7 +31,6 @@ public class OrderServiceImpl implements OrderService {
     private static final Map<OrderStatus, Set<OrderStatus>> ALLOWED_TRANSITIONS = Map.of(
             OrderStatus.PENDING, Set.of(OrderStatus.ACCEPTED, OrderStatus.CANCELLED),
             OrderStatus.ACCEPTED, Set.of(OrderStatus.IN_DELIVERY),
-            OrderStatus.IN_DELIVERY, Set.of(OrderStatus.DELIVERED),
             OrderStatus.DELIVERED, Set.of(),
             OrderStatus.CANCELLED, Set.of()
     );
@@ -38,15 +39,18 @@ public class OrderServiceImpl implements OrderService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final RestaurantRepository restaurantRepository;
+    private final BonusService bonusService;
 
     public OrderServiceImpl(OrderRepository orderRepository,
                             UserRepository userRepository,
                             ProductRepository productRepository,
-                            RestaurantRepository restaurantRepository) {
+                            RestaurantRepository restaurantRepository,
+                            BonusService bonusService) {
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
         this.productRepository = productRepository;
         this.restaurantRepository = restaurantRepository;
+        this.bonusService = bonusService;
     }
 
     @Override
@@ -110,7 +114,7 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new EntityNotFoundException("Employee not found"));
 
         if (!"EMPLOYEE".equals(employee.getRole().getName())) {
-            throw new IllegalArgumentException("Only employees can update order statuses");
+            throw new IllegalStateException("Only employees can update order statuses");
         }
 
         Order order = orderRepository.findById(orderId)
@@ -126,6 +130,33 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderStatus(newStatus);
 
         orderRepository.save(order);
+    }
+
+    @Override
+    @Transactional
+    public OrderDto finishOrder(Long orderId, Long supplierId) {
+        User supplier = userRepository.findById(supplierId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        if (!"SUPPLIER".equals(supplier.getRole().getName())) {
+            throw new IllegalStateException("Only suppliers can finish orders");
+        }
+
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+
+        if (order.getOrderStatus() != OrderStatus.IN_DELIVERY) {
+            throw new IllegalStateException(String.format("Order can't be finished because it has a status: %s",
+                    order.getOrderStatus()));
+        }
+
+        order.setOrderStatus(OrderStatus.DELIVERED);
+        bonusService.checkAndAddBonusForSupplier(supplier);
+
+
+        orderRepository.save(order);
+
+        return OrderMapper.mapFromOrderToDto(order);
     }
 
     @Override
@@ -145,24 +176,25 @@ public class OrderServiceImpl implements OrderService {
         orderRepository.save(order);
     }
 
+
     @Override
-    public List<OrderDto> getOrdersByClient(Long clientId) {
+    public List<OrderResponseDto> getOrdersByClient(Long clientId) {
         return orderRepository.findByClientId(clientId).stream()
-                .map(OrderMapper::mapFromOrderToDto)
+                .map(OrderMapper::toResponseDto)
                 .toList();
     }
 
     @Override
-    public List<OrderDto> getOrdersBySupplier(Long supplierId) {
+    public List<OrderResponseDto> getOrdersBySupplier(Long supplierId) {
         return orderRepository.findBySupplierId(supplierId).stream()
-                .map(OrderMapper::mapFromOrderToDto)
+                .map(OrderMapper::toResponseDto)
                 .toList();
     }
 
     @Override
-    public List<OrderDto> getOrdersByStatus(OrderStatus status) {
+    public List<OrderResponseDto> getOrdersByStatus(OrderStatus status) {
         return orderRepository.findByOrderStatus(status).stream()
-                .map(OrderMapper::mapFromOrderToDto)
+                .map(OrderMapper::toResponseDto)
                 .toList();
     }
 
@@ -174,10 +206,10 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderDto> getAvailableOrdersForSuppliers() {
+    public List<OrderResponseDto> getAvailableOrdersForSuppliers() {
         return orderRepository.findByOrderStatusAndSupplierIsNull(OrderStatus.ACCEPTED)
                 .stream()
-                .map(OrderMapper::mapFromOrderToDto)
+                .map(OrderMapper::toResponseDto)
                 .toList();
     }
 }

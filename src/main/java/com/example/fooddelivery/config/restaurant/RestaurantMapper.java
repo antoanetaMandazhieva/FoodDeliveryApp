@@ -1,6 +1,5 @@
 package com.example.fooddelivery.config.restaurant;
 
-import com.example.fooddelivery.config.common.Mapper;
 import com.example.fooddelivery.dto.restaurant.RestaurantCreateDto;
 import com.example.fooddelivery.dto.restaurant.RestaurantDto;
 import com.example.fooddelivery.entity.Cuisine;
@@ -12,7 +11,7 @@ import java.util.stream.Collectors;
 
 public class RestaurantMapper {
 
-    private final static ModelMapper mapper = Mapper.getInstance();
+    private static final ModelMapper mapper = new ModelMapper();
 
     public static Restaurant mapToEntity(RestaurantCreateDto dto, Set<Cuisine> cuisines) {
         Restaurant restaurant = mapper.map(dto, Restaurant.class);

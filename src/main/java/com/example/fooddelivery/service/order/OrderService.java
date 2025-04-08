@@ -2,6 +2,7 @@ package com.example.fooddelivery.service.order;
 
 import com.example.fooddelivery.dto.order.OrderCreateDto;
 import com.example.fooddelivery.dto.order.OrderDto;
+import com.example.fooddelivery.dto.order.OrderResponseDto;
 import com.example.fooddelivery.enums.OrderStatus;
 
 import java.math.BigDecimal;
@@ -16,15 +17,17 @@ public interface OrderService {
 
     void updateOrderStatus(Long orderId, OrderStatus newStatus, Long employeeId);
 
+    OrderDto finishOrder(Long orderId, Long supplierId);
+
     void cancelOrderByClient(Long orderId, Long clientId);
 
-    List<OrderDto> getOrdersByClient(Long clientId);
+    List<OrderResponseDto> getOrdersByClient(Long clientId);
 
-    List<OrderDto> getOrdersBySupplier(Long supplierId);
+    List<OrderResponseDto> getOrdersBySupplier(Long supplierId);
 
-    List<OrderDto> getOrdersByStatus(OrderStatus status);
+    List<OrderResponseDto> getOrdersByStatus(OrderStatus status);
 
     BigDecimal getTotalRevenueBetween(LocalDateTime start, LocalDateTime end);
 
-    List<OrderDto> getAvailableOrdersForSuppliers();
+    List<OrderResponseDto> getAvailableOrdersForSuppliers();
 }
