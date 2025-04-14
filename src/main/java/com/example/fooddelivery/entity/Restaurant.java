@@ -114,7 +114,7 @@ public class Restaurant extends IdEntity {
     }
 
     public void addProduct(Product product) {
-        if (product != null && this.products.add(product)) {
+        if (product != null && this.products.contains(product) && this.products.add(product)) {
             product.setRestaurant(this);
         }
     }

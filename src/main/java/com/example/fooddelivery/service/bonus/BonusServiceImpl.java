@@ -1,7 +1,6 @@
 package com.example.fooddelivery.service.bonus;
 
 import com.example.fooddelivery.config.bonus.BonusMapper;
-import com.example.fooddelivery.config.common.Mapper;
 import com.example.fooddelivery.dto.bonus.BonusDto;
 import com.example.fooddelivery.entity.Bonus;
 import com.example.fooddelivery.entity.User;
@@ -9,8 +8,6 @@ import com.example.fooddelivery.enums.OrderStatus;
 import com.example.fooddelivery.repository.BonusRepository;
 import com.example.fooddelivery.repository.OrderRepository;
 import com.example.fooddelivery.repository.UserRepository;
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -26,13 +23,16 @@ public class BonusServiceImpl implements BonusService {
     private final BonusRepository bonusRepository;
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
+    private final BonusMapper bonusMapper;
 
     public BonusServiceImpl(BonusRepository bonusRepository,
                             OrderRepository orderRepository,
-                            UserRepository userRepository) {
+                            UserRepository userRepository,
+                            BonusMapper bonusMapper) {
         this.bonusRepository = bonusRepository;
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
+        this.bonusMapper = bonusMapper;
     }
 
     @Override
@@ -61,7 +61,7 @@ public class BonusServiceImpl implements BonusService {
     @Override
     public List<BonusDto> getBonusesByUser(Long userId) {
         return bonusRepository.findByUserId(userId).stream()
-                .map(BonusMapper::toBonusDto)
+                .map(bonusMapper::toBonusDto)
                 .toList();
     }
 
@@ -69,7 +69,7 @@ public class BonusServiceImpl implements BonusService {
     public List<BonusDto> getBonusesBetweenDates(Long userId, LocalDateTime from, LocalDateTime to) {
         return bonusRepository.findByUserIdAndBonusDateTimeBetween(userId, from, to)
                 .stream()
-                .map(BonusMapper::toBonusDto)
+                .map(bonusMapper::toBonusDto)
                 .toList();
     }
 }

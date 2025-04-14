@@ -1,19 +1,25 @@
 package com.example.fooddelivery.config.address;
 
-import com.example.fooddelivery.config.common.Mapper;
 import com.example.fooddelivery.dto.address.AddressDto;
 import com.example.fooddelivery.entity.Address;
 import org.modelmapper.ModelMapper;
+import org.springframework.stereotype.Component;
 
+@Component
 public class AddressMapper {
 
-    private static final ModelMapper mapper = Mapper.getInstance();
+    private final ModelMapper mapper;
 
-    public static Address mapToAddress(AddressDto addressDto) {
+    public AddressMapper(ModelMapper mapper) {
+        this.mapper = mapper;
+    }
+
+
+    public Address mapToAddress(AddressDto addressDto) {
         return mapper.map(addressDto, Address.class);
     }
 
-    public static AddressDto toDto(Address address) {
+    public AddressDto toDto(Address address) {
         return mapper.map(address, AddressDto.class);
     }
 }

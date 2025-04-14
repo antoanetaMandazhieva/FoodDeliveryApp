@@ -3,12 +3,18 @@ package com.example.fooddelivery.config.product;
 import com.example.fooddelivery.dto.product.ProductDto;
 import com.example.fooddelivery.entity.Product;
 import org.modelmapper.ModelMapper;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ProductMapper {
 
-    private static final ModelMapper mapper = new ModelMapper();
+    private final ModelMapper mapper;
 
-    public static ProductDto mapToProductDto(Product product) {
+    public ProductMapper(ModelMapper mapper) {
+        this.mapper = mapper;
+    }
+
+    public ProductDto mapToProductDto(Product product) {
         ProductDto productDto = mapper.map(product, ProductDto.class);
 
         if (product.getCuisine() != null) {
@@ -22,7 +28,7 @@ public class ProductMapper {
         return productDto;
     }
 
-    public static Product mapToProduct(ProductDto productDto) {
+    public Product mapToProduct(ProductDto productDto) {
         return mapper.map(productDto, Product.class);
     }
 

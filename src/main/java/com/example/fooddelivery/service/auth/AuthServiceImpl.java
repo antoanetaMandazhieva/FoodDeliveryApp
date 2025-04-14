@@ -19,10 +19,14 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final UserMapper userMapper;
+    private final AddressMapper addressMapper;
 
-    public AuthServiceImpl(UserRepository userRepository, RoleRepository roleRepository) {
+    public AuthServiceImpl(UserRepository userRepository, RoleRepository roleRepository, UserMapper userMapper, AddressMapper addressMapper) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.userMapper = userMapper;
+        this.addressMapper = addressMapper;
     }
 
     @Transactional
@@ -46,10 +50,18 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private User configureUser(RegisterRequestDto registerRequestDto) {
-        User user = UserMapper.mapToUser(registerRequestDto);
+        User user = userMapper.mapToUser(registerRequestDto);
 
         if (isUserExistsInDb(user.getUsername())) {
-            throw new RuntimeException("User with this name already exists.");
+            throw new RuntimeException("User with this username already exists.");
+        }
+
+        if (userRepository.findByEmail(registerRequestDto.getEmail()).isPresent()) {
+            throw new RuntimeException("Email is already taken");
+        }
+
+        if (userRepository.findByPhoneNumber(registerRequestDto.getPhoneNumber()).isPresent()) {
+            throw new RuntimeException("Phone number is already taken");
         }
 
         Role clientRole = roleRepository.findByName("CLIENT")
@@ -58,7 +70,7 @@ public class AuthServiceImpl implements AuthService {
         clientRole.addUser(user);
 
         AddressDto addressDto = registerRequestDto.getAddress();
-        Address address = AddressMapper.mapToAddress(addressDto);
+        Address address = addressMapper.mapToAddress(addressDto);
 
         user.addAddress(address);
 

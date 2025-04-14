@@ -3,21 +3,30 @@ package com.example.fooddelivery.config.order;
 import com.example.fooddelivery.config.address.AddressMapper;
 import com.example.fooddelivery.config.product.ProductMapper;
 import com.example.fooddelivery.dto.address.AddressDto;
-import com.example.fooddelivery.dto.order.OrderCreateDto;
 import com.example.fooddelivery.dto.order.OrderDto;
 import com.example.fooddelivery.dto.order.OrderResponseDto;
 import com.example.fooddelivery.dto.product.ProductDto;
 import com.example.fooddelivery.entity.Order;
 import org.modelmapper.ModelMapper;
+import org.springframework.stereotype.Component;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Component
 public class OrderMapper {
 
-    private static final ModelMapper mapper = new ModelMapper();
+    private final ModelMapper mapper;
+    private final AddressMapper addressMapper;
+    private final ProductMapper productMapper;
 
-    public static OrderDto mapFromOrderToDto(Order order) {
+    public OrderMapper(ModelMapper mapper, AddressMapper addressMapper, ProductMapper productMapper) {
+        this.mapper = mapper;
+        this.addressMapper = addressMapper;
+        this.productMapper = productMapper;
+    }
+
+    public OrderDto mapFromOrderToDto(Order order) {
         OrderDto orderDto = mapper.map(order, OrderDto.class);
 
         orderDto.setClientName(order.getClient().getName());
@@ -25,7 +34,7 @@ public class OrderMapper {
         orderDto.setSupplierName(order.getSupplier() != null ? order.getSupplier().getUsername() : null);
 
         Set<ProductDto> productDtos = order.getProducts().stream()
-                .map(ProductMapper::mapToProductDto)
+                .map(productMapper::mapToProductDto)
                 .collect(Collectors.toSet());
 
         orderDto.setProducts(productDtos);
@@ -34,14 +43,7 @@ public class OrderMapper {
         return orderDto;
     }
 
-    public static Order mapFromOrderCreateDto(OrderCreateDto orderCreateDto) {
-        Order order = new Order();
-        // TODO -> Ще се добавят продуктите и ресторанта по ID в самия OrderServiceImpl
-
-        return order;
-    }
-
-    public static OrderResponseDto toResponseDto(Order order) {
+    public OrderResponseDto toResponseDto(Order order) {
         OrderResponseDto orderResponseDto = mapper.map(order, OrderResponseDto.class);
 
         if (order.getRestaurant() != null) {
@@ -55,7 +57,7 @@ public class OrderMapper {
         if (orderResponseDto.getClientAddress() == null) {
             AddressDto addressDto = order.getClient().getAddresses().stream()
                     .findFirst()
-                    .map(AddressMapper::toDto)
+                    .map(addressMapper::toDto)
                     .orElseThrow(() -> new IllegalStateException("No address for that user"));
 
             String clientAddress = String.format("Country: %s, City: %s, Street: %s", addressDto.getCountry(),

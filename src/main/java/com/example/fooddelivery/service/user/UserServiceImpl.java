@@ -1,10 +1,13 @@
 package com.example.fooddelivery.service.user;
 
+import com.example.fooddelivery.config.address.AddressMapper;
 import com.example.fooddelivery.config.order.OrderMapper;
 import com.example.fooddelivery.config.user.UserMapper;
+import com.example.fooddelivery.dto.address.AddressDto;
 import com.example.fooddelivery.dto.order.OrderResponseDto;
 import com.example.fooddelivery.dto.user.UserDto;
 import com.example.fooddelivery.dto.user.UserProfileDto;
+import com.example.fooddelivery.entity.Address;
 import com.example.fooddelivery.entity.Role;
 import com.example.fooddelivery.entity.User;
 import com.example.fooddelivery.repository.OrderRepository;
@@ -14,9 +17,11 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Service;
 import com.example.fooddelivery.repository.UserRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.AccessDeniedException;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,11 +30,21 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final OrderRepository orderRepository;
+    private final UserMapper userMapper;
+    private final OrderMapper orderMapper;
+    private final AddressMapper addressMapper;
 
-    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, OrderRepository orderRepository) {
+    public UserServiceImpl(UserRepository userRepository,
+                           RoleRepository roleRepository,
+                           OrderRepository orderRepository,
+                           UserMapper userMapper,
+                           OrderMapper orderMapper, AddressMapper addressMapper) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.orderRepository = orderRepository;
+        this.userMapper = userMapper;
+        this.orderMapper = orderMapper;
+        this.addressMapper = addressMapper;
     }
 
     @Override
@@ -37,21 +52,24 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("user not found"));
 
-        return UserMapper.mapToUserProfileDto(user);
+        return userMapper.mapToUserProfileDto(user);
     }
 
     @Override
     public List<UserDto> getAllUsers() {
         return userRepository.findAll().stream()
-                .map(UserMapper::mapToUserDto)
+                .map(userMapper::mapToUserDto)
                 .collect(Collectors.toList());
     }
 
     @Override
+    @Transactional
     public UserProfileDto updateUser(Long id, UserProfileDto dto) {
+
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
+        validateUsernameEmailAndPhoneNumber(user, dto);
 
         user.setUsername(dto.getUsername());
         user.setEmail(dto.getEmail());
@@ -61,18 +79,35 @@ public class UserServiceImpl implements UserService {
         user.setDateOfBirth(dto.getDateOfBirth());
         user.setGender(dto.getGender());
 
+        Set<Address> addressesFromDto = dto.getAddresses().stream()
+                .map(addressMapper::mapToAddress)
+                .collect(Collectors.toSet());
+
+
+        for (Address addressFromDto : addressesFromDto) {
+            for (Address addressFromUserEntity : user.getAddresses()) {
+
+                if (!addressFromDto.getStreet().equals(addressFromUserEntity.getStreet()) &&
+                    !addressFromDto.getCity().equals(addressFromUserEntity.getStreet())) {
+
+                    user.addAddress(addressFromDto);
+                }
+            }
+        }
+
         userRepository.save(user);
 
-        return UserMapper.mapToUserProfileDto(user);
+        return userMapper.mapToUserProfileDto(user);
     }
 
     @Override
     public void deleteUser(Long id) {
-        if (!userRepository.existsById(id)) {
-            throw new EntityNotFoundException("User not found");
-        }
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
-        userRepository.deleteById(id);
+        user.detachAllRelations();
+
+        userRepository.delete(user);
     }
 
     @Override
@@ -113,7 +148,7 @@ public class UserServiceImpl implements UserService {
 
         return orderRepository.findByClientId(client.getId())
                 .stream()
-                .map(OrderMapper::toResponseDto)
+                .map(orderMapper::toResponseDto)
                 .toList();
     }
 
@@ -124,7 +159,22 @@ public class UserServiceImpl implements UserService {
 
         return orderRepository.findBySupplierId(supplier.getId())
                 .stream()
-                .map(OrderMapper::toResponseDto)
+                .map(orderMapper::toResponseDto)
                 .toList();
+    }
+
+    private void validateUsernameEmailAndPhoneNumber(User user, UserProfileDto dto) {
+        if (!dto.getUsername().equals(user.getUsername()) && userRepository.findByUsername(dto.getUsername()).isPresent()) {
+            throw new IllegalArgumentException("Username is already taken");
+        }
+
+        if (!dto.getEmail().equals(user.getEmail()) && userRepository.findByUsername(dto.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("Email already taken");
+        }
+
+        if (!dto.getPhoneNumber().equals(user.getPhoneNumber()) &&
+                userRepository.findByPhoneNumber(dto.getPhoneNumber()).isPresent()) {
+            throw new IllegalArgumentException("Phone number already taken");
+        }
     }
 }

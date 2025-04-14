@@ -1,37 +1,35 @@
 package com.example.fooddelivery.dto.user;
 
+import com.example.fooddelivery.dto.address.AddressDto;
 import com.example.fooddelivery.enums.Gender;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 public class UserProfileDto {
 
-    private String username;
     private String email;
+    private String username;
     private String name;
     private String surname;
     private Gender gender;
     private String phoneNumber;
     private LocalDate dateOfBirth;
+    private Set<AddressDto> addresses;
 
     public UserProfileDto() {}
 
-    public UserProfileDto(String username, String email, String name, String surname, Gender gender, String phoneNumber, LocalDate dateOfBirth) {
-        this.username = username;
+    public UserProfileDto(String email, String username, String name,
+                          String surname, Gender gender, LocalDate dateOfBirth,
+                          String phoneNumber, Set<AddressDto> addresses) {
         this.email = email;
+        this.username = username;
         this.name = name;
         this.surname = surname;
         this.gender = gender;
         this.phoneNumber = phoneNumber;
         this.dateOfBirth = dateOfBirth;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
+        this.addresses = addresses;
     }
 
     public String getEmail() {
@@ -40,6 +38,14 @@ public class UserProfileDto {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getName() {
@@ -80,5 +86,13 @@ public class UserProfileDto {
 
     public void setDateOfBirth(LocalDate dateOfBirth) {
         this.dateOfBirth = dateOfBirth;
+    }
+
+    public Set<AddressDto> getAddresses() {
+        return addresses;
+    }
+
+    public void setAddresses(Set<AddressDto> addresses) {
+        this.addresses = addresses;
     }
 }

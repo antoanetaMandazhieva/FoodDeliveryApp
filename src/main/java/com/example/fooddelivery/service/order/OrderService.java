@@ -15,7 +15,11 @@ public interface OrderService {
 
     void assignOrderToSupplier(Long orderId, Long supplierId);
 
-    void updateOrderStatus(Long orderId, OrderStatus newStatus, Long employeeId);
+    void acceptOrder(Long orderId, Long employeeId);
+
+    void updateOrderStatus(Long orderId, Long employeeId);
+
+    void takeOrder(Long orderId, Long supplierId);
 
     OrderDto finishOrder(Long orderId, Long supplierId);
 
@@ -27,7 +31,7 @@ public interface OrderService {
 
     List<OrderResponseDto> getOrdersByStatus(OrderStatus status);
 
-    BigDecimal getTotalRevenueBetween(LocalDateTime start, LocalDateTime end);
+    BigDecimal getTotalRevenueBetween(LocalDateTime start, LocalDateTime end, Long employeeId);
 
     List<OrderResponseDto> getAvailableOrdersForSuppliers();
 }

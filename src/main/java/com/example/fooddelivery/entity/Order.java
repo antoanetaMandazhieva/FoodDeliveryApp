@@ -100,10 +100,6 @@ public class Order extends IdEntity {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
-
     public Set<Product> getProducts() {
         return Collections.unmodifiableSet(this.products);
     }

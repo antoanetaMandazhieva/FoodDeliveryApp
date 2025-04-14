@@ -16,11 +16,14 @@ public class SupplierReviewServiceImpl implements SupplierReviewService {
 
     private final SupplierReviewRepository reviewRepository;
     private final UserRepository userRepository;
+    private final ReviewMapper reviewMapper;
 
     public SupplierReviewServiceImpl(SupplierReviewRepository reviewRepository,
-                                     UserRepository userRepository) {
+                                     UserRepository userRepository,
+                                     ReviewMapper reviewMapper) {
         this.reviewRepository = reviewRepository;
         this.userRepository = userRepository;
+        this.reviewMapper = reviewMapper;
     }
 
     @Override
@@ -54,7 +57,7 @@ public class SupplierReviewServiceImpl implements SupplierReviewService {
     public List<ReviewDto> getReviewsForSupplier(Long supplierId) {
         return reviewRepository.findBySupplierId(supplierId)
                 .stream()
-                .map(ReviewMapper::mapToDto)
+                .map(reviewMapper::mapToDto)
                 .toList();
     }
 }

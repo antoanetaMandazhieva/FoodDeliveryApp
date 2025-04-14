@@ -9,7 +9,7 @@ import com.example.fooddelivery.repository.RestaurantRepository;
 import com.example.fooddelivery.repository.RestaurantReviewRepository;
 import com.example.fooddelivery.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.modelmapper.ModelMapper;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,13 +23,16 @@ public class RestaurantReviewServiceImpl implements RestaurantReviewService {
     private final RestaurantReviewRepository reviewRepository;
     private final UserRepository userRepository;
     private final RestaurantRepository restaurantRepository;
+    private final ReviewMapper reviewMapper;
 
     public RestaurantReviewServiceImpl(RestaurantReviewRepository reviewRepository,
                                        UserRepository userRepository,
-                                       RestaurantRepository restaurantRepository) {
+                                       RestaurantRepository restaurantRepository,
+                                       ReviewMapper reviewMapper) {
         this.reviewRepository = reviewRepository;
         this.userRepository = userRepository;
         this.restaurantRepository = restaurantRepository;
+        this.reviewMapper = reviewMapper;
     }
 
     @Override
@@ -56,7 +59,7 @@ public class RestaurantReviewServiceImpl implements RestaurantReviewService {
     public List<ReviewDto> getReviewsForRestaurant(Long restaurantId) {
         return reviewRepository.findByRestaurantId(restaurantId)
                 .stream()
-                .map(ReviewMapper::mapToDto)
+                .map(reviewMapper::mapToDto)
                 .toList();
     }
 

@@ -1,16 +1,21 @@
 package com.example.fooddelivery.config.review;
 
-import com.example.fooddelivery.config.common.Mapper;
 import com.example.fooddelivery.dto.review.ReviewDto;
 import com.example.fooddelivery.entity.RestaurantReview;
 import com.example.fooddelivery.entity.SupplierReview;
 import org.modelmapper.ModelMapper;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ReviewMapper {
 
-    private final static ModelMapper mapper = Mapper.getInstance();
+    private final ModelMapper mapper;
 
-    public static ReviewDto mapToDto(SupplierReview review) {
+    public ReviewMapper(ModelMapper mapper) {
+        this.mapper = mapper;
+    }
+
+    public ReviewDto mapToDto(SupplierReview review) {
         ReviewDto reviewDto = mapper.map(review, ReviewDto.class);
 
         if (reviewDto.getReviewerId() == null) {
@@ -20,7 +25,7 @@ public class ReviewMapper {
         return reviewDto;
     }
 
-    public static ReviewDto mapToDto(RestaurantReview review) {
+    public ReviewDto mapToDto(RestaurantReview review) {
         ReviewDto reviewDto = mapper.map(review, ReviewDto.class);
 
         if (reviewDto.getReviewerId() == null) {
