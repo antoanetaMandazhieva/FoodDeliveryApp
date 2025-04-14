@@ -15,15 +15,18 @@ public class SupplierReview extends IdEntity {
     @JoinColumn(name = "reviewer_id", nullable = false)
     private User reviewer;
 
-    @Column(nullable = false)
-    private int rating;
-
-    @Column(name = "review_time")
-    private LocalDateTime createdAt;
-
     @ManyToOne
     @JoinColumn(name = "supplier_id", nullable = false)
     private User supplier;
+
+    @Column(nullable = false)
+    private int rating;
+
+    @Basic
+    private String comment;
+
+    @Column(name = "review_time")
+    private LocalDateTime createdAt;
 
     public SupplierReview() {}
 
@@ -33,6 +36,14 @@ public class SupplierReview extends IdEntity {
 
     public void setReviewer(User reviewer) {
         this.reviewer = reviewer;
+    }
+
+    public User getSupplier() {
+        return supplier;
+    }
+
+    public void setSupplier(User supplier) {
+        this.supplier = supplier;
     }
 
     public int getRating() {
@@ -47,6 +58,14 @@ public class SupplierReview extends IdEntity {
         this.rating = rating;
     }
 
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -54,13 +73,5 @@ public class SupplierReview extends IdEntity {
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
-    }
-
-    public User getSupplier() {
-        return supplier;
-    }
-
-    public void setSupplier(User supplier) {
-        this.supplier = supplier;
     }
 }

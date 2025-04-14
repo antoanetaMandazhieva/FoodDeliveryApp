@@ -7,6 +7,11 @@ public class OrderCreateDto {
     private Long restaurantId;
     private Set<Long> productIds;
 
+    public OrderCreateDto(Long restaurantId, Set<Long> productIds) {
+        this.restaurantId = restaurantId;
+        this.productIds = productIds;
+    }
+
     public Long getRestaurantId() {
         return restaurantId;
     }

@@ -4,7 +4,6 @@ import com.example.fooddelivery.enums.Gender;
 import jakarta.persistence.*;
 import org.mindrot.jbcrypt.BCrypt;
 
-import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.HashSet;
@@ -14,8 +13,6 @@ import static com.example.fooddelivery.util.Messages.*;
 
 @Entity
 @Table(name = "Users")
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "user_type", discriminatorType = DiscriminatorType.STRING)
 public class User extends IdEntity {
 
     @Column(length = 50, nullable = false, unique = true)
@@ -40,16 +37,16 @@ public class User extends IdEntity {
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 
-    @OneToMany(mappedBy = "user", targetEntity = Address.class, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", targetEntity = Address.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private Set<Address> addresses;
 
-    @OneToMany(mappedBy = "user", targetEntity = Bonus.class, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", targetEntity = Bonus.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private Set<Bonus> bonuses;
 
-    @OneToMany(mappedBy = "client", targetEntity = Order.class, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "client", targetEntity = Order.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private Set<Order> orders;
 
-    @Column(name = "phone_num", nullable = false)
+    @Column(name = "phone_num", nullable = false, unique = true)
     private String phoneNumber;
 
     @Column(name = "is_active", columnDefinition = "BOOLEAN DEFAULT TRUE")
@@ -72,7 +69,7 @@ public class User extends IdEntity {
 
         setEmail(email);
         setPassword(password);
-        setUsername(username); // TODO При свързване на БД трябва да се валидира
+        setUsername(username);
         setName(name);
         setSurname(surname);
         setGender(gender);
@@ -89,18 +86,10 @@ public class User extends IdEntity {
     }
 
     public void setEmail(String email) {
-        if (!email.matches("^[a-zA-Z0-9+&*-]+\\.[a-zA-Z0-9+&-]+@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$")) {
-            throw new IllegalArgumentException(INVALID_EMAIL);
-        }
-
         this.email = email;
     }
 
     public void setPassword(String password) {
-        if (password.length() < 8 || !password.matches(".*[a-zA-Z]+.*")) {
-            throw new IllegalArgumentException(WRONG_PASSWORD);
-        }
-
         this.password = hashPassword(password);
     }
 
@@ -149,13 +138,17 @@ public class User extends IdEntity {
     }
 
     public void setDateOfBirth(LocalDate dateOfBirth) {
-//        try {
-//            this.dateOfBirth = LocalDate.of(year, month, day);
-//        } catch (DateTimeException e) {
-//            throw new IllegalArgumentException(INVALID_DATE);
-//        }
-
         this.dateOfBirth = dateOfBirth;
+    }
+
+    public boolean isOver18() {
+        if (dateOfBirth == null) {
+            throw new IllegalArgumentException("Birth date cannot be null");
+        }
+
+        LocalDate today = LocalDate.now();
+
+        return !today.isBefore(this.dateOfBirth.plusYears(18));
     }
 
     public Set<Address> getAddresses() {
@@ -175,10 +168,6 @@ public class User extends IdEntity {
     }
 
     public void setPhoneNumber(String phoneNumber) {
-        if (!phoneNumber.matches( "^(\\+359|0)\\d{9}$")) {
-            throw new IllegalArgumentException(INVALID_PHONE_NUMBER);
-        }
-
         this.phoneNumber = phoneNumber;
     }
 
@@ -236,5 +225,11 @@ public class User extends IdEntity {
     public void removeOrder(Order order) {
         this.orders.remove(order);
         order.setClient(null);
+    }
+
+    public void detachAllRelations() {
+        this.addresses.forEach(address -> address.setUser(null));
+        this.bonuses.forEach(bonus -> bonus.setUser(null));
+        this.orders.forEach(order -> order.setClient(null));
     }
 }

@@ -22,7 +22,7 @@ public class Address extends IdEntity {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @OneToOne(mappedBy = "address", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "address", cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     private Restaurant restaurant;
 
     public Address() {}

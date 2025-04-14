@@ -2,6 +2,7 @@ package com.example.fooddelivery.entity;
 
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -16,6 +17,9 @@ public class Restaurant extends IdEntity {
     @OneToOne
     @JoinColumn(name = "address_id", nullable = false)
     private Address address;
+
+    @Column(name = "average_rating", precision = 2, scale = 1)
+    private BigDecimal averageRating = BigDecimal.ZERO;
 
     @OneToMany(mappedBy = "restaurant", targetEntity = Order.class, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Order> orders;
@@ -61,6 +65,14 @@ public class Restaurant extends IdEntity {
         this.address = address;
     }
 
+    public BigDecimal getAverageRating() {
+        return averageRating;
+    }
+
+    public void setAverageRating(BigDecimal averageRating) {
+        this.averageRating = averageRating;
+    }
+
     public boolean isActive() {
         return isActive;
     }
@@ -102,7 +114,7 @@ public class Restaurant extends IdEntity {
     }
 
     public void addProduct(Product product) {
-        if (product != null && this.products.add(product)) {
+        if (product != null && this.products.contains(product) && this.products.add(product)) {
             product.setRestaurant(this);
         }
     }

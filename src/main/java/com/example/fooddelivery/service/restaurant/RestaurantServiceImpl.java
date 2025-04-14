@@ -1,6 +1,8 @@
 package com.example.fooddelivery.service.restaurant;
 
+import com.example.fooddelivery.config.product.ProductMapper;
 import com.example.fooddelivery.config.restaurant.RestaurantMapper;
+import com.example.fooddelivery.dto.product.ProductDto;
 import com.example.fooddelivery.dto.restaurant.RestaurantCreateDto;
 import com.example.fooddelivery.dto.restaurant.RestaurantDto;
 import com.example.fooddelivery.entity.*;
@@ -11,13 +13,11 @@ import com.example.fooddelivery.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Service
 public class RestaurantServiceImpl implements RestaurantService {
@@ -28,28 +28,53 @@ public class RestaurantServiceImpl implements RestaurantService {
     private final ProductRepository productRepository;
     private final CuisineRepository cuisineRepository;
     private final UserRepository userRepository;
+    private final RestaurantMapper restaurantMapper;
+    private final ProductMapper productMapper;
 
     public RestaurantServiceImpl(RestaurantRepository restaurantRepository,
                                  ProductRepository productRepository,
                                  CuisineRepository cuisineRepository,
-                                 UserRepository userRepository) {
+                                 UserRepository userRepository,
+                                 RestaurantMapper restaurantMapper,
+                                 ProductMapper productMapper) {
         this.restaurantRepository = restaurantRepository;
         this.productRepository = productRepository;
         this.cuisineRepository = cuisineRepository;
         this.userRepository = userRepository;
+        this.restaurantMapper = restaurantMapper;
+        this.productMapper = productMapper;
     }
 
     @Override
-    public Restaurant getRestaurantByName(String restaurantName) {
-        return restaurantRepository.findByName(restaurantName)
+    public RestaurantDto getRestaurantByName(String restaurantName) {
+        return restaurantRepository.findByName(restaurantName).map(restaurantMapper::mapToDto)
                 .orElseThrow(() -> new EntityNotFoundException("Restaurant with this name is not found"));
     }
 
     @Override
-    public List<Product> getAllAvailableProductsFromRestaurant(String restaurantName) {
-        Restaurant restaurant = getRestaurantByName(restaurantName);
+    public List<ProductDto> getAllAvailableProductsFromRestaurant(String restaurantName) {
+        RestaurantDto restaurant = getRestaurantByName(restaurantName);
 
-        return productRepository.findAllByRestaurantIdAndIsAvailableTrue(restaurant.getId());
+        return productRepository.findAllByRestaurantIdAndIsAvailableTrue(restaurant.getId()).stream()
+                .map(productMapper::mapToProductDto)
+                .toList();
+    }
+
+    @Override
+    public ProductDto getProductFromRestaurantByName(String restaurantName, String productName) {
+        Restaurant restaurant = restaurantRepository.findByName(restaurantName)
+                .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
+
+        Product product = productRepository.findByName(productName)
+                .orElseThrow(() -> new EntityNotFoundException("Product not found"));
+
+
+        if (!restaurant.getProducts().contains(product)) {
+            throw new IllegalArgumentException(String.format("Restaurant: %s doesn't contain Product: %s",
+                    restaurant.getName(), product.getName()));
+        }
+
+        return productMapper.mapToProductDto(product);
     }
 
     @Override
@@ -68,18 +93,28 @@ public class RestaurantServiceImpl implements RestaurantService {
                     .orElseThrow(() -> new EntityNotFoundException("Cuisine not found")));
         }
 
-        Restaurant restaurant = RestaurantMapper.mapToEntity(dto, cuisines);
+        Restaurant restaurant = restaurantMapper.mapToEntity(dto, cuisines);
 
-        return RestaurantMapper.mapToDto(restaurantRepository.save(restaurant));
+        return restaurantMapper.mapToDto(restaurantRepository.save(restaurant));
     }
 
     @Transactional
     @Override
-    public void addProductToRestaurant(Long restaurantId, Long productId) {
+    public void addProductToRestaurant(Long employeeId, Long restaurantId, Long productId) {
+        User employee = userRepository.findById(employeeId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        if (!"EMPLOYEE".equals(employee.getRole().getName())) {
+            throw new IllegalStateException("Only employee can add products");
+        }
+
         Restaurant restaurant = getRestaurantById(restaurantId);
 
         Product product = getProductById(productId);
 
+        if (!product.isAvailable()) {
+            product.setAvailable(true);
+        }
 
         restaurant.addProduct(product);
         restaurantRepository.save(restaurant);
@@ -89,7 +124,14 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     @Transactional
     @Override
-    public void removeProductFromRestaurant(Long restaurantId, Long productId) {
+    public void removeProductFromRestaurant(Long employeeId, Long restaurantId, Long productId) {
+        User employee = userRepository.findById(employeeId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        if (!"EMPLOYEE".equals(employee.getRole().getName())) {
+            throw new IllegalStateException("Only employee can add products");
+        }
+
         Restaurant restaurant = getRestaurantById(restaurantId);
 
         Product product = getProductById(productId);
@@ -97,7 +139,6 @@ public class RestaurantServiceImpl implements RestaurantService {
         if (!(product.getRestaurant().getId() == restaurantId)) {
             throw new IllegalArgumentException("Product does not belong to the given restaurant");
         }
-
 
         product.setAvailable(false);
 
@@ -108,11 +149,32 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     @Override
     public List<RestaurantDto> getRestaurantsByCuisine(Long cuisineId) {
-        List<Restaurant> restaurants = restaurantRepository.findAllByCuisineId(cuisineId);
+        return restaurantRepository.findAllByCuisineId(cuisineId).stream()
+                .map(restaurantMapper::mapToDto)
+                .toList();
+    }
 
-        return restaurants.stream()
-                .map(RestaurantMapper::mapToDto)
-                .collect(Collectors.toList());
+    @Override
+    public List<RestaurantDto> getTopRatedRestaurants(int limit) {
+        return restaurantRepository.findTopByOrderByAverageRatingDesc(PageRequest.of(0, limit)).stream()
+                .map(restaurantMapper::mapToDto)
+                .toList();
+    }
+
+    @Override
+    public List<RestaurantDto> getRestaurantsByNameAsc() {
+        return restaurantRepository.findAll().stream()
+                .sorted(Comparator.comparing(Restaurant::getName))
+                .map(restaurantMapper::mapToDto)
+                .toList();
+    }
+
+    @Override
+    public List<RestaurantDto> getRestaurantsByNameDesc() {
+        return restaurantRepository.findAll().stream()
+                .sorted(Comparator.comparing(Restaurant::getName).reversed())
+                .map(restaurantMapper::mapToDto)
+                .toList();
     }
 
     private Restaurant getRestaurantById(Long restaurantId) {

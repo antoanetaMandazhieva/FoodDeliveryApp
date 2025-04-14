@@ -18,8 +18,11 @@ public class RestaurantReview extends IdEntity {
     @Column(nullable = false)
     private int rating;
 
+    @Basic
+    private String comment;
+
     @Column(name = "review_time")
-    private LocalDateTime reviewTime;
+    private LocalDateTime createdAt;
 
     @ManyToOne
     @JoinColumn(name = "restaurant_id", nullable = false)
@@ -49,14 +52,21 @@ public class RestaurantReview extends IdEntity {
         this.rating = rating;
     }
 
-    public LocalDateTime getReviewTime() {
-        return reviewTime;
+    public String getComment() {
+        return comment;
     }
 
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
 
     @PrePersist
     protected void onCreate() {
-        this.reviewTime = LocalDateTime.now();
+        this.createdAt = LocalDateTime.now();
     }
 
     public Restaurant getRestaurant() {

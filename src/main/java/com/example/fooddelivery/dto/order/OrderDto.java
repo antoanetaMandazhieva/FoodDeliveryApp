@@ -16,8 +16,6 @@ public class OrderDto {
     private Set<ProductDto> products;
     private BigDecimal totalPrice;
     private String orderStatus;
-    private LocalTime estimatedTime;
-    private LocalTime deliveryTime;
     private LocalDateTime createdAt;
 
     public Long getId() {
@@ -74,22 +72,6 @@ public class OrderDto {
 
     public void setOrderStatus(String orderStatus) {
         this.orderStatus = orderStatus;
-    }
-
-    public LocalTime getEstimatedTime() {
-        return estimatedTime;
-    }
-
-    public void setEstimatedTime(LocalTime estimatedTime) {
-        this.estimatedTime = estimatedTime;
-    }
-
-    public LocalTime getDeliveryTime() {
-        return deliveryTime;
-    }
-
-    public void setDeliveryTime(LocalTime deliveryTime) {
-        this.deliveryTime = deliveryTime;
     }
 
     public LocalDateTime getCreatedAt() {

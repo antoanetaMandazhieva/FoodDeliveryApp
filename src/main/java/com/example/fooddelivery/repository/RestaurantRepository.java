@@ -1,6 +1,7 @@
 package com.example.fooddelivery.repository;
 
 import com.example.fooddelivery.entity.Restaurant;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,4 +19,6 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
     List<Restaurant> findAllByCuisineId(@Param("cuisineId") Long cuisineId);
 
     Optional<Restaurant> findByName(String restaurantName);
+
+    List<Restaurant> findTopByOrderByAverageRatingDesc(Pageable pageable);
 }
