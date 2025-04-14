@@ -1,6 +1,7 @@
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import sushi_plate from '../../assets/images/page_images/sushi_plate.jpg';
+import heroImg from '../../assets/images/page_images/hero_image_2.avif'
 
 const Hero = () => {
     useGSAP(() => {
@@ -44,15 +45,15 @@ const Hero = () => {
                 </linearGradient>
                 </defs>
             </svg>
-            <h1 id='hh-1' className='max-sm:text-2xl md:text-6xl xl:text-8xl z-10 relative pl-4 
-                max-sm:left-[5%] left-[9%] max-sm:top-[20%] md:top-[15%] lg:top-[2%] font-quicksand font-bold'>
+            <h1 id='hh-1' className='max-sm:text-xl sm:text-3xl md:text-6xl xl:text-8xl z-10 relative pl-4 
+                sm:left-[5%] left-[9%] max-sm:top-[5%] sm:top-[10%] md:top-[15%] lg:top-[2%] font-quicksand font-bold'>
                 Zaexpress
             </h1>
-            <h2 id='hh-2' className='max-sm:text-2xl md:text-6xl xl:text-8xl z-10 relative pl-4 
-                max-sm:left-[2%] left-[6%] max-sm:top-[20%] md:top-[15%] lg:top-[4%] font-quicksand'>
+            <h2 id='hh-2' className='max-sm:text-xl sm:text-3xl md:text-6xl xl:text-8xl z-10 relative pl-4 
+                sm:left-[2%] left-[6%] max-sm:top-[5%] sm:top-[10%] md:top-[15%] lg:top-[4%] font-quicksand'>
                 Deliveries
             </h2>
-            <img
+            {/* <img
                 src={sushi_plate}
                 id='sushi-plate'
                 className='max-sm:w-[220px] max-sm:h-[167px] md:w-[400px] md:h-[317px] 
@@ -62,6 +63,15 @@ const Hero = () => {
                     lg:left-[45%] lg:bottom-[17%] 
                     rounded-[4.5rem] shadow-2xl shadow-black'
                 alt='sushi-plate'
+            /> */}
+            <img src={heroImg}
+                id='hero-image'
+                className='relative z-10 rotate-[12deg] h-full w-auto
+                    max-sm:left-[45%] max-sm:bottom-[24%] sm:left-[40%] 
+                    sm:bottom-[17%] md:bottom-[24%] md:left-[48%] 
+                    lg:left-[50%] lg:bottom-[18%] xl:bottom-[24%] shadow-2xl
+                    shadow-black rounded-4xl'
+                alt='hero-image'
             />
         </section>
     );

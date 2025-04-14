@@ -85,7 +85,7 @@ const Cuisines = () => {
     }, [seaIsHovered])
     
     return (
-        <section className='max-md:h-[300px] md:h-[540px] lg:h-[600px] xl:h-[660px] w-full bg-ivory mt-0'>
+        <section className='max-sm:h-[240px] sm:h-[300px] md:h-[480px] lg:h-[600px] xl:h-[660px] w-full bg-ivory mt-0'>
 
             {/* top */}
 
@@ -152,8 +152,8 @@ const Cuisines = () => {
                     </linearGradient>
                     </defs>
                 </svg>
-                <h1 className='max-sm:text-2xl md:text-6xl xl:text-8xl font-quicksand
-                        relative left-[6.5%] max-sm:top-9 md:top-18 lg:top-[108px] xl:top-36'>
+                <h1 className='max-sm:text-2xl sm:text-3xl md:text-6xl xl:text-8xl font-quicksand
+                        relative max-sm:left-[8%] left-[6.5%] max-sm:top-10 sm:top-12 md:top-18 lg:top-[108px] xl:top-36'>
                     Popular Cuisines
                 </h1>
             </div>
@@ -164,7 +164,7 @@ const Cuisines = () => {
                 {/* japanese */}
                 <div className='relative cui'>
                     <div className='h-full w-full relative'>
-                        <svg className='z-0 max-md:w-[140px] max-md:h-[93px] md:w-[200px] md:h-[153px] lg:w-[313px] lg:h-[266px]' viewBox='0 0 313 266' fill='none' xmlns='http://www.w3.org/2000/svg' onMouseEnter={() => setJapIsHovered(prev => !prev)} onMouseLeave={() => setJapIsHovered(prev => !prev)}>
+                        <svg className='z-0 max-sm:w-[110px] max-sm:h-[83px] sm:w-[140px] sm:h-[93px] md:w-[200px] md:h-[153px] lg:w-[313px] lg:h-[266px]' viewBox='0 0 313 266' fill='none' xmlns='http://www.w3.org/2000/svg' onMouseEnter={() => setJapIsHovered(prev => !prev)} onMouseLeave={() => setJapIsHovered(prev => !prev)}>
                             <g filter='url(#filter0_d_14_13)'>
                                 <path d='M309 99.3205C309 174.257 214.161 254 140.151 254C66.1411 254 4 217.133 4 142.197C4 67.2605 128.856 0 202.866 0C276.876 0 309 24.3844 309 99.3205Z' fill='#FFD69F'/>
                             </g>
@@ -182,18 +182,18 @@ const Cuisines = () => {
                             </defs>
                         </svg>
                     </div>   
-                    <img src={hosomaki} className='absolute max-md:size-[58px] md:size-24 lg:size-40 
-                        max-md:left-10 max-md:top-4 md:left-12 md:top-8 lg:left-18 lg:top-16 z-20'
+                    <img src={hosomaki} className='absolute max-sm:size-[50px] sm:size-[58px] md:size-24 lg:size-40 
+                        max-sm:left-8 max-sm:top-3 sm:left-10 sm:top-4 md:left-12 md:top-8 lg:left-18 lg:top-16 z-20'
                         ref={japImgRef}/>
-                    <h1 className='max-md:text-md md:text-2xl lg:text-[32px] font-bold font-quicksand 
-                        z-20 absolute max-md:left-8 md:left-10 lg:left-18 lg:top-64'>
+                    <h1 className='max-sm:text-md sm:text-md md:text-2xl lg:text-[32px] font-bold font-quicksand 
+                        z-20 absolute max-sm:left-6 sm:left-8 md:left-10 lg:left-18 lg:top-64'>
                         Japanese
                     </h1>
                 </div>
                 {/* italian */}
                 <div className='relative cui'>
                     <div className='h-full w-full relative'>
-                        <svg className='z-0 max-md:w-[140px] max-md:h-[93px] md:w-[200px] md:h-[153px] lg:w-[313px] lg:h-[266px]' viewBox='0 0 313 266' fill='none' xmlns='http://www.w3.org/2000/svg' onMouseEnter={() => setItaIsHovered(prev => !prev)} onMouseLeave={() => setItaIsHovered(prev => !prev)}>
+                        <svg className='z-0 max-sm:w-[110px] max-sm:h-[83px] sm:w-[140px] sm:h-[93px] md:w-[200px] md:h-[153px] lg:w-[313px] lg:h-[266px]' viewBox='0 0 313 266' fill='none' xmlns='http://www.w3.org/2000/svg' onMouseEnter={() => setItaIsHovered(prev => !prev)} onMouseLeave={() => setItaIsHovered(prev => !prev)}>
                             <g filter='url(#filter0_d_16_23)'>
                                 <path d='M309 99.3205C309 174.257 214.161 254 140.151 254C66.1411 254 4 217.133 4 142.197C4 67.2605 128.856 0 202.866 0C276.876 0 309 24.3844 309 99.3205Z' fill='#FFD79C'/>
                             </g>
@@ -211,18 +211,18 @@ const Cuisines = () => {
                             </defs>
                         </svg>
                     </div>
-                    <img src={pizza} className='absolute max-md:size-[58px] md:size-24 lg:size-40 
-                        max-md:left-10 max-md:top-4 md:left-12 md:top-8 lg:left-18 lg:top-16 z-20'
+                    <img src={pizza} className='absolute max-sm:size-[50px] sm:size-[58px] md:size-24 lg:size-40 
+                        max-sm:left-8 max-sm:top-3 sm:left-10 sm:top-4 md:left-12 md:top-8 lg:left-18 lg:top-16 z-20'
                         ref={itaImgRef}/>
-                    <h1 className='max-md:text-md md:text-2xl lg:text-[32px] font-bold font-quicksand z-20 
-                        absolute max-md:left-[44px] md:left-14 lg:left-24 xl:left-[100px] lg:top-64'>
+                    <h1 className='max-sm:text-md sm:text-md md:text-2xl lg:text-[32px] font-bold font-quicksand z-20 
+                        absolute max-sm:left-8 sm:left-[44px] md:left-14 lg:left-24 xl:left-[100px] lg:top-64'>
                         Italian
                     </h1>
                 </div>
                 {/* seafood */}
                 <div className='relative cui'>
                     <div className='h-full w-full relative'>
-                        <svg className='z-0 max-md:w-[140px] max-md:h-[93px] md:w-[200px] md:h-[153px] lg:w-[313px] lg:h-[266px]' viewBox='0 0 313 266' fill='none' xmlns='http://www.w3.org/2000/svg' onMouseEnter={() => setSeaIsHovered(prev => !prev)} onMouseLeave={() => setSeaIsHovered(prev => !prev)}>
+                        <svg className='z-0 max-sm:w-[110px] max-sm:h-[83px] sm:w-[140px] sm:h-[93px] md:w-[200px] md:h-[153px] lg:w-[313px] lg:h-[266px]' viewBox='0 0 313 266' fill='none' xmlns='http://www.w3.org/2000/svg' onMouseEnter={() => setSeaIsHovered(prev => !prev)} onMouseLeave={() => setSeaIsHovered(prev => !prev)}>
                             <g filter='url(#filter0_d_16_25)'>
                                 <path d='M309 99.3205C309 174.257 214.161 254 140.151 254C66.1411 254 4 217.133 4 142.197C4 67.2605 128.856 0 202.866 0C276.876 0 309 24.3844 309 99.3205Z' fill='#FFD69C'/>
                             </g>
@@ -240,11 +240,11 @@ const Cuisines = () => {
                             </defs>
                         </svg>
                     </div>
-                    <img src={lobster} className='absolute max-md:size-[58px] md:size-24 lg:size-40 
-                        max-md:left-10 max-md:top-4 md:left-12 md:top-8 lg:left-18 lg:top-16 z-20'
+                    <img src={lobster} className='absolute max-sm:size-[50px] sm:size-[58px] md:size-24 lg:size-40 
+                        max-sm:left-8 max-sm:top-3 sm:left-10 sm:top-4 md:left-12 md:top-8 lg:left-18 lg:top-16 z-20'
                         ref={seaImgRef}/>
-                    <h1 className='max-md:text-md md:text-2xl lg:text-[32px] font-bold font-quicksand 
-                        z-20 absolute max-md:left-8 md:left-10 lg:left-18 lg:top-64'>
+                    <h1 className='max-sm:text-md sm:text-md md:text-2xl lg:text-[32px] font-bold font-quicksand 
+                        z-20 absolute max-sm:left-6 sm:left-8 md:left-10 lg:left-18 lg:top-64'>
                         Seafood
                     </h1>
                 </div>

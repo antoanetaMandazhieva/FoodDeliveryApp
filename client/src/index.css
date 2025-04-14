@@ -24,3 +24,15 @@
 html, body {
     @apply overflow-x-hidden;
 }
+
+.form {
+    background-color: gray;
+    background-clip: padding-box;
+    backdrop-filter: blur(8px) saturate(100%) contrast(100%);
+    opacity: 80%; 
+}
+
+.form-input {
+    @apply rounded-4xl text-center font-quicksand bg-peach-400 w-[60%] h-8
+    focus:outline focus:outline-black opacity-100;
+}

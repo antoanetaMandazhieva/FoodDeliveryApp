@@ -33,15 +33,15 @@ const PopRestaurants = () => {
                 <svg className='absolute' viewBox='0 0 1440 528' fill='none' xmlns='http://www.w3.org/2000/svg'>
                     <path d='M0 0L1440 135.5C1440 135.5 1440 758.111 1440 433.5C1440 108.889 0 159.5 0 159.5C6.02607e-06 395.865 0 0 0 0Z' fill='#FFD79C'/>
                 </svg>
-                <h1 className='max-sm:text-2xl md:text-6xl xl:text-8xl font-quicksand
-                        relative left-[2%] max-sm:top-[5rem] md:top-[10rem] lg:top-[15rem] xl:top-[18rem]'>
+                <h1 className='max-sm:text-2xl sm:text-3xl md:text-6xl xl:text-8xl font-quicksand
+                        relative left-[2%] max-sm:top-[5.5rem] sm:top-[7rem] md:top-[10rem] lg:top-[15rem] xl:top-[18rem]'>
                     Restaurants you might like
                 </h1>
             </div>
 
             {/* bottom */}
 
-            <div id='pop-rest-bottom' className='h-full grid grid-rows-2 grid-cols-3 gap-x-4 gap-y-10 p-2'>
+            <div id='pop-rest-bottom' className='h-full grid grid-rows-2 grid-cols-3 gap-x-4 gap-y-10 px-4'>
                 {/* placeholders */}
                 <svg className='aspect-406/251 item' viewBox='0 0 406 251' fill='none' xmlns='http://www.w3.org/2000/svg'>
                     <rect width='406' height='251' rx='56' fill='#D9D9D9'/>

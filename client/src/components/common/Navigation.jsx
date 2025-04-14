@@ -58,7 +58,7 @@ const Navigation = () => {
 
     // TODO: set the rest of the links
     const navElements = <div className={`${isSmall && 'inline-block'}`}>
-        <ul className={`${isSmall ? 'max-sm:block' : 'max-sm:hidden'} flex items-center justify-evenly h-full mx-2 min-w-[60%]`}>
+        <ul className={`${isSmall ? 'max-sm:block' : 'max-md:hidden'} flex items-center justify-evenly h-full mx-2 min-w-[60%]`}>
             <Link to='/restaurants'>
                 <li className='text-black mx-6 md:text-md lg:text-lg hover:text-peach-400 hover:scale-110 font-playfair'>
                     Restaurants
@@ -87,7 +87,7 @@ const Navigation = () => {
         </ul>
     </div>
 
-    const signInButton = <div className='flex items-center h-full md:h-2/3 max-sm:w-[80px] md:w-[181px] lg:w-1/9 mr-4'>
+    const signInButton = <div className='flex items-center h-full md:h-3/4 max-sm:w-[90px] sm:w-[120px] md:w-[181px] lg:w-1/9 mr-4'>
         <Link to='/signin' className='h-3/5 w-full mr-1'>
             <button className='h-full w-full rounded-[3rem] bg-peach-400 text-black max-sm:text-sm lg:text-xl font-playfair font-bold hover:bg-peach-200 hover:h-[95%] hover:w-[95%]'>
                 Sign In
@@ -96,16 +96,18 @@ const Navigation = () => {
     </div>
 
     return (
-        <div className='max-sm:h-[7%] md:h-[15%] lg:h-[20%] w-full'>
+        <div className='max-sm:h-[7%] sm:h-[8%] md:h-[13%] lg:h-[15%]  w-full '>
             {smallNavigation()}
-            <nav className='h-full w-full flex justify-between items-center z-20' ref={navRef}>
+            <nav className='h-full w-full flex justify-between items-center shadow-md shadow-zinc-800' ref={navRef}>
                 <div className='h-full w-auto flex justify-around items-center ml-2'>
                     <svg xmlns='http://www.w3.org/2000/svg' fill='none' 
                         viewBox='0 0 24 24' stroke-width='1.5' stroke='currentColor' 
                         className='size-6 md:hidden' onClick={() => setIsSmall(prev => !prev)}>
                         <path stroke-linecap='round' stroke-linejoin='round' d='M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5' />
                     </svg>
-                    <img src={main_logo_ivory} alt='LogoIvory' className='h-full max-md:w-auto md:h-2/3 md:w-36 lg:w-auto'/>
+                    <Link className='h-full max-md:w-auto md:h-2/3 md:w-28 lg:w-auto' to='/'>
+                        <img src={main_logo_ivory} alt='LogoIvory' className='h-full w-full'/>
+                    </Link>
                 </div>
                 {navElements}
                 {signInButton}
