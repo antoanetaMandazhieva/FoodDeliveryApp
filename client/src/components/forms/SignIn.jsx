@@ -1,20 +1,15 @@
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { setCookie } from '../../util/cookies';
 
 const SignIn = () => {
     const { register, handleSubmit, formState: {errors, isSubmitting} } = useForm();
-    const navigate = useNavigate();
+    
     const onSubmit = async (formData) => {
         try {
-            const res = await axios.post('http://127.0.0.1:8080/api/auth/login', formData, {
+            const res = await axios.post('http://127.0.0.1:5000/register', formData, {
                 headers: { 'Content-Type': 'application/json' }
             });
-
-            setCookie('userRole', res.data.role, 1);
-            setCookie('username', res.data.username, 1);
-
             confirm(res.data.message);
             navigate('/');
         } catch (error) {

@@ -5,15 +5,12 @@ import com.example.fooddelivery.dto.auth.LoginResponseDto;
 import com.example.fooddelivery.dto.auth.RegisterRequestDto;
 import com.example.fooddelivery.service.auth.AuthService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@CrossOrigin(
-        origins = "http://localhost:5173",
-        allowedHeaders = "*",
-        methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS},
-        allowCredentials = "true"
-)
 @RequestMapping("api/auth")
 public class AuthController {
 
