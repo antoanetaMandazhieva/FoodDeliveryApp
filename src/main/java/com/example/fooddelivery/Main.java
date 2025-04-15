@@ -7,7 +7,10 @@ import com.example.fooddelivery.dto.order.OrderDto;
 import com.example.fooddelivery.dto.order.OrderResponseDto;
 import com.example.fooddelivery.dto.product.ProductDto;
 import com.example.fooddelivery.dto.user.UserProfileDto;
-import com.example.fooddelivery.entity.*;
+import com.example.fooddelivery.entity.Address;
+import com.example.fooddelivery.entity.Cuisine;
+import com.example.fooddelivery.entity.Product;
+import com.example.fooddelivery.entity.Restaurant;
 import com.example.fooddelivery.enums.Category;
 import com.example.fooddelivery.enums.Gender;
 import com.example.fooddelivery.enums.OrderStatus;
@@ -203,11 +206,6 @@ public class Main implements CommandLineRunner {
 //        orderService.takeOrder(4L, 4L);
 //        orderService.finishOrder(4L, 4L);
 
-//        Role adminRole = new Role("ADMIN");
-//        Role clientRole = new Role("CLIENT");
-//        Role supplierRole = new Role("SUPPLIER");
-//        Role employeeRole = new Role("EMPLOYEE");
-//
-//        roleRepository.saveAll(List.of(adminRole, clientRole, supplierRole, employeeRole));
+
     }
 }

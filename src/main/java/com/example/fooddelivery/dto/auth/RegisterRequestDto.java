@@ -12,7 +12,7 @@ public class RegisterRequestDto {
     private String username;
     private String name;
     private String surname;
-    private String gender;
+    private Gender gender;
     private LocalDate dateOfBirth;
     private String phoneNumber;
     private AddressDto address;
@@ -20,7 +20,7 @@ public class RegisterRequestDto {
     public RegisterRequestDto() {}
 
     public RegisterRequestDto(String email, String password, String username,
-                              String name, String surname, String gender,
+                              String name, String surname, Gender gender,
                               LocalDate dateOfBirth, String phoneNumber,
                               AddressDto address) {
         this.email = email;
@@ -74,11 +74,11 @@ public class RegisterRequestDto {
         this.surname = surname;
     }
 
-    public String getGender() {
+    public Gender getGender() {
         return gender;
     }
 
-    public void setGender(String gender) {
+    public void setGender(Gender gender) {
         this.gender = gender;
     }
 

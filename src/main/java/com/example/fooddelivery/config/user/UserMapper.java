@@ -7,7 +7,6 @@ import com.example.fooddelivery.dto.auth.LoginRequestDto;
 import com.example.fooddelivery.dto.user.UserDto;
 import com.example.fooddelivery.dto.user.UserProfileDto;
 import com.example.fooddelivery.entity.User;
-import com.example.fooddelivery.enums.Gender;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
@@ -26,11 +25,7 @@ public class UserMapper {
     }
 
     public User mapToUser(RegisterRequestDto registerRequestDto) {
-        User user = mapper.map(registerRequestDto, User.class);
-        if (user.getGender() == null) {
-            user.setGender(Gender.valueOf(registerRequestDto.getGender()));
-        }
-        return user;
+        return mapper.map(registerRequestDto, User.class);
     }
 
     public User mapToUser(LoginRequestDto loginRequestDto) {
