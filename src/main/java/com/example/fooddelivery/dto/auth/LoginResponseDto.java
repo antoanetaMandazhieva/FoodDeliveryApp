@@ -4,6 +4,7 @@ public class LoginResponseDto {
 
     private String username;
     private String role;
+    private String message;
 
     public LoginResponseDto(String username, String role) {
         this.username = username;
@@ -24,5 +25,13 @@ public class LoginResponseDto {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }
