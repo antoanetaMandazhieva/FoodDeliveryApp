@@ -14,7 +14,7 @@ public class Role extends IdEntity {
     @Column(length = 20, nullable = false, unique = true)
     private String name;
 
-    @OneToMany(mappedBy = "role", targetEntity = User.class)
+    @OneToMany(mappedBy = "role", targetEntity = User.class, cascade = {CascadeType.MERGE, CascadeType.PERSIST})
     private Set<User> users;
 
     public Role() {

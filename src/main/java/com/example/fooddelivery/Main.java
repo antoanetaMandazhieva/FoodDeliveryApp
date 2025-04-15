@@ -1,11 +1,9 @@
 package com.example.fooddelivery;
 
 import com.example.fooddelivery.config.address.AddressMapper;
-import com.example.fooddelivery.entity.Address;
-import com.example.fooddelivery.entity.Cuisine;
-import com.example.fooddelivery.entity.Product;
-import com.example.fooddelivery.entity.Restaurant;
+import com.example.fooddelivery.entity.*;
 import com.example.fooddelivery.enums.Category;
+import com.example.fooddelivery.enums.Gender;
 import com.example.fooddelivery.repository.*;
 import com.example.fooddelivery.service.auth.AuthService;
 import com.example.fooddelivery.service.order.OrderService;
@@ -17,8 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.nio.file.AccessDeniedException;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Component
 public class Main implements CommandLineRunner {
@@ -268,6 +266,25 @@ public class Main implements CommandLineRunner {
 //        Product product = createProduct("Mango Pudding", BigDecimal.valueOf(12.50),
 //                    "Smooth, fruity pudding with a burst of fresh mango flavor.",
 //                Category.DESSERTS, chinese, restaurant);
+
+//        Address address = new Address("Opalchenska 21 Street", "Sofia", "1000", "Bulgaria");
+//
+//        User admin = new User("admin123@gmail.com", "12345678910", "admin1", "Stoyan", "Zaykov", Gender.MALE,
+//                LocalDate.of(2004, 3, 11), "0888999999");
+//
+//        admin.addAddress(address);
+
+//        User admin1 = userRepository.findByUsername("admin1").get();
+//        Role adminRole = roleRepository.findById(1L).get();
+//
+//        adminRole.addUser(admin1);
+//
+//        userRepository.save(admin1);
+
+//        Role clientRole = roleRepository.findById(2L).get();
+//        clientRole.addUser(new User("stefogamera11@abv.bg", "stefffPASS", "stefi", "Stefan", "Yanudov",
+//                Gender.MALE, LocalDate.of(2020, 11, 5), "0888776543"));
+
 
 
     }

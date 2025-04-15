@@ -53,7 +53,10 @@ public class UserMapper {
     }
 
     public UserDto mapToUserDto(User user) {
-        return mapper.map(user, UserDto.class);
+        UserDto userDto = mapper.map(user, UserDto.class);
+        userDto.setRole(user.getRole().getName());
+
+        return userDto;
     }
 
 }

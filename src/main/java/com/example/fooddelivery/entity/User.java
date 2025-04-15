@@ -37,7 +37,7 @@ public class User extends IdEntity {
     @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 
-    @OneToMany(mappedBy = "user", targetEntity = Address.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @OneToMany(mappedBy = "user", targetEntity = Address.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     private Set<Address> addresses;
 
     @OneToMany(mappedBy = "user", targetEntity = Discount.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
@@ -205,16 +205,6 @@ public class User extends IdEntity {
     public void removeAddress(Address address) {
         this.addresses.remove(address);
         address.setUser(null);
-    }
-
-    public void addBonus(Discount discount) {
-        this.discounts.add(discount);
-        discount.setUser(this);
-    }
-
-    public void removeBonus(Discount discount) {
-        this.discounts.remove(discount);
-        discount.setUser(null);
     }
 
     public void addOrder(Order order) {

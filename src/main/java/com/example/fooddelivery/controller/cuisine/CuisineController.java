@@ -19,8 +19,12 @@ public class CuisineController {
         this.cuisineService = cuisineService;
     }
 
+
+    // Tested!
     @GetMapping
     public ResponseEntity<List<CuisineDto>> getAllCuisines() {
+        System.out.println("Test");
+
         List<CuisineDto> cuisines = cuisineService.getAllCuisines();
         return ResponseEntity.ok(cuisines);
     }

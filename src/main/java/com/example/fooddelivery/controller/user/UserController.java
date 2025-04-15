@@ -20,19 +20,23 @@ public class UserController {
         this.userService = userService;
     }
 
+    // Tested!
     @GetMapping("/{id}")
     public ResponseEntity<UserProfileDto> getUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
+    // Tested!
     @GetMapping
     public ResponseEntity<List<UserDto>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
-    @PutMapping("/id")
+    // Tested!
+    @PutMapping("/{id}")
     public ResponseEntity<UserProfileDto> updateUser(@PathVariable Long id,
                                            @RequestBody UserProfileDto userProfileDto) {
+        System.out.println("REACHED PUT ENDPOINT");
         return ResponseEntity.ok(userService.updateUser(id, userProfileDto));
     }
 
@@ -42,6 +46,8 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
+
+    // Tested!
     @PutMapping("/{adminId}/change-role/{userId}")
     public ResponseEntity<Void> changeUserRole(@PathVariable Long adminId,
                                                @PathVariable Long userId,
@@ -51,12 +57,12 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("orders/client/{username}")
+    @GetMapping("/orders/client/{username}")
     public ResponseEntity<List<OrderResponseDto>> getOrdersByClientUsername(@PathVariable String username) {
         return ResponseEntity.ok(userService.getOrdersByClientUsername(username));
     }
 
-    @GetMapping("orders/supplier/{username}")
+    @GetMapping("/orders/supplier/{username}")
     public ResponseEntity<List<OrderResponseDto>> getOrdersBySupplierName(@PathVariable String username) {
         return ResponseEntity.ok(userService.getOrdersBySupplierUsername(username));
     }

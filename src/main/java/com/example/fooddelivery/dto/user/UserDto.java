@@ -1,6 +1,7 @@
 package com.example.fooddelivery.dto.user;
 
 public class UserDto {
+
     private Long id;
     private String username;
     private String email;
@@ -10,6 +11,10 @@ public class UserDto {
 
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getUsername() {
