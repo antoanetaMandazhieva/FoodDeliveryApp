@@ -1,6 +1,7 @@
 package com.example.fooddelivery.config.review;
 
-import com.example.fooddelivery.dto.review.ReviewDto;
+import com.example.fooddelivery.dto.review.RestaurantReviewDto;
+import com.example.fooddelivery.dto.review.SupplierReviewDto;
 import com.example.fooddelivery.entity.RestaurantReview;
 import com.example.fooddelivery.entity.SupplierReview;
 import org.modelmapper.ModelMapper;
@@ -15,23 +16,32 @@ public class ReviewMapper {
         this.mapper = mapper;
     }
 
-    public ReviewDto mapToDto(SupplierReview review) {
-        ReviewDto reviewDto = mapper.map(review, ReviewDto.class);
+    public SupplierReviewDto mapToDto(SupplierReview review) {
+        SupplierReviewDto supplierReviewDto = mapper.map(review, SupplierReviewDto.class);
 
-        if (reviewDto.getReviewerId() == null) {
-            reviewDto.setReviewerId(review.getReviewer().getId());
+        if (supplierReviewDto.getReviewerId() == null) {
+            supplierReviewDto.setReviewerId(review.getReviewer().getId());
         }
 
-        return reviewDto;
+        if (supplierReviewDto.getId() == null) {
+            supplierReviewDto.setId(review.getId());
+        }
+
+        return supplierReviewDto;
     }
 
-    public ReviewDto mapToDto(RestaurantReview review) {
-        ReviewDto reviewDto = mapper.map(review, ReviewDto.class);
+    public RestaurantReviewDto mapToDto(RestaurantReview review) {
+        RestaurantReviewDto restaurantReviewDto = mapper.map(review, RestaurantReviewDto.class);
 
-        if (reviewDto.getReviewerId() == null) {
-            reviewDto.setReviewerId(review.getReviewer().getId());
+        if (restaurantReviewDto.getReviewerId() == null) {
+            restaurantReviewDto.setReviewerId(review.getReviewer().getId());
         }
 
-        return reviewDto;
+        if (restaurantReviewDto.getId() == null) {
+            restaurantReviewDto.setId(review.getId());
+        }
+
+
+        return restaurantReviewDto;
     }
 }

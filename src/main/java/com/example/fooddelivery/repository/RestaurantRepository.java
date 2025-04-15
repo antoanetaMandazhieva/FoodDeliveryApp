@@ -20,5 +20,5 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
 
     Optional<Restaurant> findByName(String restaurantName);
 
-    List<Restaurant> findTopByOrderByAverageRatingDesc(Pageable pageable);
+    List<Restaurant> findAllByAverageRatingGreaterThanOrderByAverageRatingDesc(double minRating);
 }

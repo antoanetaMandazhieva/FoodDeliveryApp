@@ -27,7 +27,7 @@ public class Restaurant extends IdEntity {
     @OneToMany(mappedBy = "restaurant", targetEntity = Product.class, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Product> products;
 
-    @ManyToMany(mappedBy = "restaurants", targetEntity = Cuisine.class, cascade = CascadeType.ALL)
+    @ManyToMany(mappedBy = "restaurants", targetEntity = Cuisine.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private Set<Cuisine> cuisines;
 
     @Column(name = "is_active", columnDefinition = "BOOLEAN DEFAULT TRUE")
@@ -42,7 +42,7 @@ public class Restaurant extends IdEntity {
 
     public Restaurant(String name, Address address) {
         this.name = name;
-        this.address = address;
+        addAddress(address);
         this.isActive = true;
         this.orders = new HashSet<>();
         this.products = new HashSet<>();
@@ -114,7 +114,7 @@ public class Restaurant extends IdEntity {
     }
 
     public void addProduct(Product product) {
-        if (product != null && this.products.contains(product) && this.products.add(product)) {
+        if (product != null && !this.products.contains(product) && this.products.add(product)) {
             product.setRestaurant(this);
         }
     }

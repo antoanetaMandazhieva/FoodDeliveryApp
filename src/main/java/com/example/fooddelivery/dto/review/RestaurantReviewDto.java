@@ -2,8 +2,9 @@ package com.example.fooddelivery.dto.review;
 
 import java.time.LocalDateTime;
 
-public class ReviewDto {
+public class RestaurantReviewDto {
 
+    private Long id;
     private Long reviewerId;
     private int rating;
     private String comment;
@@ -39,5 +40,13 @@ public class ReviewDto {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 }

@@ -17,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AuthServiceImpl implements AuthService {
 
+    private static final String SUCCESSFUL_LOGIN_MESSAGE = "Login Successful";
+
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final UserMapper userMapper;
@@ -46,7 +48,10 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Invalid password!");
         }
 
-        return new LoginResponseDto(user.getUsername(), user.getRole().getName());
+        LoginResponseDto loginResponseDto = new LoginResponseDto(user.getUsername(), user.getRole().getName());
+        loginResponseDto.setMessage(SUCCESSFUL_LOGIN_MESSAGE);
+
+        return loginResponseDto;
     }
 
     private User configureUser(RegisterRequestDto registerRequestDto) {
