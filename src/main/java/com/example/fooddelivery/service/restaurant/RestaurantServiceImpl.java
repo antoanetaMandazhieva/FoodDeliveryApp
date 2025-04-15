@@ -11,9 +11,6 @@ import com.example.fooddelivery.repository.ProductRepository;
 import com.example.fooddelivery.repository.RestaurantRepository;
 import com.example.fooddelivery.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,8 +18,6 @@ import java.util.*;
 
 @Service
 public class RestaurantServiceImpl implements RestaurantService {
-
-    private static final Logger log = LoggerFactory.getLogger(RestaurantServiceImpl.class);
 
     private final RestaurantRepository restaurantRepository;
     private final ProductRepository productRepository;
@@ -98,9 +93,11 @@ public class RestaurantServiceImpl implements RestaurantService {
         return restaurantMapper.mapToDto(restaurantRepository.save(restaurant));
     }
 
+
+    // TODO Employee should add more products not only one!
     @Transactional
     @Override
-    public void addProductToRestaurant(Long employeeId, Long restaurantId, Long productId) {
+    public void addProductToRestaurant(Long employeeId, Long restaurantId, ProductDto productDto) {
         User employee = userRepository.findById(employeeId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
@@ -110,16 +107,17 @@ public class RestaurantServiceImpl implements RestaurantService {
 
         Restaurant restaurant = getRestaurantById(restaurantId);
 
-        Product product = getProductById(productId);
+        Product product = productMapper.mapToProduct(productDto);
+        product.setAvailable(true);
+        product.setRestaurant(restaurant);
 
         if (!product.isAvailable()) {
             product.setAvailable(true);
         }
 
         restaurant.addProduct(product);
+        productRepository.save(product);
         restaurantRepository.save(restaurant);
-
-        log.info("Added product {} to restaurant {}", product.getName(), restaurant.getName());
     }
 
     @Transactional
@@ -143,8 +141,6 @@ public class RestaurantServiceImpl implements RestaurantService {
         product.setAvailable(false);
 
         productRepository.save(product);
-
-        log.info("Soft-deleted product {} from restaurant {}", product.getName(), restaurant.getName());
     }
 
     @Override
@@ -155,8 +151,8 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Override
-    public List<RestaurantDto> getTopRatedRestaurants(int limit) {
-        return restaurantRepository.findTopByOrderByAverageRatingDesc(PageRequest.of(0, limit)).stream()
+    public List<RestaurantDto> getTopRatedRestaurants() {
+        return restaurantRepository.findAllByAverageRatingGreaterThanOrderByAverageRatingDesc(3.5).stream()
                 .map(restaurantMapper::mapToDto)
                 .toList();
     }

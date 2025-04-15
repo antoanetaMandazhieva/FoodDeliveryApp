@@ -1,16 +1,11 @@
 package com.example.fooddelivery;
 
 import com.example.fooddelivery.config.address.AddressMapper;
-import com.example.fooddelivery.dto.address.AddressDto;
-import com.example.fooddelivery.dto.order.OrderCreateDto;
-import com.example.fooddelivery.dto.order.OrderDto;
-import com.example.fooddelivery.dto.order.OrderResponseDto;
-import com.example.fooddelivery.dto.product.ProductDto;
-import com.example.fooddelivery.dto.user.UserProfileDto;
-import com.example.fooddelivery.entity.*;
+import com.example.fooddelivery.entity.Address;
+import com.example.fooddelivery.entity.Cuisine;
+import com.example.fooddelivery.entity.Product;
+import com.example.fooddelivery.entity.Restaurant;
 import com.example.fooddelivery.enums.Category;
-import com.example.fooddelivery.enums.Gender;
-import com.example.fooddelivery.enums.OrderStatus;
 import com.example.fooddelivery.repository.*;
 import com.example.fooddelivery.service.auth.AuthService;
 import com.example.fooddelivery.service.order.OrderService;
@@ -22,9 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.nio.file.AccessDeniedException;
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 
 @Component
 public class Main implements CommandLineRunner {
@@ -59,155 +53,240 @@ public class Main implements CommandLineRunner {
     @Transactional
     public void run(String... args) throws AccessDeniedException {
 
-//        User admin = new User("ivan123@example.com", "9876543210", "ivan123", "Ivan", "Ivanov",
-//                Gender.MALE, LocalDate.of(1980, 9, 8), "0888987553");
-//
-//        AddressDto addressDto = new AddressDto("Rakovska", "Sofia", "1000", "Bulgaria");
-//        Address address = addressMapper.mapToAddress(addressDto);
-//
-//        admin.addAddress(address);
-//        admin.setRole(roleRepository.findByName("ADMIN").get());
-//
-//        userRepository.save(admin);
-
-
-//        authService.register(new RegisterRequestDto("abcd@example.com", "1234567890", "client1", "First", "Client",
-//                Gender.MALE, LocalDate.of(2000, 11, 5), "0888999999",
-//                new AddressDto("Dondukov", "Sofia", "1000", "Bulgaria")));
-//
-//        authService.register(new RegisterRequestDto("milenaS@example.com", "5555555555", "milenaStv", "Milena", "Stamova",
-//                Gender.FEMALE, LocalDate.of(1995, 5, 26), "0888923450",
-//                new AddressDto("Krasna Polyana - 700", "Sofia", "1000", "Bulgaria")));
-//
-//        authService.register(new RegisterRequestDto("stoyanZ@example.com", "2214577248", "stoyan11", "Stoyan", "Zamfirov",
-//                Gender.MALE, LocalDate.of(2005, 8, 20), "0888754231",
-//                new AddressDto("Lyulin - ul. 715", "Sofia", "1000", "Bulgaria")));
-//
-//        authService.register(new RegisterRequestDto("miho@example.com", "1234444444", "Mihan69", "Miho", "Mihov",
-//                Gender.MALE, LocalDate.of(2008, 7, 3), "0888999426",
-//                new AddressDto("Oborishte 21", "Sofia", "1000", "Bulgaria")));
-//
-//        authService.register(new RegisterRequestDto("princess6969@example.com", "0888696996", "kitty_queen", "Little", "Princess",
-//                Gender.FEMALE, LocalDate.of(2010, 3, 5), "0888999908",
-//                new AddressDto("Aleksandar Malinov 20", "Sofia", "1000", "Bulgaria")));
-//
-//        authService.register(new RegisterRequestDto("krisCR7@example.com", "1234554321", "CR7_1106", "Kristian", "Georgiev",
-//                Gender.MALE, LocalDate.of(2003, 9, 14), "0888990651",
-//                new AddressDto("Drujba 123", "Sofia", "1000", "Bulgaria")));
-//
-//        authService.register(new RegisterRequestDto("hrisipissi@example.com", "ASDF12345", "Hristina1234", "Hristina", "Dimitrova",
-//                Gender.FEMALE, LocalDate.of(2001, 2, 20), "0888010123",
-//                new AddressDto("St. grad 1000", "Sofia", "1000", "Bulgaria")));
-
-//        Address address = addressRepository.findById(8L).get();
-//        AddressDto dto = addressMapper.toDto(address);
-//
-//
-//        userService.updateUser(8L, new UserProfileDto("hrisipissi@example.com", "Hristina1234", "Hristina", "Dimitrova",
-//                Gender.FEMALE, LocalDate.of(2001, 2, 20), "0888010123",
-//             Set.of(dto, new AddressDto("Mladost 4", "Sofia", "1000", "Bulgaria"))));
-
-
-//        Cuisine asian = new Cuisine("Asian");
 //        Cuisine italian = new Cuisine("Italian");
-//        Cuisine bulgarian = new Cuisine("Bulgarian");
+//        Cuisine chinese = new Cuisine("Chinese");
+//        Cuisine indian = new Cuisine("Indian");
+//        Cuisine japanese = new Cuisine("Japanese");
+//        Cuisine mexican = new Cuisine("Mexican");
 //        Cuisine french = new Cuisine("French");
-//        Cuisine fastFood = new Cuisine("Fast Food");
+//        Cuisine thai = new Cuisine("Thai");
+//        Cuisine mediterranean = new Cuisine("Mediterranean");
+//        Cuisine korean = new Cuisine("Korean");
+//        Cuisine lebanese = new Cuisine("Lebanese");
+//        Cuisine americanFastFood = new Cuisine("American Fast Food");
+//        Cuisine seafood = new Cuisine("Seafood");
+//        Cuisine bulgarian = new Cuisine("Bulgarian");
+//        Cuisine vietnamese = new Cuisine("Vietnamese");
 //
-//        cuisineRepository.save(asian);
-//        cuisineRepository.save(italian);
-//        cuisineRepository.save(bulgarian);
-//        cuisineRepository.save(french);
-//        cuisineRepository.save(fastFood);
+//        List<Cuisine> cuisines = List.of(italian, chinese, indian, japanese, mexican, french,
+//        thai, mediterranean, korean, lebanese, americanFastFood, seafood, bulgarian, vietnamese);
+//
+//        cuisineRepository.saveAll(cuisines);
 
 
-//        Cuisine asian = cuisineRepository.findById(1L).get();
-//        Cuisine italian = cuisineRepository.findById(2L).get();
-//        Cuisine bulgarian = cuisineRepository.findById(3L).get();
-//        Cuisine french = cuisineRepository.findById(4L).get();
-//        Cuisine fastFood = cuisineRepository.findById(5L).get();
+//        Address laDolceVitaAddress = new Address("Buzludzha street", "Sofia Center", "1606", "Bulgaria");
+//        addressRepository.save(laDolceVitaAddress);
+
+//        Restaurant laDolceVita = restaurantRepository.findById(1L).get();
+//        laDolceVita.addCuisine(cuisineRepository.findByName("Italian").get());
+//        laDolceVita.addAddress(addressRepository.findById(1L).get());
 //
+//        restaurantRepository.save(laDolceVita);
+
+
+//        Restaurant laDolceVita = restaurantRepository.findById(1L).get();
+//        laDolceVita.addCuisine(cuisineRepository.findByName("Italian").get());
 //
-//        Address address = new Address("Rakovska 123", "Sofia", "1000", "Bulgaria");
+//        restaurantRepository.save(laDolceVita);
+
+
+//        Address dragonsFeastAddress = new Address("Zona B5 - Bl.2", "Sofia", "1303", "Bulgaria");
+//        addressRepository.save(dragonsFeastAddress);
+//        Restaurant dragonsFeast = new Restaurant("Dragon's Feast", addressRepository.findById(2L).get());
+//        dragonsFeast.addCuisine(cuisineRepository.findByName("Chinese").get());
+//        restaurantRepository.save(dragonsFeast);
+
+//        Restaurant dragonsFeast = restaurantRepository.findByName("Dragon's Feast").get();
+//        dragonsFeast.addCuisine(cuisineRepository.findByName("Chinese").get());
+//
+//        restaurantRepository.save(dragonsFeast);
+
+//        Address spiceSymphonyAddress = new Address("Buzludzha street", "Sofia Center", "1606", "Bulgaria");
+//        addressRepository.save(spiceSymphonyAddress);
+
+//        Restaurant spiceSymphony = new Restaurant("Spice Symphony", addressRepository.findById(3L).get());
+//        spiceSymphony.addCuisine(cuisineRepository.findByName("Indian").get());
+//
+//        restaurantRepository.save(spiceSymphony);
+
+//        Address sakuraHavenAddress = new Address("Sofiyski Geroy 1 Street", "Sofia Hipodruma", "1612", "Bulgaria");
+//        addressRepository.save(sakuraHavenAddress);
+//
+//        Restaurant sakuraHaven = new Restaurant("Sakura Haven", addressRepository.findById(4L).get());
+//        sakuraHaven.addCuisine(cuisineRepository.findByName("Japanese").get());
+//
+//        restaurantRepository.save(sakuraHaven);
+
+
+//        Address elSabrosoAddress = new Address("Evlogi & Hristo Georgiev Blvd.", "Sofia", "1164", "Bulgaria");
+//        addressRepository.save(elSabrosoAddress);
+//
+//        Restaurant elSabroso = new Restaurant("El Sabroso", addressRepository.findById(5L).get());
+//        elSabroso.addCuisine(cuisineRepository.findByName("Mexican").get());
+//
+//        restaurantRepository.save(elSabroso);
+
+//        Address leGourmetAddress = new Address("Vasil Levski 82 Blvd.", "Sofia Center", "1142", "Bulgaria");
+//        addressRepository.save(leGourmetAddress);
+//
+//        Restaurant leGourmet = new Restaurant("Le Gourmet", addressRepository.findById(6L).get());
+//        leGourmet.addCuisine(cuisineRepository.findByName("French").get());
+//
+//        restaurantRepository.save(leGourmet);
+//
+
+
+//        Address siamSpiceAddress = new Address("Lozenska Planina 10 Street", "Sofia g.k. Lozenets", "1421", "Bulgaria");
+//        addressRepository.save(siamSpiceAddress);
+//
+//        Restaurant siamSpice = new Restaurant("Siam Spice", addressRepository.findById(7L).get());
+//        siamSpice.addCuisine(cuisineRepository.findByName("Thai").get());
+//
+//        restaurantRepository.save(siamSpice);
+
+//        Address oliveOreganoAddress = new Address("Mihai Eminescu 1 Blvd.", "Sofia Oborishte", "1124", "Bulgaria");
+//        addressRepository.save(oliveOreganoAddress);
+
+//        Restaurant oliveOregano = new Restaurant("Olive & Oregano", addressRepository.findById(8L).get());
+//        oliveOregano.addCuisine(cuisineRepository.findByName("Thai").get());
+//        Restaurant oliveOregano = restaurantRepository.findByName("Olive & Oregano").get();
+//        oliveOregano.addCuisine(cuisineRepository.findByName("Mediterranean").get());
+//
+//        restaurantRepository.save(oliveOregano);
+
+//        Address address = new Address("Buxton Brothers 34 Blvd.", "Sofia", "1618", "Bulgaria");
 //        addressRepository.save(address);
+
+//        Restaurant restaurant = new Restaurant("Seoul Sensation", addressRepository.findById(9L).get());
+//        restaurant.addCuisine(cuisineRepository.findByName("Korean").get());
+//
+//        restaurantRepository.save(restaurant);
+
+//    Address address = new Address("Nishava 111 Street", "Sofia g.k. Strelbishte", "1408", "Bulgaria");
+//    addressRepository.save(address);
+
+//    Restaurant restaurant = new Restaurant("Cedars of Lebanon", addressRepository.findById(10L).get());
+//    restaurant.addCuisine(cuisineRepository.findByName("Lebanese").get());
+//
+//    restaurantRepository.save(restaurant);
+
+//        Address address = new Address("Kliment Ohridski 10 Blvd.", "Sofia g.k. Darvenitsa", "1756", "Bulgaria");
+//        addressRepository.save(address);
+
+//        Restaurant restaurant = new Restaurant("Burger Boulevard", addressRepository.findById(11L).get());
+//        restaurant.addCuisine(cuisineRepository.findByName("American Fast Food").get());
+//
+//        restaurantRepository.save(restaurant);
+
+
+//        Address address1 = new Address("Iordan Radichkov Street", "Sofia g.k. Vitosha", "1700", "Bulgaria");
+//        Address address2 = new Address("Krastyu Pastuhov 34 Blvd.", "Sofia g.k. Drujba", "1592", "Bulgaria");
+//        Address address3 = new Address("Tsaritsa Yoanna 23 Blvd.", "Sofia g.k. Lyulin", "1324", "Bulgaria");
+//
+//        addressRepository.saveAll(List.of(address1, address2, address3));
+
+//        Restaurant restaurant1 = new Restaurant("Ocean's Bounty", addressRepository.findById(12L).get());
+//        restaurant1.addCuisine(cuisineRepository.findByName("Seafood").get());
+//
+//        Restaurant restaurant2 = new Restaurant("Balkan Bistro", addressRepository.findById(14L).get());
+//        restaurant2.addCuisine(cuisineRepository.findByName("Bulgarian").get());
+//
+//        Restaurant restaurant3 = new Restaurant("Saigon Flavors", addressRepository.findById(13L).get());
+//        restaurant3.addCuisine(cuisineRepository.findByName("Vietnamese").get());
+//
+//        restaurantRepository.saveAll(List.of(restaurant1, restaurant2, restaurant3));
+
+
+//
+//        addAddress("Dondukov 91 Blvd.", "Sofia Center", "1000", "Bulgaria", addressRepository);
+//        addAddress("Montevideo Street", "Sofia Ovcha Kupel", "1000", "Bulgaria", addressRepository);
+//        addAddress("Pirin 12A Street", "Sofia Borovo", "1000", "Bulgaria", addressRepository);
+//        addAddress("Alabin Street", "Sofia Oborishte", "1000", "Bulgaria", addressRepository);
+//        addAddress("Aleksandar Malinov 69 Blvd.", "Sofia Mladost", "1000", "Bulgaria", addressRepository);
+//        addAddress("Vladimir Vazov Blvd.", "Sofia Levski", "1000", "Bulgaria", addressRepository);
+
+
+
+
+//        Cuisine italian = cuisineRepository.findByName("Italian").get();
+//        Cuisine mediterranean = cuisineRepository.findByName("Mediterranean").get();
+//        Cuisine greek = cuisineRepository.findByName("Greek").get();
+//
+//        Cuisine indian = cuisineRepository.findByName("Indian").get();
+//        Cuisine thai = cuisineRepository.findByName("Thai").get();
+//        Cuisine chinese = cuisineRepository.findByName("Chinese").get();
+//
+//        Cuisine mexican = cuisineRepository.findByName("Mexican").get();
+//        Cuisine americanFastFood = cuisineRepository.findByName("American Fast Food").get();
+//        Cuisine spanish = cuisineRepository.findByName("Spanish").get();
 //
 //
-//        Restaurant happy1 = new Restaurant("Happy 1", address);
-//
-//        happy1.addCuisine(asian);
-//        happy1.addCuisine(italian);
-//        happy1.addCuisine(bulgarian);
-//        happy1.addCuisine(french);
-//        happy1.addCuisine(fastFood);
+//        Cuisine japanese = cuisineRepository.findByName("Japanese").get();
+//        Cuisine korean = cuisineRepository.findByName("Korean").get();
+//        Cuisine vietnamese = cuisineRepository.findByName("Vietnamese").get();
 //
 //
-//        restaurantRepository.save(happy1);
-
-//        Restaurant restaurant = restaurantRepository.findById(1L).get();
+//        Cuisine french = cuisineRepository.findByName("French").get();
+//        Cuisine german = cuisineRepository.findByName("German").get();
+//        Cuisine british = cuisineRepository.findByName("British").get();
 //
-//        restaurant.addProduct(new Product("Caesar", BigDecimal.valueOf(12.5),
-//                "Very tasty salad with chicken", Category.SALADS));
+//        Cuisine lebanese = cuisineRepository.findByName("Lebanese").get();
+//        Cuisine turkish = cuisineRepository.findByName("Turkish").get();
+//        Cuisine moroccan = cuisineRepository.findByName("Moroccan").get();
 
-//        restaurant.addProduct(new Product("Coke", BigDecimal.valueOf(3.5),
-//                "Very tasty drink", Category.DRINKS));
 
-//        Product beefBurger = new Product("Beef Burger", BigDecimal.valueOf(12.5),
-//                "Very tasty burger with beef", Category.BURGERS);
 //
+//        addRestaurant("Global Bites", addressRepository.findById(15L).get(), List.of(italian, mediterranean, greek), restaurantRepository);
+//        addRestaurant("World Flavors", addressRepository.findById(16L).get(), List.of(indian, thai, chinese), restaurantRepository);
+//        addRestaurant("Fusion Fiesta", addressRepository.findById(17L).get(), List.of(americanFastFood, mexican, spanish), restaurantRepository);
+//        addRestaurant("Culinary Carnival", addressRepository.findById(18L).get(), List.of(japanese, korean, vietnamese), restaurantRepository);
+//        addRestaurant("Epicurean Junction", addressRepository.findById(19L).get(), List.of(french, german, british), restaurantRepository);
+//        addRestaurant("Taste of the World", addressRepository.findById(20L).get(), List.of(lebanese, turkish, moroccan), restaurantRepository);
+
+//        Cuisine turkish = new Cuisine("Turkish");
+//        Cuisine moroccan = new Cuisine("Moroccan");
 //
+//        cuisineRepository.saveAll(List.of(turkish, moroccan));
+
+//        Restaurant restaurant = restaurantRepository.findById(20L).get();
 //
-//        restaurant.addProduct(beefBurger);
-
-//        restaurant.addProduct(new Product("White wine", BigDecimal.valueOf(35),
-//                "French white wine", Category.ALCOHOLS));
-
-//        restaurant.addProduct(new Product("Chicken Soup", BigDecimal.valueOf(10),
-//                "Very tasty chicken soup", Category.SOUPS));
-
-//        restaurant.addProduct(new Product("Ice-cream", BigDecimal.valueOf(8.3),
-//                "Very tasty ice-cream", Category.DESSERTS));
-
-
-//        restaurantService.removeProductFromRestaurant(1L, 7L);
-
-//        List<ProductDto> allAvailableProductsFromRestaurant =
-//                restaurantService.getAllAvailableProductsFromRestaurant("Happy 1");
+//        restaurant.addCuisine(lebanese);
+//        restaurant.addCuisine(turkish);
+//        restaurant.addCuisine(moroccan);
 //
+//        restaurantRepository.save(restaurant);
+
+
+//        Product spaghettiBolognese = new Product("Spaghetti Bolognese", BigDecimal.valueOf(14.50),
+//                "Classic pasta served in a rich meat sauce with tomatoes, garlic, and basil.",
+//                Category.MAIN);
+
+//        Restaurant restaurant = restaurantRepository.findById(16L).get();
+//        Cuisine chinese = cuisineRepository.findByName("Chinese").get();
+//        Cuisine indian = cuisineRepository.findByName("Indian").get();
 //
-//        for (ProductDto product : allAvailableProductsFromRestaurant) {
-//            System.out.println(product.getName());
-//        }
+//        Product product = createProduct("Mango Pudding", BigDecimal.valueOf(12.50),
+//                    "Smooth, fruity pudding with a burst of fresh mango flavor.",
+//                Category.DESSERTS, chinese, restaurant);
 
 
-//     orderService.createOrder(new OrderCreateDto(1L, Set.of(1L, 2L, 4L)), 3L);
+    }
 
-//        orderService.cancelOrderByClient(1L, 3L);
+    private static void addAddress(String street, String city, String postalCode, String country, AddressRepository repository) {
+        repository.save(new Address(street, city, postalCode, country));
+    }
 
-//        orderService.createOrder(new OrderCreateDto(1L, Set.of(1L, 2L, 5L)), 3L);
+    private static void addRestaurant(String name, Address address, List<Cuisine> cuisines, RestaurantRepository repository) {
+        Restaurant restaurant = new Restaurant(name, address);
+        for (Cuisine cuisine: cuisines) {
+            restaurant.addCuisine(cuisine);
+        }
 
-//        orderService.updateOrderStatus(2L, OrderStatus.ACCEPTED, 2L);
+        repository.save(restaurant);
+    }
 
-//        orderService.assignOrderToSupplier(2L, 4L);
-//        OrderDto orderDto = orderService.finishOrder(2L, 4L);
-
-//        orderService.createOrder(new OrderCreateDto(1L, Set.of(6L, 7L)), 1L);
-
-//        orderService.assignOrderToSupplier(3L, 4L);
-
-//        orderService.updateOrderStatus(4L, 2L);
-//        orderService.updateOrderStatus(4L, 2L);
-
-//        orderService.finishOrder(3L, 4L);
-//        orderService.assignOrderToSupplier(4L, 4L);
-//
-//        orderService.takeOrder(4L, 4L);
-//        orderService.finishOrder(4L, 4L);
-
-//        Role adminRole = new Role("ADMIN");
-//        Role clientRole = new Role("CLIENT");
-//        Role supplierRole = new Role("SUPPLIER");
-//        Role employeeRole = new Role("EMPLOYEE");
-//
-//        roleRepository.saveAll(List.of(adminRole, clientRole, supplierRole, employeeRole));
+    private Product createProduct(String name, BigDecimal value, String description,
+                                  Category category, Cuisine cuisine, Restaurant restaurant) {
+        return new Product(name, value, description, category, cuisine, restaurant);
     }
 }

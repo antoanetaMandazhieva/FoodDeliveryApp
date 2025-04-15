@@ -26,10 +26,13 @@ public class UserMapper {
     }
 
     public User mapToUser(RegisterRequestDto registerRequestDto) {
+
         User user = mapper.map(registerRequestDto, User.class);
+
         if (user.getGender() == null) {
             user.setGender(Gender.valueOf(registerRequestDto.getGender()));
         }
+
         return user;
     }
 

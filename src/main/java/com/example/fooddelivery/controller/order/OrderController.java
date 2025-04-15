@@ -50,7 +50,20 @@ public class OrderController {
     }
 
     /**
-     * 3. Обновяване на статус (служител)
+     * 3. Приемане на доставка от служител
+     * @param orderId
+     * @param employeeId
+     * @return
+     */
+    @PutMapping("/{orderId}/accept")
+    public ResponseEntity<String> acceptOrder(@PathVariable Long orderId,
+                                              @RequestParam Long employeeId) {
+        orderService.acceptOrder(orderId, employeeId);
+        return ResponseEntity.ok("Order accepted successfully");
+    }
+
+    /**
+     * 4. Обновяване на статус (служител)
      * @param dto
      * @param employeeId
      * @return
@@ -63,7 +76,20 @@ public class OrderController {
     }
 
     /**
-     * 4. Завършване на поръчка (доставчик)
+     * 5. Взимане на доставка от доставчик и е в процес на доставяне
+     * @param orderId
+     * @param supplierId
+     * @return
+     */
+    @PutMapping("/{orderId}/take")
+    public ResponseEntity<String> takeOrder(@PathVariable Long orderId,
+                                            @RequestParam Long supplierId) {
+        orderService.takeOrder(orderId, supplierId);
+        return ResponseEntity.ok("Order taken successfully and is now in delivery");
+    }
+
+    /**
+     * 6. Завършване на поръчка (доставчик)
      * @param orderId
      * @param supplierId
      * @return
@@ -75,7 +101,7 @@ public class OrderController {
     }
 
     /**
-     * 5. Отказ от страна на клиента
+     * 7. Отказ от страна на клиента
      * @param orderId
      * @param clientId
      * @return
@@ -88,7 +114,7 @@ public class OrderController {
     }
 
     /**
-     * 6. Заявки по клиент
+     * 8. Заявки по клиент
      * @param clientId
      * @return
      */
@@ -98,7 +124,7 @@ public class OrderController {
     }
 
     /**
-     * 7. Заявки по доставчик
+     * 9. Заявки по доставчик
      * @param supplierId
      * @return
      */
@@ -108,7 +134,7 @@ public class OrderController {
     }
 
     /**
-     * 8. Заявки по статус
+     * 10. Заявки по статус
      * @param status
      * @return
      */
@@ -118,7 +144,7 @@ public class OrderController {
     }
 
     /**
-     * 9. Свободни заявки (за доставчици)
+     * 11. Свободни заявки (за доставчици)
      * @return
      */
     @GetMapping("/available")
@@ -127,7 +153,7 @@ public class OrderController {
     }
 
     /**
-     * 10. Обща сума за период
+     * 12. Обща сума за период
      * @param from
      * @param to
      * @param employeeId

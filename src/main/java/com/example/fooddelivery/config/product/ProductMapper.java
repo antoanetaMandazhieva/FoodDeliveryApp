@@ -1,7 +1,11 @@
 package com.example.fooddelivery.config.product;
 
 import com.example.fooddelivery.dto.product.ProductDto;
+import com.example.fooddelivery.entity.Cuisine;
 import com.example.fooddelivery.entity.Product;
+import com.example.fooddelivery.enums.Category;
+import com.example.fooddelivery.repository.CuisineRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
@@ -9,9 +13,11 @@ import org.springframework.stereotype.Component;
 public class ProductMapper {
 
     private final ModelMapper mapper;
+    private final CuisineRepository cuisineRepository;
 
-    public ProductMapper(ModelMapper mapper) {
+    public ProductMapper(ModelMapper mapper, CuisineRepository cuisineRepository) {
         this.mapper = mapper;
+        this.cuisineRepository = cuisineRepository;
     }
 
     public ProductDto mapToProductDto(Product product) {
@@ -29,7 +35,19 @@ public class ProductMapper {
     }
 
     public Product mapToProduct(ProductDto productDto) {
-        return mapper.map(productDto, Product.class);
+        Product product = new Product();
+
+        product.setName(product.getName());
+        product.setPrice(product.getPrice());
+        product.setDescription(product.getDescription());
+        product.setCategory(Category.valueOf(productDto.getCategory()));
+
+        Cuisine cuisine = cuisineRepository.findByName(productDto.getCuisineName())
+                        .orElseThrow(() -> new EntityNotFoundException("Cuisine not found"));
+
+        product.setCuisine(cuisine);
+
+        return product;
     }
 
 }

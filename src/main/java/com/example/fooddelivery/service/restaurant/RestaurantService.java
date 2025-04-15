@@ -16,13 +16,13 @@ public interface RestaurantService {
 
     RestaurantDto createRestaurant(RestaurantCreateDto dto, Long employeeId);
 
-    void addProductToRestaurant(Long employeeId, Long restaurantId, Long productId);
+    void addProductToRestaurant(Long employeeId, Long restaurantId, ProductDto productDto);
 
     void removeProductFromRestaurant(Long employeeId, Long restaurantId, Long productId);
 
     List<RestaurantDto> getRestaurantsByCuisine(Long cuisineId);
 
-    List<RestaurantDto> getTopRatedRestaurants(int limit);
+    List<RestaurantDto> getTopRatedRestaurants();
 
     List<RestaurantDto> getRestaurantsByNameAsc();
 

@@ -1,5 +1,6 @@
 package com.example.fooddelivery.service.order;
 
+import com.example.fooddelivery.config.address.AddressMapper;
 import com.example.fooddelivery.config.order.OrderMapper;
 import com.example.fooddelivery.dto.order.OrderCreateDto;
 import com.example.fooddelivery.dto.order.OrderDto;
@@ -7,11 +8,8 @@ import com.example.fooddelivery.dto.order.OrderResponseDto;
 import com.example.fooddelivery.entity.*;
 import com.example.fooddelivery.enums.Category;
 import com.example.fooddelivery.enums.OrderStatus;
-import com.example.fooddelivery.repository.OrderRepository;
-import com.example.fooddelivery.repository.ProductRepository;
-import com.example.fooddelivery.repository.RestaurantRepository;
-import com.example.fooddelivery.repository.UserRepository;
-import com.example.fooddelivery.service.bonus.BonusService;
+import com.example.fooddelivery.repository.*;
+import com.example.fooddelivery.service.discount.DiscountService;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,21 +25,27 @@ public class OrderServiceImpl implements OrderService {
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
     private final RestaurantRepository restaurantRepository;
-    private final BonusService bonusService;
+    private final AddressRepository addressRepository;
+    private final DiscountService discountService;
     private final OrderMapper orderMapper;
+    private final AddressMapper addressMapper;
 
     public OrderServiceImpl(OrderRepository orderRepository,
                             UserRepository userRepository,
                             ProductRepository productRepository,
                             RestaurantRepository restaurantRepository,
-                            BonusService bonusService,
-                            OrderMapper orderMapper) {
+                            AddressRepository addressRepository,
+                            DiscountService discountService,
+                            OrderMapper orderMapper,
+                            AddressMapper addressMapper) {
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
         this.productRepository = productRepository;
         this.restaurantRepository = restaurantRepository;
-        this.bonusService = bonusService;
+        this.addressRepository = addressRepository;
+        this.discountService = discountService;
         this.orderMapper = orderMapper;
+        this.addressMapper = addressMapper;
     }
 
     @Override
@@ -50,6 +54,12 @@ public class OrderServiceImpl implements OrderService {
         User client = userRepository.findById(clientId)
                 .orElseThrow(() -> new EntityNotFoundException("Client not found"));
 
+        Address orderAddress = getOrderAddress(addressMapper.mapToAddress(orderCreateDto.getAddress()));
+
+        if (!client.getAddresses().contains(orderAddress)) {
+            throw new IllegalArgumentException("Client doesn't have this address");
+        }
+
         Restaurant restaurant = restaurantRepository.findById(orderCreateDto.getRestaurantId())
                 .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
 
@@ -57,6 +67,17 @@ public class OrderServiceImpl implements OrderService {
 
         order.setClient(client);
         order.setRestaurant(restaurant);
+        order.setAddress(orderAddress);
+
+        BigDecimal discountAmount;
+
+        if ("CLIENT".equals(client.getRole().getName())) {
+            discountAmount = discountService.checkAndGiveClientDiscount(client);
+        } else {
+            discountAmount = discountService.checkAndGiveWorkerDiscount(client);
+        }
+
+
 
         for (Long productId : orderCreateDto.getProductIds()) {
             Product product = productRepository.findById(productId)
@@ -71,7 +92,8 @@ public class OrderServiceImpl implements OrderService {
             order.addProduct(product);
         }
 
-        order.calculateTotalPrice();
+        order.calculateTotalPrice(discountAmount);
+
         order.setOrderStatus(OrderStatus.PENDING);
 
         return orderMapper.mapFromOrderToDto(orderRepository.save(order));
@@ -187,8 +209,6 @@ public class OrderServiceImpl implements OrderService {
         }
 
         order.setOrderStatus(OrderStatus.DELIVERED);
-        bonusService.checkAndAddBonusForSupplier(supplier);
-
 
         orderRepository.save(order);
 
@@ -256,5 +276,11 @@ public class OrderServiceImpl implements OrderService {
                 .stream()
                 .map(orderMapper::toResponseDto)
                 .toList();
+    }
+
+    private Address getOrderAddress(Address orderAddress) {
+        return addressRepository.findByStreetAndCityAndCountry(orderAddress.getStreet(), orderAddress.getCity(),
+                                                               orderAddress.getCountry())
+                            .orElseThrow(() -> new EntityNotFoundException("Order not found"));
     }
 }

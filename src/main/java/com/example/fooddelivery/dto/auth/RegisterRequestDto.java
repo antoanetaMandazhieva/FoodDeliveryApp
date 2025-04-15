@@ -1,7 +1,6 @@
 package com.example.fooddelivery.dto.auth;
 
 import com.example.fooddelivery.dto.address.AddressDto;
-import com.example.fooddelivery.enums.Gender;
 
 import java.time.LocalDate;
 

@@ -40,8 +40,8 @@ public class User extends IdEntity {
     @OneToMany(mappedBy = "user", targetEntity = Address.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private Set<Address> addresses;
 
-    @OneToMany(mappedBy = "user", targetEntity = Bonus.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    private Set<Bonus> bonuses;
+    @OneToMany(mappedBy = "user", targetEntity = Discount.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    private Set<Discount> discounts;
 
     @OneToMany(mappedBy = "client", targetEntity = Order.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private Set<Order> orders;
@@ -59,7 +59,7 @@ public class User extends IdEntity {
     public User () {
         this.isActive = true;
         this.addresses = new HashSet<>();
-        this.bonuses = new HashSet<>();
+        this.discounts = new HashSet<>();
         this.orders = new HashSet<>();
     }
 
@@ -77,7 +77,7 @@ public class User extends IdEntity {
         setPhoneNumber(phoneNumber);
         this.isActive = true;
         this.addresses = new HashSet<>();
-        this.bonuses = new HashSet<>();
+        this.discounts = new HashSet<>();
         this.orders = new HashSet<>();
     }
 
@@ -155,8 +155,8 @@ public class User extends IdEntity {
         return Collections.unmodifiableSet(this.addresses);
     }
 
-    public Set<Bonus> getBonuses() {
-        return Collections.unmodifiableSet(this.bonuses);
+    public Set<Discount> getBonuses() {
+        return Collections.unmodifiableSet(this.discounts);
     }
 
     public Set<Order> getOrders() {
@@ -207,14 +207,14 @@ public class User extends IdEntity {
         address.setUser(null);
     }
 
-    public void addBonus(Bonus bonus) {
-        this.bonuses.add(bonus);
-        bonus.setUser(this);
+    public void addBonus(Discount discount) {
+        this.discounts.add(discount);
+        discount.setUser(this);
     }
 
-    public void removeBonus(Bonus bonus) {
-        this.bonuses.remove(bonus);
-        bonus.setUser(null);
+    public void removeBonus(Discount discount) {
+        this.discounts.remove(discount);
+        discount.setUser(null);
     }
 
     public void addOrder(Order order) {
@@ -229,7 +229,7 @@ public class User extends IdEntity {
 
     public void detachAllRelations() {
         this.addresses.forEach(address -> address.setUser(null));
-        this.bonuses.forEach(bonus -> bonus.setUser(null));
+        this.discounts.forEach(discount -> discount.setUser(null));
         this.orders.forEach(order -> order.setClient(null));
     }
 }

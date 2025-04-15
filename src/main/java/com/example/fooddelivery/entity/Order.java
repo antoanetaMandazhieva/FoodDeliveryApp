@@ -34,6 +34,10 @@ public class Order extends IdEntity {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
+    @ManyToOne
+    @JoinColumn(name = "address_id", nullable = false)
+    private Address address;
+
     @ManyToMany
     @JoinTable(
             name = "ordered_items",
@@ -46,7 +50,6 @@ public class Order extends IdEntity {
         this.totalPrice = BigDecimal.ZERO;
         this.products = new HashSet<>();
         this.orderStatus = OrderStatus.PENDING;
-
     }
 
     public User getClient() {
@@ -77,10 +80,12 @@ public class Order extends IdEntity {
         return totalPrice;
     }
 
-    public void calculateTotalPrice() {
+    public void calculateTotalPrice(BigDecimal discountAmount) {
         this.totalPrice = this.products.stream()
                 .map(Product::getPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        this.totalPrice = totalPrice.multiply(BigDecimal.ONE.subtract(discountAmount));
     }
 
     public OrderStatus getOrderStatus() {
@@ -106,5 +111,13 @@ public class Order extends IdEntity {
 
     public void addProduct(Product product) {
         this.products.add(product);
+    }
+
+    public Address getAddress() {
+        return address;
+    }
+
+    public void setAddress(Address address) {
+        this.address = address;
     }
 }

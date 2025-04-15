@@ -37,12 +37,14 @@ public class Product extends IdEntity {
         this.isAvailable = true;
     }
 
-    public Product(String name, BigDecimal price, String description, Category category) {
+    public Product(String name, BigDecimal price, String description, Category category, Cuisine cuisine, Restaurant restaurant) {
         this.name = name;
         this.price = price;
         this.description = description;
         this.category = category;
         this.isAvailable = true;
+        cuisine.addProduct(this);
+        restaurant.addProduct(this);
     }
 
     public String getName() {

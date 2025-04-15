@@ -1,7 +1,8 @@
 package com.example.fooddelivery.service.review;
 
 import com.example.fooddelivery.config.review.ReviewMapper;
-import com.example.fooddelivery.dto.review.ReviewDto;
+import com.example.fooddelivery.dto.review.RestaurantReviewDto;
+import com.example.fooddelivery.dto.review.SupplierReviewDto;
 import com.example.fooddelivery.entity.Restaurant;
 import com.example.fooddelivery.entity.RestaurantReview;
 import com.example.fooddelivery.entity.User;
@@ -37,7 +38,7 @@ public class RestaurantReviewServiceImpl implements RestaurantReviewService {
 
     @Override
     @Transactional
-    public void addReview(Long clientId, Long restaurantId, int rating, String comment) {
+    public RestaurantReviewDto addReview(Long clientId, Long restaurantId, int rating, String comment) {
         User client = userRepository.findById(clientId)
                 .orElseThrow(() -> new EntityNotFoundException("Client not found"));
 
@@ -50,13 +51,15 @@ public class RestaurantReviewServiceImpl implements RestaurantReviewService {
         review.setRating(rating);
         review.setComment(comment);
 
+        reviewRepository.save(review);
+
         updateRestaurantAverageRating(restaurantId);
 
-        reviewRepository.save(review);
+        return reviewMapper.mapToDto(review);
     }
 
     @Override
-    public List<ReviewDto> getReviewsForRestaurant(Long restaurantId) {
+    public List<RestaurantReviewDto> getReviewsForRestaurant(Long restaurantId) {
         return reviewRepository.findByRestaurantId(restaurantId)
                 .stream()
                 .map(reviewMapper::mapToDto)

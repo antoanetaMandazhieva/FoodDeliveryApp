@@ -1,7 +1,7 @@
 package com.example.fooddelivery.service.review;
 
 import com.example.fooddelivery.config.review.ReviewMapper;
-import com.example.fooddelivery.dto.review.ReviewDto;
+import com.example.fooddelivery.dto.review.SupplierReviewDto;
 import com.example.fooddelivery.entity.SupplierReview;
 import com.example.fooddelivery.entity.User;
 import com.example.fooddelivery.repository.SupplierReviewRepository;
@@ -27,8 +27,7 @@ public class SupplierReviewServiceImpl implements SupplierReviewService {
     }
 
     @Override
-    public void addReview(Long clientId, Long supplierId, int rating, String comment) {
-
+    public SupplierReviewDto addReview(Long clientId, Long supplierId, int rating, String comment) {
         if (clientId.equals(supplierId)) {
             throw new IllegalStateException("No permission to review yourself");
         }
@@ -43,18 +42,19 @@ public class SupplierReviewServiceImpl implements SupplierReviewService {
             throw new IllegalStateException("Reviews are only possible for suppliers");
         }
 
-
         SupplierReview review = new SupplierReview();
         review.setReviewer(client);
         review.setSupplier(supplier);
         review.setRating(rating);
         review.setComment(comment);
 
-        reviewRepository.save(review);
+        SupplierReview saved = reviewRepository.save(review);
+
+        return reviewMapper.mapToDto(saved);
     }
 
     @Override
-    public List<ReviewDto> getReviewsForSupplier(Long supplierId) {
+    public List<SupplierReviewDto> getReviewsForSupplier(Long supplierId) {
         return reviewRepository.findBySupplierId(supplierId)
                 .stream()
                 .map(reviewMapper::mapToDto)
