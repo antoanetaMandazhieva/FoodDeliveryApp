@@ -7,6 +7,7 @@ import com.example.fooddelivery.dto.auth.LoginRequestDto;
 import com.example.fooddelivery.dto.user.UserDto;
 import com.example.fooddelivery.dto.user.UserProfileDto;
 import com.example.fooddelivery.entity.User;
+import com.example.fooddelivery.enums.Gender;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
@@ -25,7 +26,6 @@ public class UserMapper {
     }
 
     public User mapToUser(RegisterRequestDto registerRequestDto) {
-<<<<<<< HEAD
 
         User user = mapper.map(registerRequestDto, User.class);
 
@@ -34,9 +34,6 @@ public class UserMapper {
         }
 
         return user;
-=======
-        return mapper.map(registerRequestDto, User.class);
->>>>>>> parent of 25eb82f (update: implement user role management and cookie handling in navigation, sign in, and sign up components; enhance CORS configuration)
     }
 
     public User mapToUser(LoginRequestDto loginRequestDto) {

@@ -1,15 +1,6 @@
 package com.example.fooddelivery;
 
 import com.example.fooddelivery.config.address.AddressMapper;
-<<<<<<< HEAD
-=======
-import com.example.fooddelivery.dto.address.AddressDto;
-import com.example.fooddelivery.dto.order.OrderCreateDto;
-import com.example.fooddelivery.dto.order.OrderDto;
-import com.example.fooddelivery.dto.order.OrderResponseDto;
-import com.example.fooddelivery.dto.product.ProductDto;
-import com.example.fooddelivery.dto.user.UserProfileDto;
->>>>>>> parent of 25eb82f (update: implement user role management and cookie handling in navigation, sign in, and sign up components; enhance CORS configuration)
 import com.example.fooddelivery.entity.Address;
 import com.example.fooddelivery.entity.Cuisine;
 import com.example.fooddelivery.entity.Product;
@@ -294,28 +285,8 @@ public class Main implements CommandLineRunner {
         repository.save(restaurant);
     }
 
-<<<<<<< HEAD
     private Product createProduct(String name, BigDecimal value, String description,
                                   Category category, Cuisine cuisine, Restaurant restaurant) {
         return new Product(name, value, description, category, cuisine, restaurant);
-=======
-//        orderService.assignOrderToSupplier(2L, 4L);
-//        OrderDto orderDto = orderService.finishOrder(2L, 4L);
-
-//        orderService.createOrder(new OrderCreateDto(1L, Set.of(6L, 7L)), 1L);
-
-//        orderService.assignOrderToSupplier(3L, 4L);
-
-//        orderService.updateOrderStatus(4L, 2L);
-//        orderService.updateOrderStatus(4L, 2L);
-
-//        orderService.finishOrder(3L, 4L);
-//        orderService.assignOrderToSupplier(4L, 4L);
-//
-//        orderService.takeOrder(4L, 4L);
-//        orderService.finishOrder(4L, 4L);
-
-
->>>>>>> parent of 25eb82f (update: implement user role management and cookie handling in navigation, sign in, and sign up components; enhance CORS configuration)
     }
 }
