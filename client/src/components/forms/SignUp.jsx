@@ -1,15 +1,39 @@
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { setCookie } from '../../util/cookies';
 
 const SignUp = () => {
-    const { register, handleSubmit, formState: {errors, isSubmitting} } = useForm();
+    const { register, handleSubmit, formState: {errors, isSubmitting} } = useForm({
+        defaultValues: {
+            name: '',
+            surname: '',
+            username: '',
+            email: '',
+            password: '',
+            dateOfBirth: '',
+            phoneNumber: '',
+            gender: '',
+            address: {
+                street: '',
+                city: '',
+                postalCode: '',
+                country: ''
+            } 
+        }
+    });
+    const navigate = useNavigate();
     
     const onSubmit = async (formData) => {
+        console.log(formData)
         try {
-            const res = await axios.post('http://127.0.0.1:5000/register', formData, {
+            const res = await axios.post('http://127.0.0.1:8080/api/auth/register', formData, {
                 headers: { 'Content-Type': 'application/json' }
             });
+
+            setCookie('userRole', res.data.role, 1);
+            setCookie('username', res.data.username, 1);
+
             confirm(res.data.message);
             navigate('/');
         } catch (error) {
@@ -112,12 +136,12 @@ const SignUp = () => {
                     <div className='text-red-600 font-semibold px-2 text-center'>{errors.password.message}</div>
                 )}
 
-                <label id='birthdate' for='birthdate'>
+                <label id='birthdate' htmlFor='birthdate'>
                     Birthdate:
                 </label>
                 
                 <input id='birthdate' type='date' className='form-input' {
-                    ...register('birthdate', {
+                    ...register('dateOfBirth', {
                     required: 'Birthdate required',
                     min: {
                         value: '1900-01-01',
@@ -130,28 +154,95 @@ const SignUp = () => {
                     })}
                 />
 
-                {errors.birthdate && (
-                    <div className='text-red-600 font-semibold px-2 text-center'>{errors.birthdate.message}</div>
+                {errors.dateOfBirth && (
+                    <div className='text-red-600 font-semibold px-2 text-center'>{errors.dateOfBirth.message}</div>
                 )}
 
                 <input className='form-input' type='text' placeholder='Phone Number' {
-                    ...register('phonenumber', { 
+                    ...register('phoneNumber', { 
                     required: 'Phone Number required',
                     pattern: {
-                        value: /^(\\+359|0)\\d{9}$/,
+                        value: /^(?:\+359|0)\d{9}$/,
                         message: 'Invalid phone number format'
                     }
                     })}
                 />
 
-                {errors.phonenumber && (
-                    <div className='text-red-600 font-semibold px-2 text-center'>{errors.phonenumber.message}</div>
+                {errors.phoneNumber && (
+                    <div className='text-red-600 font-semibold px-2 text-center'>{errors.phoneNumber.message}</div>
                 )}
 
-                <select className='form-input' {...register("Gender", { required: true })}>
-                    <option value="Male">Male</option>
-                    <option value=" Female"> Female</option>
+                <select className='form-input' {...register('gender', { required: true })}>
+                    <option value='MALE'>Male</option>
+                    <option value='FEMALE'> Female</option>
                 </select>
+                
+                <div className='flex flex-col items-center justify-between md:grid md:grid-rows-2 md:grid-cols-2 gap-y-3 w-full'>
+                    <div className='flex flex-col justify-between items-center'>
+                        <input className='rounded-4xl text-center font-quicksand 
+                            bg-peach-400 h-8 focus:outline 
+                            focus:outline-black opacity-100' 
+                            type='text' placeholder='Street' {
+                            ...register('address.street', {
+                                required: 'Address Street required',
+                                pattern: /^[A-Za-z0-9\s.,-]+$/
+                            })}
+                        />
+
+                        {/* {errors.address.street && (
+                            <div className='text-red-600 font-semibold px-2 text-center'>{errors.address.street.message}</div>
+                        )} */}
+                    </div>
+
+                    <div className='flex flex-col justify-between items-center'>
+                        <input className='rounded-4xl text-center font-quicksand 
+                            bg-peach-400 h-8 focus:outline 
+                            focus:outline-black opacity-100' 
+                            type='text' placeholder='City and Neighbourhood' {
+                            ...register('address.city', {
+                                required: 'Address City and Neighbourhood required',
+                                pattern: /^[A-Z][a-z]+\s[A-Z][a-z]+$/
+                                
+                            })}
+                        />
+
+                        {/* {errors.address.city && (
+                            <div className='text-red-600 font-semibold px-2 text-center'>{errors.address.city.message}</div>
+                        )} */}
+                    </div>
+
+                    <div className='flex flex-col justify-between items-center'>
+                        <input className='rounded-4xl text-center font-quicksand 
+                            bg-peach-400 h-8 focus:outline 
+                            focus:outline-black opacity-100' 
+                            type='text' placeholder='Postal Code' {
+                            ...register('address.postalCode', {
+                                required: 'Address Postal Code required',
+                                pattern: /^[0-9]{4}$/
+                            })}
+                        />
+
+                        {/* {errors.address.postalCode && (
+                            <div className='text-red-600 font-semibold px-2 text-center'>{errors.address.postalCode.message}</div>
+                        )} */}
+                    </div>
+
+                    <div className='flex flex-col justify-between items-center'>
+                        <input className='rounded-4xl text-center font-quicksand 
+                            bg-peach-400 h-8 focus:outline 
+                            focus:outline-black opacity-100' 
+                            type='text' placeholder='Country' {
+                            ...register('address.country', {
+                                required: 'Country required',
+                                pattern: /^[A-Za-z]+$/
+                            })}
+                        />
+
+                        {/* {errors.address.country && (
+                            <div className='text-red-600 font-semibold px-2 text-center'>{errors.address.country.message}</div>
+                        )} */}
+                    </div>
+                </div>
                 
                 <button className='bg-peach-400 hover:bg-peach-100 rounded-xl h-14 w-[30%]' disabled={isSubmitting}>
                     {isSubmitting ? 'Loading...' : 'Submit'}

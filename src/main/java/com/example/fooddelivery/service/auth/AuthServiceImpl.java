@@ -51,6 +51,7 @@ public class AuthServiceImpl implements AuthService {
 
     private User configureUser(RegisterRequestDto registerRequestDto) {
         User user = userMapper.mapToUser(registerRequestDto);
+        System.out.println("Test: " + registerRequestDto.getUsername());
 
         if (isUserExistsInDb(user.getUsername())) {
             throw new RuntimeException("User with this username already exists.");

@@ -3,13 +3,26 @@ import main_logo_ivory from '../../assets/images/page_images/main_logo_ivory.png
 import { useState, useEffect, useRef } from 'react';   
 import { Link } from 'react-router-dom';  
 import gsap from 'gsap'; 
+import { deleteCookie, getCookie } from '../../util/cookies';
 
 const Navigation = () => {
     const [isSmall, setIsSmall] = useState(() => false);
+    const [userRole, setUserRole] = useState();
+
     const navRef = useRef(null);
     const smallNavRef = useRef(null);
 
+    const logout = () => {
+        deleteCookie('userRole');
+        confirm('Logged out successfully');
+        window.location.reload();
+    }
+
     // TODO: get user role
+    useEffect(() => {
+        setUserRole(getCookie('userRole'));
+    }, [])
+
     useGSAP(() => {
         gsap.set(smallNavRef.current, {
             x: '-100%',
@@ -64,26 +77,26 @@ const Navigation = () => {
                     Restaurants
                 </li>
             </Link>
-            <Link to='/profile'>
+            {userRole === 'CLIENT' && <Link to='/profile'>
                 <li className='text-black mx-6 md:text-md lg:text-lg hover:text-peach-400 hover:scale-110 font-playfair'>
                     User Profile
                 </li>
-            </Link>
-            <Link to='/courrier'>
+            </Link>}
+            {userRole === 'SUPPLIER' && <Link to='/courrier'>
                 <li className='text-black mx-6 md:text-md lg:text-lg hover:text-peach-400 hover:scale-110 font-playfair'>
                     Courrier
                 </li>
-            </Link>
-            <Link to='/employee'>
+            </Link>}
+            {userRole === 'EMPLOYEE' && <Link to='/employee'>
                 <li className='text-black mx-6 md:text-md lg:text-lg hover:text-peach-400 hover:scale-110 font-playfair'>
                     Employee
                 </li>
-            </Link>
-            <Link to='/admin'>
+            </Link>}
+            {userRole === 'ADMIN' && <Link to='/admin'>
                 <li className='text-black mx-6 md:text-md lg:text-lg hover:text-peach-400 hover:scale-110 font-playfair'>
                     Admin Panel
                 </li>
-            </Link>
+            </Link>}
         </ul>
     </div>
 
@@ -93,6 +106,16 @@ const Navigation = () => {
                 Sign In
             </button>
         </Link>
+    </div>
+
+    const signOutButton = <div className='flex items-center h-full md:h-3/4 max-sm:w-[90px] sm:w-[120px] md:w-[181px] lg:w-1/9 mr-4'>
+        <button className='h-full w-full rounded-[3rem] bg-peach-400 
+            text-black max-sm:text-sm lg:text-xl font-playfair font-bold 
+            hover:bg-peach-200 hover:h-[95%] hover:w-[95%]'
+            onClick={logout}
+        >
+            Sign Out
+        </button>
     </div>
 
     return (
@@ -110,7 +133,7 @@ const Navigation = () => {
                     </Link>
                 </div>
                 {navElements}
-                {signInButton}
+                {userRole ? signOutButton : signInButton}
             </nav>
         </div>
         
