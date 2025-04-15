@@ -48,7 +48,7 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Invalid password!");
         }
 
-        LoginResponseDto loginResponseDto = new LoginResponseDto(user.getUsername(), user.getRole().getName());
+        LoginResponseDto loginResponseDto = new LoginResponseDto(user.getId(), user.getRole().getName());
         loginResponseDto.setMessage(SUCCESSFUL_LOGIN_MESSAGE);
 
         return loginResponseDto;
