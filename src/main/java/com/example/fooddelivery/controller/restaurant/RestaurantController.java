@@ -74,6 +74,7 @@ public class RestaurantController {
 
     @GetMapping("/sorted/asc")
     public ResponseEntity<List<RestaurantDto>> getRestaurantsByNameAsc() {
+        System.out.println(restaurantService.getRestaurantsByNameAsc());
         return ResponseEntity.ok(restaurantService.getRestaurantsByNameAsc());
     }
 

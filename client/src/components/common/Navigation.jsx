@@ -8,6 +8,7 @@ import { deleteCookie, getCookie } from '../../util/cookies';
 const Navigation = () => {
     const [isSmall, setIsSmall] = useState(() => false);
     const [userRole, setUserRole] = useState();
+    const [userId, setUserId] = useState();
 
     const navRef = useRef(null);
     const smallNavRef = useRef(null);
@@ -21,6 +22,7 @@ const Navigation = () => {
     // TODO: get user role
     useEffect(() => {
         setUserRole(getCookie('userRole'));
+        setUserId(getCookie('userId'))
     }, [])
 
     useGSAP(() => {
@@ -77,9 +79,14 @@ const Navigation = () => {
                     Restaurants
                 </li>
             </Link>
-            {userRole === 'CLIENT' && <Link to='/profile'>
+            {userRole === 'CLIENT' && <Link to={`/profile/:${userId}`}>
                 <li className='text-black mx-6 md:text-md lg:text-lg hover:text-peach-400 hover:scale-110 font-playfair'>
                     User Profile
+                </li>
+            </Link>}
+            {userRole === 'CLIENT' && <Link to={`/order/:${userId}`}>
+                <li className='text-black mx-6 md:text-md lg:text-lg hover:text-peach-400 hover:scale-110 font-playfair'>
+                    Order
                 </li>
             </Link>}
             {userRole === 'SUPPLIER' && <Link to='/courrier'>
@@ -121,7 +128,7 @@ const Navigation = () => {
     return (
         <div className='max-sm:h-[7%] sm:h-[8%] md:h-[13%] lg:h-[15%]  w-full '>
             {smallNavigation()}
-            <nav className='h-full w-full flex justify-between items-center shadow-md shadow-zinc-800' ref={navRef}>
+            <nav className='h-full w-full bg-ivory flex justify-between items-center shadow-md shadow-zinc-800' ref={navRef}>
                 <div className='h-full w-auto flex justify-around items-center ml-2'>
                     <svg xmlns='http://www.w3.org/2000/svg' fill='none' 
                         viewBox='0 0 24 24' stroke-width='1.5' stroke='currentColor' 

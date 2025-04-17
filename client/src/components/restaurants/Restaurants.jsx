@@ -2,20 +2,47 @@ import Navigation from '../common/Navigation';
 import SearchBar from './SearchBar';
 import CuisinesScroll from './CuisinesScroll';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import RestaurantsSection from './RestaurantsSection';
 import Footer from '../common/Footer';
+import axios from 'axios';
+import { get } from 'react-hook-form';
 
 const Restaurants = () => {
     const [moreIsClicked, setMoreIsClicked] = useState(() => false);
     const [filterData, setFilterData] = useState({elementId: '', value: ''});
     const [filterIsClicked, setFilterIsClicked] = useState({elementId: '', clicked: false});
+    const [sortData, setSortData] = useState({elementId: 'sort-2', value: 'sorted/asc'});
+    const [sortIsClicked, setSortIsClicked] = useState({elementId: 'sort-2', clicked: true});
+    const [restaurants, setRestaurants] = useState([]);
 
     const cuiScrollRef = useRef(null);
     const searchBarRef = useRef(null);
     const restSectionRef = useRef(null);
+
+    // console.log(filterData)
+    // console.log(sortData)
+    console.log(restaurants)
+
+    useEffect(() => {
+        const getSortResults = async () => {
+            try {
+                const response = await axios.get(`http://127.0.0.1:8080/api/restaurants/${sortData.value}`, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                // console.log(response)
+                setRestaurants(response.data);
+            } catch (error) {
+                alert('Could not fetch restaurants')
+            }
+        }
+
+        getSortResults();
+    }, [sortData])
 
     useGSAP(() => {
         gsap.set(cuiScrollRef.current, {
@@ -107,6 +134,32 @@ const Restaurants = () => {
         }
     }
 
+    const handleSortChange = (event) => {
+        const { id } = event.currentTarget;
+        const { value } = event.currentTarget.dataset;
+
+        if (sortData.elementId === id) {
+            setSortData({elementId: '', value: ''});
+            setSortIsClicked({elementId: '', clicked: false})
+        }
+        else {
+            if (sortIsClicked.elementId === '') {
+                setSortIsClicked({elementId: id, clicked: true});
+            }
+            else {
+                setSortIsClicked(prev => {
+                    return {
+                        ...prev,
+                        clicked: false
+                    }
+                });
+                setSortIsClicked({elementId: id, clicked: true});
+            }
+            setSortData({elementId: id, value: value});
+
+        }
+    }
+
     return (
         <div className='h-screen bg-ivory'>
             <Navigation />
@@ -121,6 +174,8 @@ const Restaurants = () => {
                 </div>
                 <div className='w-full inset-0 z-20 sticky' ref={searchBarRef}>
                     <SearchBar 
+                        sortIsClicked={sortIsClicked}
+                        handleSortChange={handleSortChange}
                         filterIsClicked={filterIsClicked}
                         handleFilterChange={handleFilterChange}
                         moreIsClicked={moreIsClicked}

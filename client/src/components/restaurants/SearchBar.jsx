@@ -2,12 +2,10 @@ import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import { useState, useEffect } from 'react';
 
-const SearchBar = ({ filterIsClicked, handleFilterChange, moreIsClicked, handleMoreIsClicked }) => {
+const SearchBar = ({ sortIsClicked, handleSortChange, filterIsClicked, handleFilterChange, moreIsClicked, handleMoreIsClicked }) => {
     const [windowWidth, setWindowWidth] = useState(window.innerWidth) 
 
     const [searchData, setSearchData] = useState(() => '');
-    const [sortData, setSortData] = useState({elementId: '', value: ''});
-    const [sortIsClicked, setSortIsClicked] = useState({elementId: '', clicked: false});
 
     useEffect(() => {
         const handleResize = () => {
@@ -18,31 +16,7 @@ const SearchBar = ({ filterIsClicked, handleFilterChange, moreIsClicked, handleM
         return () => window.removeEventListener('resize', handleResize)
     }, [])
 
-    const handleSortChange = (event) => {
-        const { id } = event.currentTarget;
-        const { value } = event.currentTarget.dataset;
-
-        if (sortData.elementId === id) {
-            setSortData({elementId: '', value: ''});
-            setSortIsClicked({elementId: '', clicked: false})
-        }
-        else {
-            if (sortIsClicked.elementId === '') {
-                setSortIsClicked({elementId: id, clicked: true});
-            }
-            else {
-                setSortIsClicked(prev => {
-                    return {
-                        ...prev,
-                        clicked: false
-                    }
-                });
-                setSortIsClicked({elementId: id, clicked: true});
-            }
-            setSortData({elementId: id, value: value});
-
-        }
-    }
+    
 
     const handleSearchChange = (event) => {
         const {value} = event.target;
@@ -67,7 +41,7 @@ const SearchBar = ({ filterIsClicked, handleFilterChange, moreIsClicked, handleM
 
                     {/* Sort 1 */} 
 
-                    <div id='sort-1' className='flex flex-col justify-between items-center mr-5' onClick={handleSortChange} data-value='rating'>
+                    <div id='sort-1' className='flex flex-col justify-between items-center mr-5' onClick={handleSortChange} data-value='top-rated'>
                         <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' 
                             stroke-width='1.5' stroke='currentColor' 
                             className={`fill-none rounded-full max-sm:size-6 sm:size-7 md:size-8 lg:size-9 max-sm:mb-3 hover:bg-peach-400 ${(sortIsClicked.clicked && sortIsClicked.elementId === 'sort-1') ? 'bg-peach-400' : 'bg-peach-100'}`}   
@@ -81,7 +55,7 @@ const SearchBar = ({ filterIsClicked, handleFilterChange, moreIsClicked, handleM
 
                     {/* Sort 2 */}
 
-                    <div id='sort-2' className='flex flex-col justify-between items-center mr-5' onClick={handleSortChange} data-value='asc'>
+                    <div id='sort-2' className='flex flex-col justify-between items-center mr-5' onClick={handleSortChange} data-value='sorted/asc'>
                         <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' 
                             stroke-width='1.5' stroke='currentColor' 
                             className={`rounded-full max-sm:size-6 sm:size-7 md:size-8 lg:size-9 hover:bg-peach-400 ${(sortIsClicked.clicked && sortIsClicked.elementId === 'sort-2') ? 'bg-peach-400' : 'bg-peach-100'}`}
@@ -95,7 +69,7 @@ const SearchBar = ({ filterIsClicked, handleFilterChange, moreIsClicked, handleM
 
                     {/* Sort 3 */}
 
-                    <div id='sort-3' className='flex flex-col justify-between items-center mr-5' onClick={handleSortChange} data-value='desc'>
+                    <div id='sort-3' className='flex flex-col justify-between items-center mr-5' onClick={handleSortChange} data-value='sorted/desc'>
                         <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' 
                             stroke-width='1.5' stroke='currentColor' 
                             className={`fill-ivory rounded-full max-sm:size-6 sm:size-7 md:size-8 lg:size-9 hover:bg-peach-400 ${(sortIsClicked.clicked && sortIsClicked.elementId === 'sort-3') ? 'bg-peach-400' : 'bg-peach-100'}`}

@@ -157,6 +157,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                 .toList();
     }
 
+    @Transactional
     @Override
     public List<RestaurantDto> getRestaurantsByNameAsc() {
         return restaurantRepository.findAll().stream()
@@ -165,6 +166,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                 .toList();
     }
 
+    @Transactional
     @Override
     public List<RestaurantDto> getRestaurantsByNameDesc() {
         return restaurantRepository.findAll().stream()

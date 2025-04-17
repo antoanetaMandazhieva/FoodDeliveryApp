@@ -1,6 +1,6 @@
 import sushiPlate from '../../assets/images/page_images/sushi_plate.jpg'
 
-const SearchBarMenu = () => {
+const SearchBarMenu = ({ handleCartClick }) => {
     return (
         <section className='max-sm:w-full sm:w-[95%] md:w-[85%] bg-peach-400 rounded-b-4xl max-sm:rounded-tr-4xl rounded-tr-[5rem]
             grid grid-rows-3 grid-cols-3 grid-flow-col gap-x-4 gap-y-3 p-3'
@@ -232,7 +232,11 @@ const SearchBarMenu = () => {
 
                 {/* Cart */}
                 <div className='flex flex-col justify-between items-center pt-2'>
-                    <div className='bg-peach-100 rounded-full max-sm:size-7 sm:size-8 md:size-10 lg:size-12 xl:size-14 flex items-center justify-center'>
+                    <div className='bg-peach-100 rounded-full max-sm:size-7 
+                        sm:size-8 md:size-10 lg:size-12 xl:size-14 
+                        flex items-center justify-center hover:cursor-pointer'
+                        onClick={handleCartClick}
+                    >
                         <svg xmlns='http://www.w3.org/2000/svg' 
                             fill='none' viewBox='0 0 24 24' 
                             stroke-width='1.5' stroke='currentColor' 

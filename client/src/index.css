@@ -25,11 +25,10 @@ html, body {
     @apply overflow-x-hidden;
 }
 
-.form {
-    background-color: gray;
-    background-clip: padding-box;
-    backdrop-filter: blur(8px) saturate(100%) contrast(100%);
-    opacity: 80%; 
+.user-order {
+    @apply flex flex-col justify-around items-center gap-3 m-10 py-4 bg-ivory/5 rounded-4xl 
+    bg-clip-padding backdrop-filter backdrop-blur-2xl border border-ivory shadow-zinc-800 shadow-xl
+    w-full sm:w-[90%] md:w-[80%] h-screen
 }
 
 .form-input {

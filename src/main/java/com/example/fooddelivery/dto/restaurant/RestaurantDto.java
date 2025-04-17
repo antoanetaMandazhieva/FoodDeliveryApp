@@ -2,6 +2,7 @@ package com.example.fooddelivery.dto.restaurant;
 
 import com.example.fooddelivery.dto.address.AddressDto;
 
+import java.math.BigDecimal;
 import java.util.Set;
 
 public class RestaurantDto {
@@ -10,6 +11,7 @@ public class RestaurantDto {
     private String name;
     private AddressDto address;
     private Set<Long> cuisineIds;
+    private BigDecimal averageRating;
 
     public Long getId() {
         return id;
@@ -41,5 +43,13 @@ public class RestaurantDto {
 
     public void setCuisineIds(Set<Long> cuisineIds) {
         this.cuisineIds = cuisineIds;
+    }
+
+    public BigDecimal getAverageRating() {
+        return averageRating;
+    }
+
+    public void setAverageRating(BigDecimal averageRating) {
+        this.averageRating = averageRating;
     }
 }

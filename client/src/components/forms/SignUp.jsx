@@ -32,7 +32,7 @@ const SignUp = () => {
             });
 
             setCookie('userRole', res.data.role, 1);
-            setCookie('username', res.data.username, 1);
+            setCookie('userId', res.data.id, 1);
 
             confirm(res.data.message);
             navigate('/');
