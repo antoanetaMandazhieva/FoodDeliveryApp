@@ -41,12 +41,15 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Override
+    @Transactional
     public RestaurantDto getRestaurantByName(String restaurantName) {
-        return restaurantRepository.findByName(restaurantName).map(restaurantMapper::mapToDto)
+        return restaurantRepository.findByName(restaurantName)
+                .map(restaurantMapper::mapToDto)
                 .orElseThrow(() -> new EntityNotFoundException("Restaurant with this name is not found"));
     }
 
     @Override
+    @Transactional
     public List<ProductDto> getAllAvailableProductsFromRestaurant(String restaurantName) {
         RestaurantDto restaurant = getRestaurantByName(restaurantName);
 
@@ -56,18 +59,17 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Override
+    @Transactional
     public ProductDto getProductFromRestaurantByName(String restaurantName, String productName) {
         Restaurant restaurant = restaurantRepository.findByName(restaurantName)
                 .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
 
-        Product product = productRepository.findByName(productName)
-                .orElseThrow(() -> new EntityNotFoundException("Product not found"));
 
+        Product product = productRepository.findByNameAndRestaurantName(productName, restaurantName)
+                .orElseThrow(() -> new EntityNotFoundException(String.format(
+                        "Product: %s not found in Restaurant: %s", productName, restaurantName
+                )));
 
-        if (!restaurant.getProducts().contains(product)) {
-            throw new IllegalArgumentException(String.format("Restaurant: %s doesn't contain Product: %s",
-                    restaurant.getName(), product.getName()));
-        }
 
         return productMapper.mapToProductDto(product);
     }
@@ -93,8 +95,6 @@ public class RestaurantServiceImpl implements RestaurantService {
         return restaurantMapper.mapToDto(restaurantRepository.save(restaurant));
     }
 
-
-    // TODO Employee should add more products not only one!
     @Transactional
     @Override
     public void addProductToRestaurant(Long employeeId, Long restaurantId, ProductDto productDto) {
@@ -144,6 +144,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Override
+    @Transactional
     public List<RestaurantDto> getRestaurantsByCuisine(Long cuisineId) {
         return restaurantRepository.findAllByCuisineId(cuisineId).stream()
                 .map(restaurantMapper::mapToDto)
@@ -151,14 +152,15 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Override
+    @Transactional
     public List<RestaurantDto> getTopRatedRestaurants() {
         return restaurantRepository.findAllByAverageRatingGreaterThanOrderByAverageRatingDesc(3.5).stream()
                 .map(restaurantMapper::mapToDto)
                 .toList();
     }
 
-    @Transactional
     @Override
+    @Transactional
     public List<RestaurantDto> getRestaurantsByNameAsc() {
         return restaurantRepository.findAll().stream()
                 .sorted(Comparator.comparing(Restaurant::getName))
@@ -166,8 +168,8 @@ public class RestaurantServiceImpl implements RestaurantService {
                 .toList();
     }
 
-    @Transactional
     @Override
+    @Transactional
     public List<RestaurantDto> getRestaurantsByNameDesc() {
         return restaurantRepository.findAll().stream()
                 .sorted(Comparator.comparing(Restaurant::getName).reversed())

@@ -8,6 +8,7 @@ import com.example.fooddelivery.repository.SupplierReviewRepository;
 import com.example.fooddelivery.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -27,20 +28,21 @@ public class SupplierReviewServiceImpl implements SupplierReviewService {
     }
 
     @Override
+    @Transactional
     public SupplierReviewDto addReview(Long clientId, Long supplierId, int rating, String comment) {
-        if (clientId.equals(supplierId)) {
-            throw new IllegalStateException("No permission to review yourself");
-        }
-
-        User client = userRepository.findById(clientId)
-                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
-
         User supplier = userRepository.findById(supplierId)
                 .orElseThrow(() -> new EntityNotFoundException("Supplier not found"));
 
         if (!"SUPPLIER".equals(supplier.getRole().getName())) {
             throw new IllegalStateException("Reviews are only possible for suppliers");
         }
+
+        if (clientId.equals(supplierId)) {
+            throw new IllegalStateException("No permission to review yourself");
+        }
+
+        User client = userRepository.findById(clientId)
+                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
 
         SupplierReview review = new SupplierReview();
         review.setReviewer(client);
@@ -54,6 +56,7 @@ public class SupplierReviewServiceImpl implements SupplierReviewService {
     }
 
     @Override
+    @Transactional
     public List<SupplierReviewDto> getReviewsForSupplier(Long supplierId) {
         return reviewRepository.findBySupplierId(supplierId)
                 .stream()

@@ -1,6 +1,7 @@
 package com.example.fooddelivery.dto.restaurant;
 
 import com.example.fooddelivery.dto.address.AddressDto;
+import com.example.fooddelivery.dto.cuisine.CuisineDto;
 
 import java.math.BigDecimal;
 import java.util.Set;
@@ -10,7 +11,7 @@ public class RestaurantDto {
     private Long id;
     private String name;
     private AddressDto address;
-    private Set<Long> cuisineIds;
+    private Set<CuisineDto> cuisineDtos;
     private BigDecimal averageRating;
 
     public Long getId() {
@@ -37,19 +38,19 @@ public class RestaurantDto {
         this.address = address;
     }
 
-    public Set<Long> getCuisineIds() {
-        return cuisineIds;
-    }
-
-    public void setCuisineIds(Set<Long> cuisineIds) {
-        this.cuisineIds = cuisineIds;
-    }
-
     public BigDecimal getAverageRating() {
         return averageRating;
     }
 
     public void setAverageRating(BigDecimal averageRating) {
         this.averageRating = averageRating;
+    }
+
+    public Set<CuisineDto> getCuisineDtos() {
+        return cuisineDtos;
+    }
+
+    public void setCuisineDtos(Set<CuisineDto> cuisineDtos) {
+        this.cuisineDtos = cuisineDtos;
     }
 }

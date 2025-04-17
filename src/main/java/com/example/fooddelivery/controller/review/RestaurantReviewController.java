@@ -20,6 +20,7 @@ public class RestaurantReviewController {
         this.reviewService = reviewService;
     }
 
+    // Tested!
     @PostMapping("/{restaurantId}/add")
     public ResponseEntity<RestaurantReviewDto> addReview(@PathVariable Long restaurantId,
                                                          @RequestParam Long clientId,
@@ -36,6 +37,7 @@ public class RestaurantReviewController {
         return ResponseEntity.created(location).body(savedReview);
     }
 
+    // Tested!
     @GetMapping("/{restaurantId}")
     public ResponseEntity<List<RestaurantReviewDto>> getReviews(@PathVariable Long restaurantId) {
         return ResponseEntity.ok(reviewService.getReviewsForRestaurant(restaurantId));

@@ -10,6 +10,15 @@ public class RestaurantReviewDto {
     private String comment;
     private LocalDateTime createdAt;
 
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public Long getReviewerId() {
         return reviewerId;
     }
@@ -40,13 +49,5 @@ public class RestaurantReviewDto {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 }

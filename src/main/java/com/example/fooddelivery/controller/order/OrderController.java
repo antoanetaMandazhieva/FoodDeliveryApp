@@ -29,6 +29,7 @@ public class OrderController {
      * @param clientId
      * @return
      */
+    // Tested!
     @PostMapping("/create/{clientId}")
     public ResponseEntity<OrderDto> createOrder(@RequestBody OrderCreateDto dto,
                                                 @PathVariable Long clientId) {
@@ -41,6 +42,7 @@ public class OrderController {
      * @param supplierId
      * @return
      */
+    // Tested!
     @PutMapping("/{orderId}/assign/{supplierId}")
     public ResponseEntity<Void> assignOrder(@PathVariable Long orderId,
                                             @PathVariable Long supplierId) {
@@ -55,6 +57,7 @@ public class OrderController {
      * @param employeeId
      * @return
      */
+    // Tested!
     @PutMapping("/{orderId}/accept")
     public ResponseEntity<String> acceptOrder(@PathVariable Long orderId,
                                               @RequestParam Long employeeId) {

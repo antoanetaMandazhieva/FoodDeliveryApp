@@ -83,6 +83,11 @@ public class OrderServiceImpl implements OrderService {
             Product product = productRepository.findById(productId)
                     .orElseThrow(() -> new EntityNotFoundException("Product not found"));
 
+            if (!restaurant.getProducts().contains(product)) {
+                throw new IllegalArgumentException(String.format("Product: %s is not in Restaurant: %s",
+                        product.getName(), restaurant.getName()));
+            }
+
             if (product.getCategory() == Category.ALCOHOLS) {
                 if (!client.isOver18()) {
                     throw new IllegalArgumentException("You are underage and cannot order alcohol");
@@ -281,6 +286,6 @@ public class OrderServiceImpl implements OrderService {
     private Address getOrderAddress(Address orderAddress) {
         return addressRepository.findByStreetAndCityAndCountry(orderAddress.getStreet(), orderAddress.getCity(),
                                                                orderAddress.getCountry())
-                            .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+                            .orElseThrow(() -> new EntityNotFoundException("Client doesn't have this address"));
     }
 }

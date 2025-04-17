@@ -19,16 +19,19 @@ public class RestaurantController {
         this.restaurantService = restaurantService;
     }
 
+    // Tested!
     @GetMapping("/name/{name}")
     public ResponseEntity<RestaurantDto> getRestaurantByName(@PathVariable String name) {
         return ResponseEntity.ok(restaurantService.getRestaurantByName(name));
     }
 
+    // Tested!
     @GetMapping("/{name}/products")
     public ResponseEntity<List<ProductDto>> getAllAvailableProducts(@PathVariable String name) {
         return ResponseEntity.ok(restaurantService.getAllAvailableProductsFromRestaurant(name));
     }
 
+    // Tested!
     @GetMapping("/{restaurantName}/product/{productName}")
     public ResponseEntity<ProductDto> getProductFromRestaurant(@PathVariable String restaurantName,
                                                                @PathVariable String productName) {
@@ -57,6 +60,7 @@ public class RestaurantController {
         return ResponseEntity.ok().build();
     }
 
+    // Tested!
     @GetMapping("/cuisine/{cuisineId}")
     public ResponseEntity<List<RestaurantDto>> getRestaurantsByCuisine(@PathVariable Long cuisineId) {
         return ResponseEntity.ok(restaurantService.getRestaurantsByCuisine(cuisineId));
@@ -67,17 +71,19 @@ public class RestaurantController {
      * @return All restaurants with average rating > 3.5
      */
 
+    // Tested!
     @GetMapping("/top-rated")
     public List<RestaurantDto> getTopRatedRestaurants() {
         return restaurantService.getTopRatedRestaurants();
     }
 
+    // Tested!
     @GetMapping("/sorted/asc")
     public ResponseEntity<List<RestaurantDto>> getRestaurantsByNameAsc() {
-        System.out.println(restaurantService.getRestaurantsByNameAsc());
         return ResponseEntity.ok(restaurantService.getRestaurantsByNameAsc());
     }
 
+    // Tested!
     @GetMapping("/sorted/desc")
     public ResponseEntity<List<RestaurantDto>> getRestaurantsByNameDesc() {
         return ResponseEntity.ok(restaurantService.getRestaurantsByNameDesc());

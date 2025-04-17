@@ -59,6 +59,7 @@ public class RestaurantReviewServiceImpl implements RestaurantReviewService {
     }
 
     @Override
+    @Transactional
     public List<RestaurantReviewDto> getReviewsForRestaurant(Long restaurantId) {
         return reviewRepository.findByRestaurantId(restaurantId)
                 .stream()
