@@ -3,10 +3,9 @@ package com.example.fooddelivery.config.restaurant;
 import com.example.fooddelivery.config.cuisine.CuisineMapper;
 import com.example.fooddelivery.dto.restaurant.RestaurantCreateDto;
 import com.example.fooddelivery.dto.restaurant.RestaurantDto;
-import com.example.fooddelivery.entity.Cuisine;
-import com.example.fooddelivery.entity.Restaurant;
+import com.example.fooddelivery.entity.cuisine.Cuisine;
+import com.example.fooddelivery.entity.restaurant.Restaurant;
 import org.modelmapper.ModelMapper;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;

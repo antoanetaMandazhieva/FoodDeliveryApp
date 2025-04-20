@@ -1,5 +1,10 @@
-package com.example.fooddelivery.entity;
+package com.example.fooddelivery.entity.restaurant;
 
+import com.example.fooddelivery.entity.order.Order;
+import com.example.fooddelivery.entity.product.Product;
+import com.example.fooddelivery.entity.address.Address;
+import com.example.fooddelivery.entity.cuisine.Cuisine;
+import com.example.fooddelivery.entity.id_mapped_superclass.IdEntity;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;

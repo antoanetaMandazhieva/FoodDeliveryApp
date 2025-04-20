@@ -1,6 +1,6 @@
 package com.example.fooddelivery.repository;
 
-import com.example.fooddelivery.entity.RestaurantReview;
+import com.example.fooddelivery.entity.review.RestaurantReview;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

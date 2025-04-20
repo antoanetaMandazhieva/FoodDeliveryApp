@@ -1,9 +1,11 @@
 package com.example.fooddelivery;
 
 import com.example.fooddelivery.config.address.AddressMapper;
-import com.example.fooddelivery.entity.*;
+import com.example.fooddelivery.entity.address.Address;
+import com.example.fooddelivery.entity.cuisine.Cuisine;
+import com.example.fooddelivery.entity.product.Product;
+import com.example.fooddelivery.entity.restaurant.Restaurant;
 import com.example.fooddelivery.enums.Category;
-import com.example.fooddelivery.enums.Gender;
 import com.example.fooddelivery.repository.*;
 import com.example.fooddelivery.service.auth.AuthService;
 import com.example.fooddelivery.service.order.OrderService;
@@ -15,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.nio.file.AccessDeniedException;
-import java.time.LocalDate;
 import java.util.List;
 
 @Component

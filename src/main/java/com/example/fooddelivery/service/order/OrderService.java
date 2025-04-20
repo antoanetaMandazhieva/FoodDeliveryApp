@@ -3,6 +3,7 @@ package com.example.fooddelivery.service.order;
 import com.example.fooddelivery.dto.order.OrderCreateDto;
 import com.example.fooddelivery.dto.order.OrderDto;
 import com.example.fooddelivery.dto.order.OrderResponseDto;
+import com.example.fooddelivery.dto.order.OrderStatusUpdateDto;
 import com.example.fooddelivery.enums.OrderStatus;
 
 import java.math.BigDecimal;
@@ -13,17 +14,17 @@ public interface OrderService {
 
     OrderDto createOrder(OrderCreateDto orderCreateDto, Long clientId);
 
-    void assignOrderToSupplier(Long orderId, Long supplierId);
+    OrderDto assignOrderToSupplier(Long orderId, Long supplierId);
 
     void acceptOrder(Long orderId, Long employeeId);
 
-    void updateOrderStatus(Long orderId, Long employeeId);
+    OrderStatusUpdateDto updateOrderStatus(Long orderId, Long employeeId);
 
     void takeOrder(Long orderId, Long supplierId);
 
     OrderDto finishOrder(Long orderId, Long supplierId);
 
-    void cancelOrderByClient(Long orderId, Long clientId);
+    OrderDto cancelOrderByClient(Long orderId, Long clientId);
 
     List<OrderResponseDto> getOrdersByClient(Long clientId);
 

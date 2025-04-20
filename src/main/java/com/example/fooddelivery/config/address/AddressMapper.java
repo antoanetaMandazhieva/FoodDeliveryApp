@@ -1,7 +1,7 @@
 package com.example.fooddelivery.config.address;
 
 import com.example.fooddelivery.dto.address.AddressDto;
-import com.example.fooddelivery.entity.Address;
+import com.example.fooddelivery.entity.address.Address;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 

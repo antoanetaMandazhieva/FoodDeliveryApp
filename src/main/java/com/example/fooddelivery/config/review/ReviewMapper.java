@@ -2,8 +2,8 @@ package com.example.fooddelivery.config.review;
 
 import com.example.fooddelivery.dto.review.RestaurantReviewDto;
 import com.example.fooddelivery.dto.review.SupplierReviewDto;
-import com.example.fooddelivery.entity.RestaurantReview;
-import com.example.fooddelivery.entity.SupplierReview;
+import com.example.fooddelivery.entity.review.RestaurantReview;
+import com.example.fooddelivery.entity.review.SupplierReview;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 

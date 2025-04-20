@@ -1,7 +1,7 @@
 package com.example.fooddelivery.config.discount;
 
 import com.example.fooddelivery.dto.discount.DiscountDto;
-import com.example.fooddelivery.entity.Discount;
+import com.example.fooddelivery.entity.discount.Discount;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 

@@ -1,13 +1,15 @@
 package com.example.fooddelivery.service.discount;
 
 import com.example.fooddelivery.config.discount.DiscountMapper;
-import com.example.fooddelivery.entity.Discount;
-import com.example.fooddelivery.entity.User;
+import com.example.fooddelivery.dto.discount.DiscountDto;
+import com.example.fooddelivery.entity.discount.Discount;
+import com.example.fooddelivery.entity.user.User;
 import com.example.fooddelivery.repository.DiscountRepository;
 import com.example.fooddelivery.repository.OrderRepository;
 import com.example.fooddelivery.repository.UserRepository;
 import com.example.fooddelivery.service.user.UserService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 
@@ -34,7 +36,8 @@ public class DiscountServiceImpl implements DiscountService {
 
 
     @Override
-    public BigDecimal checkAndGiveClientDiscount(User client) {
+    @Transactional
+    public Discount checkAndGiveClientDiscount(User client) {
 
         if (!"CLIENT".equals(client.getRole().getName())) {
             throw new IllegalStateException("You cannot have client discount");
@@ -48,18 +51,17 @@ public class DiscountServiceImpl implements DiscountService {
             BigDecimal discountAmount = BigDecimal.valueOf(0.1);
 
             discount.setDiscountAmount(discountAmount);
-            discount.setUser(client);
+            client.addDiscount(discount);
 
-            discountRepository.save(discount);
 
-            return discountAmount;
+            return discountRepository.save(discount);
         }
 
-        return BigDecimal.ZERO;
+        return null;
     }
 
     @Override
-    public BigDecimal checkAndGiveWorkerDiscount(User worker) {
+    public Discount checkAndGiveWorkerDiscount(User worker) {
 
         String role = worker.getRole().getName();
 
@@ -73,11 +75,9 @@ public class DiscountServiceImpl implements DiscountService {
 
         Discount discount = new Discount();
 
-        discount.setUser(worker);
         discount.setDiscountAmount(discountAmount);
+        worker.addDiscount(discount);
 
-        discountRepository.save(discount);
-
-        return discountAmount;
+        return discountRepository.save(discount);
     }
 }

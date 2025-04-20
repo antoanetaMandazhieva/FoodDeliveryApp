@@ -1,8 +1,8 @@
 package com.example.fooddelivery.config.product;
 
 import com.example.fooddelivery.dto.product.ProductDto;
-import com.example.fooddelivery.entity.Cuisine;
-import com.example.fooddelivery.entity.Product;
+import com.example.fooddelivery.entity.cuisine.Cuisine;
+import com.example.fooddelivery.entity.product.Product;
 import com.example.fooddelivery.enums.Category;
 import com.example.fooddelivery.repository.CuisineRepository;
 import jakarta.persistence.EntityNotFoundException;

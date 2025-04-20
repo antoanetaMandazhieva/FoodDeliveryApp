@@ -1,6 +1,6 @@
 package com.example.fooddelivery.repository;
 
-import com.example.fooddelivery.entity.User;
+import com.example.fooddelivery.entity.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

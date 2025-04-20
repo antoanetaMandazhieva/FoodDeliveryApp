@@ -1,5 +1,8 @@
-package com.example.fooddelivery.entity;
+package com.example.fooddelivery.entity.address;
 
+import com.example.fooddelivery.entity.id_mapped_superclass.IdEntity;
+import com.example.fooddelivery.entity.restaurant.Restaurant;
+import com.example.fooddelivery.entity.user.User;
 import jakarta.persistence.*;
 
 @Entity

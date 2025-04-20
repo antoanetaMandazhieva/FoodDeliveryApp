@@ -7,14 +7,14 @@ import java.util.Set;
 public class OrderCreateDto {
 
     private Long restaurantId;
-    private Set<Long> productIds;
+    private Set<OrderProductDto> products;
     private AddressDto address;
 
     public OrderCreateDto() {}
 
-    public OrderCreateDto(Long restaurantId, Set<Long> productIds, AddressDto address) {
+    public OrderCreateDto(Long restaurantId, Set<OrderProductDto> productIds, AddressDto address) {
         this.restaurantId = restaurantId;
-        this.productIds = productIds;
+        this.products = productIds;
         this.address = address;
     }
 
@@ -26,12 +26,12 @@ public class OrderCreateDto {
         this.restaurantId = restaurantId;
     }
 
-    public Set<Long> getProductIds() {
-        return productIds;
+    public Set<OrderProductDto> getProducts() {
+        return products;
     }
 
-    public void setProductIds(Set<Long> productIds) {
-        this.productIds = productIds;
+    public void setProducts(Set<OrderProductDto> productIds) {
+        this.products = productIds;
     }
 
     public AddressDto getAddress() {

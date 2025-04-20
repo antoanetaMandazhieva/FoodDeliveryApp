@@ -1,13 +1,18 @@
-package com.example.fooddelivery.entity;
+package com.example.fooddelivery.entity.order;
 
+import com.example.fooddelivery.entity.discount.Discount;
+import com.example.fooddelivery.entity.ordered_item.OrderedItem;
+import com.example.fooddelivery.entity.product.Product;
+import com.example.fooddelivery.entity.user.User;
+import com.example.fooddelivery.entity.address.Address;
+import com.example.fooddelivery.entity.id_mapped_superclass.IdEntity;
+import com.example.fooddelivery.entity.restaurant.Restaurant;
 import com.example.fooddelivery.enums.OrderStatus;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Entity
 @Table(name = "Orders")
@@ -38,17 +43,16 @@ public class Order extends IdEntity {
     @JoinColumn(name = "address_id", nullable = false)
     private Address address;
 
-    @ManyToMany
-    @JoinTable(
-            name = "ordered_items",
-            joinColumns = @JoinColumn(name = "order_id"),
-            inverseJoinColumns = @JoinColumn(name = "product_id")
-    )
-    private Set<Product> products;
+    @OneToMany(mappedBy = "order", targetEntity = OrderedItem.class, cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<OrderedItem> orderedItems;
+
+    @ManyToOne
+    @JoinColumn(name = "discount")
+    private Discount discount;
 
     public Order () {
         this.totalPrice = BigDecimal.ZERO;
-        this.products = new HashSet<>();
+        this.orderedItems = new HashSet<>();
         this.orderStatus = OrderStatus.PENDING;
     }
 
@@ -81,7 +85,8 @@ public class Order extends IdEntity {
     }
 
     public void calculateTotalPrice(BigDecimal discountAmount) {
-        this.totalPrice = this.products.stream()
+        this.totalPrice = this.orderedItems.stream()
+                .map(OrderedItem::getProduct)
                 .map(Product::getPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
@@ -105,12 +110,13 @@ public class Order extends IdEntity {
         return createdAt;
     }
 
-    public Set<Product> getProducts() {
-        return Collections.unmodifiableSet(this.products);
+    public Set<OrderedItem> getOrderedItems() {
+        return Collections.unmodifiableSet(this.orderedItems);
     }
 
-    public void addProduct(Product product) {
-        this.products.add(product);
+    public void addOrderedItem(Product product, int quantity) {
+        OrderedItem item = new OrderedItem(this, product, quantity);
+        orderedItems.add(item);
     }
 
     public Address getAddress() {
@@ -119,5 +125,13 @@ public class Order extends IdEntity {
 
     public void setAddress(Address address) {
         this.address = address;
+    }
+
+    public Discount getDiscount() {
+        return discount;
+    }
+
+    public void addDiscount(Discount discount) {
+        this.discount = discount;
     }
 }

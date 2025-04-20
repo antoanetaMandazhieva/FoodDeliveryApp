@@ -1,6 +1,6 @@
 package com.example.fooddelivery.repository;
 
-import com.example.fooddelivery.entity.Order;
+import com.example.fooddelivery.entity.order.Order;
 import com.example.fooddelivery.enums.OrderStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

@@ -1,7 +1,7 @@
 package com.example.fooddelivery.config.cuisine;
 
 import com.example.fooddelivery.dto.cuisine.CuisineDto;
-import com.example.fooddelivery.entity.Cuisine;
+import com.example.fooddelivery.entity.cuisine.Cuisine;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 

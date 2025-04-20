@@ -1,8 +1,13 @@
-package com.example.fooddelivery.entity;
+package com.example.fooddelivery.entity.discount;
 
+import com.example.fooddelivery.entity.id_mapped_superclass.IdEntity;
+import com.example.fooddelivery.entity.order.Order;
+import com.example.fooddelivery.entity.user.User;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "Discounts")
@@ -12,10 +17,15 @@ public class Discount extends IdEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @OneToMany(mappedBy = "discount", targetEntity = Order.class)
+    private Set<Order> orders;
+
     @Column(name = "discount_amount", precision = 10, scale = 2, nullable = false)
     private BigDecimal discountAmount;
 
-    public Discount() {}
+    public Discount() {
+        this.orders = new HashSet<>();
+    }
 
     public User getUser() {
         return user;
@@ -25,6 +35,16 @@ public class Discount extends IdEntity {
         this.user = user;
     }
 
+    public Set<Order> getOrders() {
+        return orders;
+    }
+
+    public void addOrder(Order order) {
+        if (order != null && this.orders.add(order)) {
+            order.addDiscount(this);
+        }
+    }
+
     public BigDecimal getDiscountAmount() {
         return discountAmount;
     }
@@ -32,5 +52,4 @@ public class Discount extends IdEntity {
     public void setDiscountAmount(BigDecimal discountAmount) {
         this.discountAmount = discountAmount;
     }
-
 }

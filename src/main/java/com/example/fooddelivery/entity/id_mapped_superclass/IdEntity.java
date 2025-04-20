@@ -1,4 +1,4 @@
-package com.example.fooddelivery.entity;
+package com.example.fooddelivery.entity.id_mapped_superclass;
 
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;

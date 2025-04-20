@@ -1,5 +1,7 @@
-package com.example.fooddelivery.entity;
+package com.example.fooddelivery.entity.role;
 
+import com.example.fooddelivery.entity.user.User;
+import com.example.fooddelivery.entity.id_mapped_superclass.IdEntity;
 import jakarta.persistence.*;
 
 import java.util.Collections;

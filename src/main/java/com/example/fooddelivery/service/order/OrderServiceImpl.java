@@ -2,10 +2,13 @@ package com.example.fooddelivery.service.order;
 
 import com.example.fooddelivery.config.address.AddressMapper;
 import com.example.fooddelivery.config.order.OrderMapper;
-import com.example.fooddelivery.dto.order.OrderCreateDto;
-import com.example.fooddelivery.dto.order.OrderDto;
-import com.example.fooddelivery.dto.order.OrderResponseDto;
-import com.example.fooddelivery.entity.*;
+import com.example.fooddelivery.dto.order.*;
+import com.example.fooddelivery.entity.address.Address;
+import com.example.fooddelivery.entity.discount.Discount;
+import com.example.fooddelivery.entity.order.Order;
+import com.example.fooddelivery.entity.product.Product;
+import com.example.fooddelivery.entity.restaurant.Restaurant;
+import com.example.fooddelivery.entity.user.User;
 import com.example.fooddelivery.enums.Category;
 import com.example.fooddelivery.enums.OrderStatus;
 import com.example.fooddelivery.repository.*;
@@ -54,7 +57,7 @@ public class OrderServiceImpl implements OrderService {
         User client = userRepository.findById(clientId)
                 .orElseThrow(() -> new EntityNotFoundException("Client not found"));
 
-        Address orderAddress = getOrderAddress(addressMapper.mapToAddress(orderCreateDto.getAddress()));
+        Address orderAddress = getOrderAddress(addressMapper.mapToAddress(orderCreateDto.getAddress()), client);
 
         if (!client.getAddresses().contains(orderAddress)) {
             throw new IllegalArgumentException("Client doesn't have this address");
@@ -69,17 +72,16 @@ public class OrderServiceImpl implements OrderService {
         order.setRestaurant(restaurant);
         order.setAddress(orderAddress);
 
-        BigDecimal discountAmount;
 
-        if ("CLIENT".equals(client.getRole().getName())) {
-            discountAmount = discountService.checkAndGiveClientDiscount(client);
-        } else {
-            discountAmount = discountService.checkAndGiveWorkerDiscount(client);
-        }
+        // Мап, който държи Id на продуктите и тяхното количество
+        Map<Long, Integer> productQuantityMap = getProductsAndTheirQuantity(orderCreateDto);
 
 
 
-        for (Long productId : orderCreateDto.getProductIds()) {
+        for (Map.Entry<Long, Integer> entry : productQuantityMap.entrySet()) {
+            Long productId = entry.getKey();
+            int quantity = entry.getValue();
+
             Product product = productRepository.findById(productId)
                     .orElseThrow(() -> new EntityNotFoundException("Product not found"));
 
@@ -94,9 +96,19 @@ public class OrderServiceImpl implements OrderService {
                 }
             }
 
-            order.addProduct(product);
+            order.addOrderedItem(product, quantity);
         }
 
+        Discount discount;
+
+        if ("CLIENT".equals(client.getRole().getName())) {
+            discount = discountService.checkAndGiveClientDiscount(client);
+        } else {
+            discount = discountService.checkAndGiveWorkerDiscount(client);
+        }
+
+
+        BigDecimal discountAmount = (discount != null) ? discount.getDiscountAmount() : BigDecimal.ZERO;
         order.calculateTotalPrice(discountAmount);
 
         order.setOrderStatus(OrderStatus.PENDING);
@@ -106,7 +118,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public void assignOrderToSupplier(Long orderId, Long supplierId) {
+    public OrderDto assignOrderToSupplier(Long orderId, Long supplierId) {
         User supplier = userRepository.findById(supplierId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
@@ -130,6 +142,7 @@ public class OrderServiceImpl implements OrderService {
         order.setSupplier(supplier);
         orderRepository.save(order);
 
+        return orderMapper.mapFromOrderToDto(order);
     }
 
     @Override
@@ -150,7 +163,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public void updateOrderStatus(Long orderId, Long employeeId) {
+    public OrderStatusUpdateDto updateOrderStatus(Long orderId, Long employeeId) {
         User employee = userRepository.findById(employeeId)
                 .orElseThrow(() -> new EntityNotFoundException("Employee not found"));
 
@@ -172,6 +185,12 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderStatus(newStatus);
 
         orderRepository.save(order);
+
+        OrderStatusUpdateDto dto = new OrderStatusUpdateDto();
+        dto.setOrderId(orderId);
+        dto.setNewStatus(String.valueOf(newStatus));
+
+        return dto;
     }
 
     @Override
@@ -186,7 +205,7 @@ public class OrderServiceImpl implements OrderService {
             throw new IllegalArgumentException("Only users with SUPPLIER role can take orders");
         }
 
-        if (order.getSupplier().getId() != supplierId) {
+        if (order.getSupplier() == null || order.getSupplier().getId() != supplierId) {
             throw new IllegalArgumentException("You can't take order which is not for you");
         }
 
@@ -221,7 +240,8 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public void cancelOrderByClient(Long orderId, Long clientId) {
+    @Transactional
+    public OrderDto cancelOrderByClient(Long orderId, Long clientId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Order not found"));
 
@@ -237,6 +257,8 @@ public class OrderServiceImpl implements OrderService {
 
         order.setOrderStatus(OrderStatus.CANCELLED);
         orderRepository.save(order);
+
+        return orderMapper.mapFromOrderToDto(order);
     }
 
 
@@ -283,9 +305,34 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
     }
 
-    private Address getOrderAddress(Address orderAddress) {
-        return addressRepository.findByStreetAndCityAndCountry(orderAddress.getStreet(), orderAddress.getCity(),
-                                                               orderAddress.getCountry())
-                            .orElseThrow(() -> new EntityNotFoundException("Client doesn't have this address"));
+    private Address getOrderAddress(Address orderAddress, User client) {
+        return addressRepository.findByStreetAndCityAndCountryAndUserId(orderAddress.getStreet(), orderAddress.getCity(),
+                                                               orderAddress.getCountry(), client.getId())
+                            .orElseThrow(() -> new EntityNotFoundException(String.format("Client: %s %s doesn't have this address",
+                                    client.getName(), client.getSurname())));
+    }
+
+    private static Map<Long, Integer> getProductsAndTheirQuantity(OrderCreateDto orderCreateDto) {
+        Map<Long, Integer> productQuantityMap = new HashMap<>();
+
+
+        for (OrderProductDto dto : orderCreateDto.getProducts()) {
+            Long productId = dto.getProductId();
+            int quantity = dto.getQuantity();
+
+            if (quantity <= 0) {
+                throw new IllegalArgumentException(String.format("Quantity for product with ID: %d must be greater than 0",
+                        productId));
+            }
+
+
+            /* Коментар:
+            1. Ако липсва продукта с това ID -> Добавя го със стойност 0 и след това му добавя даденото количество
+            2. Ако го има този продукт с това ID -> Прибавя към старото количсетво и прави общ брой
+             */
+            productQuantityMap.putIfAbsent(productId, 0);
+            productQuantityMap.put(productId, productQuantityMap.get(productId) + quantity);
+        }
+        return productQuantityMap;
     }
 }

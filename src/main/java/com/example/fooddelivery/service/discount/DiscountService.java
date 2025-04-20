@@ -1,12 +1,13 @@
 package com.example.fooddelivery.service.discount;
 
-import com.example.fooddelivery.entity.User;
+import com.example.fooddelivery.entity.discount.Discount;
+import com.example.fooddelivery.entity.user.User;
 
 import java.math.BigDecimal;
 
 public interface DiscountService {
 
-    BigDecimal checkAndGiveClientDiscount(User client);
+    Discount checkAndGiveClientDiscount(User client);
 
-    BigDecimal checkAndGiveWorkerDiscount(User worker);
+    Discount checkAndGiveWorkerDiscount(User worker);
 }

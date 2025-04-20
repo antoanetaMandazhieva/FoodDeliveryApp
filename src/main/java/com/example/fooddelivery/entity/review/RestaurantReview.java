@@ -1,5 +1,8 @@
-package com.example.fooddelivery.entity;
+package com.example.fooddelivery.entity.review;
 
+import com.example.fooddelivery.entity.user.User;
+import com.example.fooddelivery.entity.id_mapped_superclass.IdEntity;
+import com.example.fooddelivery.entity.restaurant.Restaurant;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
@@ -8,16 +11,12 @@ import static com.example.fooddelivery.util.Messages.INVALID_RATING;
 
 
 @Entity
-@Table(name = "supplier_reviews")
-public class SupplierReview extends IdEntity {
+@Table(name = "restaurant_reviews")
+public class RestaurantReview extends IdEntity {
 
     @ManyToOne
     @JoinColumn(name = "reviewer_id", nullable = false)
     private User reviewer;
-
-    @ManyToOne
-    @JoinColumn(name = "supplier_id", nullable = false)
-    private User supplier;
 
     @Column(nullable = false)
     private int rating;
@@ -28,7 +27,13 @@ public class SupplierReview extends IdEntity {
     @Column(name = "review_time")
     private LocalDateTime createdAt;
 
-    public SupplierReview() {}
+    @ManyToOne
+    @JoinColumn(name = "restaurant_id", nullable = false)
+    private Restaurant restaurant;
+
+
+    public RestaurantReview() {}
+
 
     public User getReviewer() {
         return reviewer;
@@ -36,14 +41,6 @@ public class SupplierReview extends IdEntity {
 
     public void setReviewer(User reviewer) {
         this.reviewer = reviewer;
-    }
-
-    public User getSupplier() {
-        return supplier;
-    }
-
-    public void setSupplier(User supplier) {
-        this.supplier = supplier;
     }
 
     public int getRating() {
@@ -73,5 +70,13 @@ public class SupplierReview extends IdEntity {
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+    }
+
+    public Restaurant getRestaurant() {
+        return restaurant;
+    }
+
+    public void setRestaurant(Restaurant restaurant) {
+        this.restaurant = restaurant;
     }
 }

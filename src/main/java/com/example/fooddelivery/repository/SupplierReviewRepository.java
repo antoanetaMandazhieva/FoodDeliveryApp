@@ -1,6 +1,6 @@
 package com.example.fooddelivery.repository;
 
-import com.example.fooddelivery.entity.SupplierReview;
+import com.example.fooddelivery.entity.review.SupplierReview;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

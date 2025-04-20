@@ -1,7 +1,5 @@
 package com.example.fooddelivery.dto.order;
 
-import com.example.fooddelivery.dto.product.ProductDto;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -12,10 +10,11 @@ public class OrderDto {
     private String clientName;
     private String restaurantName;
     private String supplierName;
-    private Set<ProductDto> products;
+    private Set<OrderProductDto> products;
     private BigDecimal totalPrice;
     private String orderStatus;
     private LocalDateTime createdAt;
+    private String discount;
 
     public Long getId() {
         return id;
@@ -49,11 +48,11 @@ public class OrderDto {
         this.supplierName = supplierName;
     }
 
-    public Set<ProductDto> getProducts() {
+    public Set<OrderProductDto> getProducts() {
         return products;
     }
 
-    public void setProducts(Set<ProductDto> products) {
+    public void setProducts(Set<OrderProductDto> products) {
         this.products = products;
     }
 
@@ -79,5 +78,13 @@ public class OrderDto {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(String discount) {
+        this.discount = discount;
     }
 }

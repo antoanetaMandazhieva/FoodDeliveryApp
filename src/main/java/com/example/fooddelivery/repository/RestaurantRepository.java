@@ -1,7 +1,6 @@
 package com.example.fooddelivery.repository;
 
-import com.example.fooddelivery.entity.Restaurant;
-import org.springframework.data.domain.Pageable;
+import com.example.fooddelivery.entity.restaurant.Restaurant;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

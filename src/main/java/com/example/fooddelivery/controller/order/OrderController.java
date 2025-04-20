@@ -44,11 +44,9 @@ public class OrderController {
      */
     // Tested!
     @PutMapping("/{orderId}/assign/{supplierId}")
-    public ResponseEntity<Void> assignOrder(@PathVariable Long orderId,
+    public ResponseEntity<OrderDto> assignOrder(@PathVariable Long orderId,
                                             @PathVariable Long supplierId) {
-        orderService.assignOrderToSupplier(orderId, supplierId);
-
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(orderService.assignOrderToSupplier(orderId, supplierId));
     }
 
     /**
@@ -67,15 +65,15 @@ public class OrderController {
 
     /**
      * 4. Обновяване на статус (служител)
-     * @param dto
+     *
      * @param employeeId
      * @return
      */
+    // Tested!
     @PutMapping("/{orderId}/status")
-    public ResponseEntity<Void> updateStatus(@RequestBody OrderStatusUpdateDto dto,
-                                             @RequestParam Long employeeId) {
-        orderService.updateOrderStatus(dto.getOrderId(), employeeId);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<OrderStatusUpdateDto> updateStatus(@PathVariable Long orderId,
+                                               @RequestParam Long employeeId) {
+        return ResponseEntity.ok(orderService.updateOrderStatus(orderId, employeeId));
     }
 
     /**
@@ -84,6 +82,7 @@ public class OrderController {
      * @param supplierId
      * @return
      */
+    // Tested!
     @PutMapping("/{orderId}/take")
     public ResponseEntity<String> takeOrder(@PathVariable Long orderId,
                                             @RequestParam Long supplierId) {
@@ -97,6 +96,7 @@ public class OrderController {
      * @param supplierId
      * @return
      */
+    // Tested!
     @PutMapping("/{orderId}/finish/{supplierId}")
     public ResponseEntity<OrderDto> finishOrder(@PathVariable Long orderId,
                                                 @PathVariable Long supplierId) {
@@ -110,10 +110,9 @@ public class OrderController {
      * @return
      */
     @PutMapping("/{orderId}/cancel/{clientId}")
-    public ResponseEntity<Void> cancelOrder(@PathVariable Long orderId,
+    public ResponseEntity<OrderDto> cancelOrder(@PathVariable Long orderId,
                                             @PathVariable Long clientId) {
-        orderService.cancelOrderByClient(orderId, clientId);
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(orderService.cancelOrderByClient(orderId, clientId));
     }
 
     /**

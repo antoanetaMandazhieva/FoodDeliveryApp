@@ -5,8 +5,10 @@ import java.math.BigDecimal;
 public class DiscountDto {
 
     private Long userId;
+    private String orderId;
     private BigDecimal discountAmount;
     private String role;
+
 
 
 
@@ -16,6 +18,14 @@ public class DiscountDto {
 
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+
+    public String getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(String orderId) {
+        this.orderId = orderId;
     }
 
     public BigDecimal getDiscountAmount() {
@@ -33,4 +43,5 @@ public class DiscountDto {
     public void setRole(String role) {
         this.role = role;
     }
+
 }

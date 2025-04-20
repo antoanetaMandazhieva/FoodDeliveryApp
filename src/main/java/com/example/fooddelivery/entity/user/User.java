@@ -1,5 +1,10 @@
-package com.example.fooddelivery.entity;
+package com.example.fooddelivery.entity.user;
 
+import com.example.fooddelivery.entity.address.Address;
+import com.example.fooddelivery.entity.discount.Discount;
+import com.example.fooddelivery.entity.id_mapped_superclass.IdEntity;
+import com.example.fooddelivery.entity.order.Order;
+import com.example.fooddelivery.entity.role.Role;
 import com.example.fooddelivery.enums.Gender;
 import jakarta.persistence.*;
 import org.mindrot.jbcrypt.BCrypt;
@@ -205,6 +210,12 @@ public class User extends IdEntity {
     public void removeAddress(Address address) {
         this.addresses.remove(address);
         address.setUser(null);
+    }
+
+    public void addDiscount(Discount discount) {
+        if (discount != null && this.discounts.add(discount)) {
+            discount.setUser(this);
+        }
     }
 
     public void addOrder(Order order) {
