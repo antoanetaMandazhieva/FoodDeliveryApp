@@ -86,8 +86,7 @@ public class Order extends IdEntity {
 
     public void calculateTotalPrice(BigDecimal discountAmount) {
         this.totalPrice = this.orderedItems.stream()
-                .map(OrderedItem::getProduct)
-                .map(Product::getPrice)
+                .map(item -> item.getProduct().getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         this.totalPrice = totalPrice.multiply(BigDecimal.ONE.subtract(discountAmount));
@@ -116,7 +115,7 @@ public class Order extends IdEntity {
 
     public void addOrderedItem(Product product, int quantity) {
         OrderedItem item = new OrderedItem(this, product, quantity);
-        orderedItems.add(item);
+        this.orderedItems.add(item);
     }
 
     public Address getAddress() {

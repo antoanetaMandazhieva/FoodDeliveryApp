@@ -109,6 +109,7 @@ public class OrderController {
      * @param clientId
      * @return
      */
+    // Tested!
     @PutMapping("/{orderId}/cancel/{clientId}")
     public ResponseEntity<OrderDto> cancelOrder(@PathVariable Long orderId,
                                             @PathVariable Long clientId) {
@@ -120,6 +121,7 @@ public class OrderController {
      * @param clientId
      * @return
      */
+    // Tested!
     @GetMapping("/client/{clientId}")
     public ResponseEntity<List<OrderResponseDto>> getOrdersByClient(@PathVariable Long clientId) {
         return ResponseEntity.ok(orderService.getOrdersByClient(clientId));
@@ -130,6 +132,7 @@ public class OrderController {
      * @param supplierId
      * @return
      */
+    // Tested!
     @GetMapping("/supplier/{supplierId}")
     public ResponseEntity<List<OrderResponseDto>> getOrdersBySupplier(@PathVariable Long supplierId) {
         return ResponseEntity.ok(orderService.getOrdersBySupplier(supplierId));
@@ -140,6 +143,7 @@ public class OrderController {
      * @param status
      * @return
      */
+    // Tested!
     @GetMapping("/status/{status}")
     public ResponseEntity<List<OrderResponseDto>> getOrdersByStatus(@PathVariable String status) {
         return ResponseEntity.ok(orderService.getOrdersByStatus(OrderStatus.valueOf(status)));
@@ -149,6 +153,7 @@ public class OrderController {
      * 11. Свободни заявки (за доставчици)
      * @return
      */
+    // Tested!
     @GetMapping("/available")
     public ResponseEntity<List<OrderResponseDto>> getAvailableOrders() {
         return ResponseEntity.ok(orderService.getAvailableOrdersForSuppliers());
@@ -158,13 +163,13 @@ public class OrderController {
      * 12. Обща сума за период
      * @param from
      * @param to
-     * @param employeeId
+     * @param adminId
      * @return
      */
     @GetMapping("/revenue")
     public ResponseEntity<BigDecimal> getRevenue(@RequestParam("from") LocalDateTime from,
                                                  @RequestParam("to") LocalDateTime to,
-                                                 @RequestParam("employeeId") Long employeeId) {
-        return ResponseEntity.ok(orderService.getTotalRevenueBetween(from, to, employeeId));
+                                                 @RequestParam("adminId") Long adminId) {
+        return ResponseEntity.ok(orderService.getTotalRevenueBetween(from, to, adminId));
     }
 }

@@ -57,13 +57,16 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
+    // Tested!
     @GetMapping("/orders/client/{username}")
     public ResponseEntity<List<OrderResponseDto>> getOrdersByClientUsername(@PathVariable String username) {
         return ResponseEntity.ok(userService.getOrdersByClientUsername(username));
     }
 
+    // Tested!
     @GetMapping("/orders/supplier/{username}")
-    public ResponseEntity<List<OrderResponseDto>> getOrdersBySupplierName(@PathVariable String username) {
-        return ResponseEntity.ok(userService.getOrdersBySupplierUsername(username));
+    public ResponseEntity<List<OrderResponseDto>> getOrdersBySupplierName(@PathVariable String username,
+                                                                          @RequestParam ("id") Long workerId) {
+        return ResponseEntity.ok(userService.getOrdersBySupplierUsername(username, workerId));
     }
 }

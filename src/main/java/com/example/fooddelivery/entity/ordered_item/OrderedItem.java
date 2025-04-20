@@ -21,15 +21,28 @@ public class OrderedItem {
 
     private int quantity;
 
-    public OrderedItem() {
-        this.id = new OrderedItemId();
-    }
+    public OrderedItem() {}
 
     public OrderedItem(Order order, Product product, int quantity) {
         this.order = order;
         this.product = product;
         this.quantity = quantity;
-        this.id = new OrderedItemId(order.getId(), product.getId());
+        this.id = new OrderedItemId();
+    }
+
+    @PrePersist
+    public void assignCompositeKey() {
+        if (this.id == null) {
+            this.id = new OrderedItemId();
+        }
+
+        if (this.id.getOrderId() == null && order != null && order.getId() != 0) {
+            this.id.setOrderId(order.getId());
+        }
+
+        if (this.id.getProductId() == null && product != null && product.getId() != 0) {
+            this.id.setProductId(product.getId());
+        }
     }
 
     public OrderedItemId getId() {

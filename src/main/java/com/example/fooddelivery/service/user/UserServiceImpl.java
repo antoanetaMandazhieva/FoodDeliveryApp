@@ -141,6 +141,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public List<OrderResponseDto> getOrdersByClientUsername(String clientUsername) {
         User client = userRepository.findByUsername(clientUsername)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
@@ -152,9 +153,21 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<OrderResponseDto> getOrdersBySupplierUsername(String supplierUsername) {
+    @Transactional
+    public List<OrderResponseDto> getOrdersBySupplierUsername(String supplierUsername, Long workerId) {
+        User worker = userRepository.findById(workerId)
+                .orElseThrow(() -> new EntityNotFoundException("Worker not found"));
+
+        String workerRole = worker.getRole().getName();
+
+        if (!workerRole.equals("ADMIN") && !workerRole.equals("EMPLOYEE")) {
+            throw new IllegalStateException("You don't have permission to see orders of supplier");
+        }
+
+
         User supplier = userRepository.findByUsername(supplierUsername)
                 .orElseThrow(() -> new EntityNotFoundException("Supplier not found"));
+
 
         return orderRepository.findBySupplierId(supplier.getId())
                 .stream()

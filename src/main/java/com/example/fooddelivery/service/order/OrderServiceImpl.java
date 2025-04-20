@@ -73,42 +73,28 @@ public class OrderServiceImpl implements OrderService {
         order.setAddress(orderAddress);
 
 
+        // Важно: Нарочно се запазва тук за да имаме валидно id за поръчката което се използва в OrderedItem!
+        orderRepository.save(order);
+
         // Мап, който държи Id на продуктите и тяхното количество
         Map<Long, Integer> productQuantityMap = getProductsAndTheirQuantity(orderCreateDto);
 
+        // Този метод добавя продуктите към поръчката, ако всичко е успено. Ако не хвърля Exception
+        addProductsToOrder(order, restaurant, client, productQuantityMap);
+
+        // Връща отстъпката за конкретния потребител (може и null, ако няма такава)
+        Discount discount = getDiscount(client);
 
 
-        for (Map.Entry<Long, Integer> entry : productQuantityMap.entrySet()) {
-            Long productId = entry.getKey();
-            int quantity = entry.getValue();
+        BigDecimal discountAmount;
 
-            Product product = productRepository.findById(productId)
-                    .orElseThrow(() -> new EntityNotFoundException("Product not found"));
-
-            if (!restaurant.getProducts().contains(product)) {
-                throw new IllegalArgumentException(String.format("Product: %s is not in Restaurant: %s",
-                        product.getName(), restaurant.getName()));
-            }
-
-            if (product.getCategory() == Category.ALCOHOLS) {
-                if (!client.isOver18()) {
-                    throw new IllegalArgumentException("You are underage and cannot order alcohol");
-                }
-            }
-
-            order.addOrderedItem(product, quantity);
-        }
-
-        Discount discount;
-
-        if ("CLIENT".equals(client.getRole().getName())) {
-            discount = discountService.checkAndGiveClientDiscount(client);
+        if (discount != null) {
+            discount.addOrder(order);
+            discountAmount = discount.getDiscountAmount();
         } else {
-            discount = discountService.checkAndGiveWorkerDiscount(client);
+            discountAmount = BigDecimal.ZERO;
         }
 
-
-        BigDecimal discountAmount = (discount != null) ? discount.getDiscountAmount() : BigDecimal.ZERO;
         order.calculateTotalPrice(discountAmount);
 
         order.setOrderStatus(OrderStatus.PENDING);
@@ -263,6 +249,7 @@ public class OrderServiceImpl implements OrderService {
 
 
     @Override
+    @Transactional
     public List<OrderResponseDto> getOrdersByClient(Long clientId) {
         return orderRepository.findByClientId(clientId).stream()
                 .map(orderMapper::toResponseDto)
@@ -270,6 +257,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public List<OrderResponseDto> getOrdersBySupplier(Long supplierId) {
         return orderRepository.findBySupplierId(supplierId).stream()
                 .map(orderMapper::toResponseDto)
@@ -277,6 +265,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public List<OrderResponseDto> getOrdersByStatus(OrderStatus status) {
         return orderRepository.findByOrderStatus(status).stream()
                 .map(orderMapper::toResponseDto)
@@ -284,8 +273,8 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public BigDecimal getTotalRevenueBetween(LocalDateTime start, LocalDateTime end, Long employeeId) {
-        User user = userRepository.findById(employeeId)
+    public BigDecimal getTotalRevenueBetween(LocalDateTime start, LocalDateTime end, Long adminId) {
+        User user = userRepository.findById(adminId)
                 .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
         if (!user.getRole().getName().equals("ADMIN")) {
@@ -298,12 +287,19 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public List<OrderResponseDto> getAvailableOrdersForSuppliers() {
-        return orderRepository.findByOrderStatusAndSupplierIsNull(OrderStatus.ACCEPTED)
+        List<Order> availableOrders = orderRepository.findByOrderStatusAndSupplierIsNull(OrderStatus.PREPARING);
+        availableOrders.addAll(orderRepository.findByOrderStatusAndSupplierIsNull(OrderStatus.ACCEPTED));
+
+        return availableOrders
                 .stream()
                 .map(orderMapper::toResponseDto)
                 .toList();
     }
+
+
+
 
     private Address getOrderAddress(Address orderAddress, User client) {
         return addressRepository.findByStreetAndCityAndCountryAndUserId(orderAddress.getStreet(), orderAddress.getCity(),
@@ -334,5 +330,37 @@ public class OrderServiceImpl implements OrderService {
             productQuantityMap.put(productId, productQuantityMap.get(productId) + quantity);
         }
         return productQuantityMap;
+    }
+
+
+    private void addProductsToOrder(Order order, Restaurant restaurant, User client, Map<Long, Integer> productQuantityMap) {
+        for (Map.Entry<Long, Integer> entry : productQuantityMap.entrySet()) {
+            Long productId = entry.getKey();
+            int quantity = entry.getValue();
+
+            Product product = productRepository.findById(productId)
+                    .orElseThrow(() -> new EntityNotFoundException("Product not found"));
+
+            if (!restaurant.getProducts().contains(product)) {
+                throw new IllegalArgumentException(String.format("Product: %s is not in Restaurant: %s",
+                        product.getName(), restaurant.getName()));
+            }
+
+            if (product.getCategory() == Category.ALCOHOLS) {
+                if (!client.isOver18()) {
+                    throw new IllegalArgumentException("You are underage and cannot order alcohol");
+                }
+            }
+
+            order.addOrderedItem(product, quantity);
+        }
+    }
+
+    private Discount getDiscount(User client) {
+        if ("CLIENT".equals(client.getRole().getName())) {
+            return discountService.checkAndGiveClientDiscount(client);
+        }
+
+        return discountService.checkAndGiveWorkerDiscount(client);
     }
 }

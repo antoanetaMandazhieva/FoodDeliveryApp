@@ -14,6 +14,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -37,9 +39,10 @@ public class OrderMapper {
         orderDto.setRestaurantName(order.getRestaurant().getName());
         orderDto.setSupplierName(order.getSupplier() != null ? order.getSupplier().getUsername() : null);
 
-        Set<OrderProductDto> productDtos = order.getOrderedItems().stream()
+        List<OrderProductDto> productDtos = order.getOrderedItems().stream()
+                .sorted(Comparator.comparing(orderedItem -> orderedItem.getId().getProductId()))
                 .map(orderedItemMapper::mapToProductDto)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
 
         orderDto.setProducts(productDtos);
         orderDto.setOrderStatus(order.getOrderStatus().name());
