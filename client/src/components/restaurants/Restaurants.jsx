@@ -26,23 +26,51 @@ const Restaurants = () => {
     // console.log(sortData)
     console.log(restaurants)
 
+    /*
+    MANY ERRORS WITH FILTER AND SORT DATA
+    */
+
+    const getSortResults = async () => {
+        try {
+            const { data } = await axios.get(`http://127.0.0.1:8080/api/restaurants/${sortData.value}`, {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            setRestaurants(data);
+        } catch (error) {
+            alert('Could not fetch restaurants')
+        }
+    }
+
     useEffect(() => {
-        const getSortResults = async () => {
-            try {
-                const response = await axios.get(`http://127.0.0.1:8080/api/restaurants/${sortData.value}`, {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                });
-                // console.log(response)
-                setRestaurants(response.data);
-            } catch (error) {
-                alert('Could not fetch restaurants')
+        getSortResults();
+    }, [sortData]);
+
+    useEffect(() => {
+        const getFilterData = async () => {
+            if (filterData.elementId && filterData.elementId !== '') {
+                try {
+                    const { data } = await axios.get(`http://localhost:8080/api/restaurants/cuisine/${filterData.elementId}`, {
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                    const dataIds = data.map(restaurant => restaurant.id);
+                    console.log(dataIds)
+                    setRestaurants(prev => prev.filter(restaurant => dataIds.includes(restaurant.id)));
+                } catch (e) {
+                    console.warn(e.message);
+                    alert('Could not fetch restaurants by cuisine')
+                }
+            }
+            else {
+                getSortResults();
             }
         }
 
-        getSortResults();
-    }, [sortData])
+        getFilterData();
+    }, [filterData])
 
     useGSAP(() => {
         gsap.set(cuiScrollRef.current, {
@@ -159,7 +187,7 @@ const Restaurants = () => {
 
         }
     }
-
+    console.log(filterIsClicked)
     return (
         <div className='h-screen bg-ivory'>
             <Navigation />
@@ -183,7 +211,9 @@ const Restaurants = () => {
                     />
                 </div>
                 <div className='w-full inset-0 z-20' ref={restSectionRef}>
-                    <RestaurantsSection />
+                    <RestaurantsSection 
+                        restaurants={restaurants}
+                    />
                 </div>
             </main>
             <Footer />

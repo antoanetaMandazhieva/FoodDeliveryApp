@@ -1,13 +1,15 @@
-import sushiPlate from '../../assets/images/page_images/sushi_plate.jpg'
+import { getRestaurantLogoUrl } from "../../util/getImageURL";
 
-const SearchBarMenu = ({ handleCartClick }) => {
+
+const SearchBarMenu = ({ handleCartClick, restaurantDetails, orderCount }) => {
+    console.log(orderCount)
     return (
         <section className='max-sm:w-full sm:w-[95%] md:w-[85%] bg-peach-400 rounded-b-4xl max-sm:rounded-tr-4xl rounded-tr-[5rem]
             grid grid-rows-3 grid-cols-3 grid-flow-col gap-x-4 gap-y-3 p-3'
         >
             <div className='grid-rows-subgrid grid-cols-subgrid row-span-2 col-span-2'>
-                <img className='h-full w-auto rounded-4xl shadow-zinc-900 shadow-lg' 
-                    src={sushiPlate}
+                <img className='max-sm:h-56 sm:h-80 md:h-[25rem] lg:h-[30rem] w-auto rounded-4xl shadow-zinc-900 shadow-lg' 
+                    src={getRestaurantLogoUrl('restaurant_images', `logo_${restaurantDetails.id}.png`)}
                 />
             </div>
 
@@ -234,7 +236,7 @@ const SearchBarMenu = ({ handleCartClick }) => {
                 <div className='flex flex-col justify-between items-center pt-2'>
                     <div className='bg-peach-100 rounded-full max-sm:size-7 
                         sm:size-8 md:size-10 lg:size-12 xl:size-14 
-                        flex items-center justify-center hover:cursor-pointer'
+                        flex items-center justify-center hover:cursor-pointer relative'
                         onClick={handleCartClick}
                     >
                         <svg xmlns='http://www.w3.org/2000/svg' 
@@ -243,6 +245,9 @@ const SearchBarMenu = ({ handleCartClick }) => {
                             className='size-12'>
                             <path stroke-linecap='round' stroke-linejoin='round' d='M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z' />
                         </svg>
+                        {<h1 className='absolute right-0.5 top-0.5 size-4 bg-teal text-ivory text-[10px] font-quicksand font-bold text-center rounded-full'>
+                            {orderCount}
+                        </h1>}
                     </div>
 
                     <h1 className='text-ivory max-sm:text-xs sm:text-sm md:text-md lg:text-lg xl:text-xl font-quicksand font-bold'>
@@ -252,27 +257,19 @@ const SearchBarMenu = ({ handleCartClick }) => {
             </div>
 
             <div className='h-full w-[80%]'>
-                <h1 className='max-sm:text-lg sm:text-2xl md:text-3xl lg:text-5xl xl:text-7xl text-ivory font-playfair font-bold'>
-                    Buratta Italiana
+                <h1 className='max-sm:text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-ivory font-playfair font-bold'>
+                    {restaurantDetails.name}
                 </h1>
             </div>
 
             <div className='max-sm:hidden flex justify-around items-start'>
-                <div className='bg-ivory opacity-90 p-1 rounded-xl'>
-                    <h2 className='text-xs md:text-sm lg:text-base text-zinc-800 font-bold font-playfair'>
-                        Japanese
-                    </h2>
-                </div>
-                <div className='bg-ivory opacity-90 p-1 rounded-xl'>
-                    <h2 className='text-xs md:text-sm lg:text-base text-zinc-800 font-bold font-playfair'>
-                        Chinese
-                    </h2>
-                </div>
-                <div className='bg-ivory opacity-90 p-1 rounded-xl'>
-                    <h2 className='text-xs md:text-sm lg:text-base text-zinc-800 font-bold font-playfair'>
-                        Thai
-                    </h2>
-                </div>
+                {restaurantDetails.cuisineDtos && restaurantDetails.cuisineDtos.map(cuisine => (
+                    <div className='bg-ivory opacity-90 p-1 rounded-xl'>
+                        <h2 className='text-xs md:text-sm lg:text-base text-zinc-800 font-bold font-playfair'>
+                            {cuisine.name}
+                        </h2>
+                    </div>
+                ))}
             </div>
         </section>
     );

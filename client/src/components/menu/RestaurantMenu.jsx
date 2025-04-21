@@ -3,12 +3,18 @@ import MenuSection from './MenuSection';
 import SearchBarMenu from './SearchBarMenu';
 import OrderMini from '../userOrder/OrderMini';
 import { useState, useEffect, useRef } from 'react';
+import { useParams } from 'react-router-dom';
 import { useGSAP } from '@gsap/react';
 import { getCookie } from '../../util/cookies';
 import gsap from 'gsap';
+import axios from 'axios';
+import { ToastContainer } from 'react-toastify';
 
 const RestaurantMenu = () => {
+    const { restaurantName } = useParams();
+
     const [products, setProducts] = useState([]);
+    const [restaurantDetails, setRestaurantDetails] = useState([]);
     const [order, setOrder] = useState([]);
     const [cartIsClicked, setCartIsClicked] = useState(() => false);
     const [userId, setUserId] = useState();
@@ -71,19 +77,42 @@ const RestaurantMenu = () => {
         }
     }, [cartIsClicked])
 
+    console.log(restaurantDetails)
+    // console.log(products)
     useEffect(() => {
-        // products: [{id: , category: , description: , ...}]
-        // DEMO:
+        const handleProducts = async () => {
+            try {
+                const { data } = await axios.get(`http://localhost:8080/api/restaurants/${restaurantName}/products`, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                setProducts(data);
+            } catch (e) {
+                console.error(e);
+                alert('Could not fetch products');
+            }
+        }
 
-        setProducts([
-            {id: '1', category: 'MAIN', description: 'Classic pasta served in a rich meat sauce with tomatoes, garlic, and basil.', is_available: '1', name: 'Spaghetti Bolognese', price: '14.50', cuisine_id: '1', restaurant_id: '1'},
-            {id: '2', category: 'SALADS', description: 'Thin-crust pizza topped with fresh tomato sauce, basil, and mozzarella.', is_available: '1', name: 'Margherita Pizza', price: '15.00', cuisine_id: '1', restaurant_id: '1'}
-        ]);
+        const handleRestaurantDetails = async () => {
+            try {
+                const { data } = await axios.get(`http://localhost:8080/api/restaurants/name/${restaurantName}`, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                setRestaurantDetails(data);
+            } catch (e) {
+                console.error(e);
+                alert('Could not fetch restaurant details');
+            }
+        }
+
+        handleProducts();
+        handleRestaurantDetails();
 
         setUserId(getCookie('userId'));
     }, []);
-    
-    console.log(userId);
 
     const addToOrder = (id) => {
         const product = products.find(pr => pr.id === id);
@@ -103,7 +132,7 @@ const RestaurantMenu = () => {
     const incrementProductCount = (productId) => {
         setOrder(prevOrder => 
             prevOrder.map(product => 
-                product.id === productId 
+                product.id === productId
                 ? {...product, count: product.count + 1 >= 10 ? 10 : product.count + 1} 
                 : product))
     }
@@ -120,6 +149,7 @@ const RestaurantMenu = () => {
 
     return (
         <div className='h-screen overflow-y-scroll bg-ivory'>
+            <ToastContainer />
             <Navigation />
             <main className='w-full flex-grow bg-ivory'>
                 <div className='w-full inset-0 z-10 absolute' ref={orderMiniRef}>
@@ -135,6 +165,8 @@ const RestaurantMenu = () => {
                 <div className='w-full inset-0 z-20 p-6' ref={searchBarMenuRef}>
                     <SearchBarMenu 
                         handleCartClick={() => setCartIsClicked(prev => !prev)}
+                        restaurantDetails={restaurantDetails}
+                        orderCount={order.length}
                     />
                 </div>
                 <div className='w-full inset-0 z-20 p-6' ref={menuSectionRef}>

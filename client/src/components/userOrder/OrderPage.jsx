@@ -3,64 +3,130 @@ import { useState, useEffect } from 'react';
 import Navigation from '../common/Navigation';
 import CreateBubbles from '../common/CreateBubbles';
 import UserOrderItem from './UserOrderItem';
+import axios from 'axios';
+import { set } from 'react-hook-form';
 
 const OrderPage = () => {
     const { state } = useLocation();
-    const userId = useParams();
-
+    const { userId } = useParams();
+    
     const [order, setOrder] = useState(state);
     const [addresses, setAddresses] = useState([]);
-    const [selectedAddress, setSelectedAddress] = useState();
+    const [selectedAddress, setSelectedAddress] = useState('none');
     const [requestData, setRequestData] = useState({
-        restaurantId: order.length > 0 && order[0].restaurant_id,
-        productIds: order.length > 0 && order.map(product => product.id) 
+        products: order.length > 0 && order.map(product => ({productId: product.id, quantity: product.count})),
     });
-
+    
+    const restaurantName = order[0].restaurantName;
     console.log(requestData)
+    console.log(order)
 
     useEffect(() => {
         // GET USER DETAILS -> GET ADDRESSES
-        setAddresses([
-            {street: 'Dondukov 91 Blvd.', city: 'Sofia Center', postalCode: '1000', country: 'Bulgaria'},
-            {street: 'Pirin 12A street', city: 'Sofia Borovo', postalCode: '1000', country: 'Bulgaria'}
-        ])
+        const handleRestaurantId = async () => {
+            try {
+                const { data } = await axios.get(`http://localhost:8080/api/restaurants/name/${restaurantName}`, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                setRequestData(prev => {
+                    return {
+                        ...prev,
+                        restaurantId: data.id
+                    }
+                });
+            } catch (e) {
+                console.warn(e.message);
+                alert('Could not fetch restaurant id')
+            }
+        }
+
+        const handleUserAddresses = async () => {
+            try {
+                const { data } = await axios.get(`http://localhost:8080/api/users/${userId}`, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                setAddresses(data.addresses);
+            } catch (e) {
+                console.warn(e.message);
+                alert('Could not fetch user addresses');
+            }
+        }
+
+        handleRestaurantId();
+        handleUserAddresses();
     }, []);
 
-    const handleRequest = () => {
-        if (selectedAddress === 'none') {
-            console.warn('Choose an address');
+    const handleRequest = async () => {
+        try {
+            const { data } = await axios.post(`http://localhost:8080/api/orders/create/${userId}`, 
+                requestData, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
+            console.log(data);
+        } catch (e) {
+            console.warn(e.message);
+            alert('Could not post request')
         }
-        else {
-            const address = addresses.find(addr => addr.street === selectedAddress);
+    }
+
+    const handleAddress = (event) => {
+        const addressStreet = event.target.value;
+        setSelectedAddress(addressStreet);
+
+        if (!addressStreet || addressStreet === 'none') {
             setRequestData(prev => {
                 return {
                     ...prev,
-                    address: address
+                    address: 'none'
+                };
+            });
+            alert('Choose an address');
+        }
+        else {
+            const fullAddress = addresses.find(addr => addr.street === addressStreet);
+            setRequestData(prev => {
+                return {
+                    ...prev,
+                    address: fullAddress
                 };
             });
         }
     }
 
     const deleteFromOrder = (id) => {
-        setOrder(prevOrder => prevOrder.filter(prod => prod.id !== id));
+        const updatedOrder = order.filter(prod => prod.id !== id);
+        setOrder(updatedOrder);
+        setRequestData(prev => {
+            return {
+                ...prev,
+                products: updatedOrder.map(product => ({productId: product.id, quantity: product.count}))
+            };
+        });
     }
 
     const incrementProductCount = (productId) => {
-        setOrder(prevOrder => 
-            prevOrder.map(product => 
-                product.id === productId 
-                ? {...product, count: product.count + 1 >= 10 ? 10 : product.count + 1} 
-                : product))
+        const updatedOrder = order.map(product => 
+            product.id === productId 
+            ? {...product, count: product.count + 1 >= 10 ? 10 : product.count + 1} 
+            : product)
+        setOrder(updatedOrder);
+        setRequestData(prev => ({ ...prev, products: updatedOrder.map(product => ({productId: product.id, quantity: product.count}))}))
     }
 
     const decrementProductCount = (productId) => {
-        setOrder(prevOrder => 
-            prevOrder.map(product => 
-                product.id === productId
-                ? {...product, count: product.count - 1 <= 1 ? 1 : product.count - 1 }
-                : product
-            )
-        )
+        const updatedOrder = order.map(product => 
+            product.id === productId 
+            ? {...product, count: product.count - 1 <= 1 ? 1 : product.count - 1} 
+            : product)
+        setOrder(updatedOrder);
+        setRequestData(prev => ({ ...prev, products: updatedOrder.map(product => ({productId: product.id, quantity: product.count}))}))
     }
 
     const calculateOrderTotal = () => {
@@ -118,7 +184,7 @@ const OrderPage = () => {
                         <select 
                             className='bg-ivory text-black text-xl font-quicksand'
                             value={selectedAddress}
-                            onChange={e => setSelectedAddress(e.target.value)}
+                            onChange={e => handleAddress(e)}
                         >
                             <option className='text-peach-400' value='none'>Select Address</option>  
                                 {addresses.map((addr, i) => <option key={i} value={addr.street} className='text-peach-400'>

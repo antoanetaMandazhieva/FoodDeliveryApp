@@ -1,6 +1,5 @@
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
-import sushi_plate from '../../assets/images/page_images/sushi_plate.jpg';
 import heroImg from '../../assets/images/page_images/hero_image_2.avif'
 
 const Hero = () => {

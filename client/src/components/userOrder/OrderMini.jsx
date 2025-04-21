@@ -5,12 +5,6 @@ import UserOrderItem from './UserOrderItem';
 
 const OrderMini = ({ order, incrementCount, decrementCount, handleCartClick, deleteFromOrder, userId }) => {
     console.log(userId)
-    const [state, setState] = useState();
-
-    useEffect(() => {
-        setState({order: order, incrementCount: incrementCount, 
-            decrementCount: decrementCount, deleteFromOrder: deleteFromOrder})
-    }, []);
 
     return (
         <section className='h-screen w-full bg-zinc-900 overflow-y-scroll'>
@@ -33,7 +27,7 @@ const OrderMini = ({ order, incrementCount, decrementCount, handleCartClick, del
                                     productDescription={product.description}
                                     productName={product.name}
                                     productPrice={product.price}
-                                    deleteFromOrder={deleteFromOrder}
+                                    deleteFromOrder={() => deleteFromOrder(product.id)}
                                 />
                                 <div className='h-full w-[40%] md:w-[20%] lg:w-[15%] flex justify-around items-center max-md:mb-3'>
                                     <svg onClick={() => decrementCount(product.id)} xmlns='http://www.w3.org/2000/svg' 

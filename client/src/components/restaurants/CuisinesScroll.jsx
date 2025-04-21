@@ -1,19 +1,33 @@
-import sushiImg from '../../assets/images/page_images/sushi_plate.jpg'
 import lobsterImg from '../../assets/images/page_images/lobster_graphic.png'
 import pizzaImg from '../../assets/images/page_images/pizza_graphic.png'
 import hosomakiImg from '../../assets/images/page_images/hosomaki_graphic.png'
 import heroImg from '../../assets/images/page_images/hero_image_2.avif'
-import { useRef } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import gsap from 'gsap'
 import { useGSAP } from '@gsap/react'
 import { Draggable } from 'gsap/Draggable'
+import { getCuisineImageUrl } from '../../util/getImageURL'
+import axios from 'axios'
 
 // Line 63: take design for dynamic rendering
 
 const CuisinesScroll = ({ filterIsClicked, handleFilterChange, handleMoreIsClicked, ref }) => {
-    const triggerRef = useRef(null)
+    const [cuisines, setCuisines] = useState([]);
 
+    const triggerRef = useRef(null);
     // TODO: RESTfully get full list of cuisines
+    useEffect(() => {
+        const handleCuisines = async () => {
+            const { data } = await axios.get('http://localhost:8080/api/cuisines', {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            setCuisines(data);
+        }
+
+        handleCuisines();
+    }, [])
 
     useGSAP(() => {
         gsap.registerPlugin(Draggable)
@@ -62,37 +76,25 @@ const CuisinesScroll = ({ filterIsClicked, handleFilterChange, handleMoreIsClick
 
             {/* Cuisines container */}
 
-            <div className='min-w-[400vw] flex justify-around items-center'>
-                <div id='filter-big-1' className='h-full flex flex-col justify-between items-center' data-value='japanese'>
-                    <img src={sushiImg} className='size-56 rounded-4xl mb-2'/>
-                    <h1 className='text-2xl text-ivory font-quicksand mb-6'>
-                        Japanese
-                    </h1>
-                    <button className={`w-full h-16 rounded-4xl
-                    hover:bg-zinc-600 text-lg text-black 
-                    font-quicksand font-bold ${(filterIsClicked.clicked && filterIsClicked.elementId === 'filter-big-1') ? 'bg-emerald-500' : 'bg-ivory'}`}
-                    onClick={handleFilterChange}
-                    >
-                        {(filterIsClicked.clicked && filterIsClicked.elementId)
-                            ? 'Selected' : 'Select'
-                        }
-                    </button>
-                </div>
-                <img src={lobsterImg} className='size-56 rounded-4xl'/>
-                <img src={pizzaImg} className='size-56 rounded-4xl'/>
-                <img src={hosomakiImg} className='size-56 rounded-4xl'/>
-                <img src={heroImg} className='size-56 rounded-4xl'/>
-                <img src={sushiImg} className='size-56 rounded-4xl '/>
-                <img src={lobsterImg} className='size-56 rounded-4xl'/>
-                <img src={pizzaImg} className='size-56 rounded-4xl'/>
-                <img src={hosomakiImg} className='size-56 rounded-4xl'/>
-                <img src={heroImg} className='size-56 rounded-4xl'/>
-                <img src={sushiImg} className='size-56 rounded-4xl '/>
-                <img src={lobsterImg} className='size-56 rounded-4xl'/>
-                <img src={pizzaImg} className='size-56 rounded-4xl'/>
-                <img src={hosomakiImg} className='size-56 rounded-4xl'/>
-                <img src={heroImg} className='size-56 rounded-4xl'/>
-                <img src={sushiImg} className='size-56 rounded-4xl '/>
+            <div className='flex justify-around items-center'>
+                {cuisines.map(cui => (
+                    <div id={cui.id} className='h-full flex flex-col justify-between items-center' data-value={cui.name}>
+                        <img src={getCuisineImageUrl('cuisine_images', `cuisine_${cui.id}.jpg`)} className='max-sm:size-14 sm:size-20 md:size-36 lg:size-48 rounded-4xl mb-2'/>
+                        <h1 className='max-sm:text-sm sm:text-md md:text-xl lg:text-2xl text-ivory font-quicksand mb-6'>
+                            {cui.name}
+                        </h1>
+                        <button className={`w-full max-sm:h-5 sm:h-6 md:h-12 lg:h-16 rounded-4xl
+                        hover:bg-zinc-600 max-sm:text-md sm:text-lg text-black 
+                        font-quicksand font-bold ${(filterIsClicked.clicked && filterIsClicked.elementId == cui.id) ? 'bg-emerald-500' : 'bg-ivory'}`}
+                        onClick={handleFilterChange}
+                        disabled={filterIsClicked.clicked && filterIsClicked.elementId != cui.id}
+                        >
+                            {(filterIsClicked.clicked && filterIsClicked.elementId == cui.id)
+                                ? 'Selected' : 'Select'
+                            }
+                        </button>
+                    </div>
+                ))}
             </div> 
         </section>
     );

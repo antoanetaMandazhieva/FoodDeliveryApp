@@ -84,11 +84,11 @@ const Navigation = () => {
                     User Profile
                 </li>
             </Link>}
-            {userRole === 'CLIENT' && <Link to={`/order/:${userId}`}>
+            {/* {userRole === 'CLIENT' && <Link to={`/order/:${userId}`}>
                 <li className='text-black mx-6 md:text-md lg:text-lg hover:text-peach-400 hover:scale-110 font-playfair'>
                     Order
                 </li>
-            </Link>}
+            </Link>} */}
             {userRole === 'SUPPLIER' && <Link to='/courrier'>
                 <li className='text-black mx-6 md:text-md lg:text-lg hover:text-peach-400 hover:scale-110 font-playfair'>
                     Courrier

@@ -10,6 +10,7 @@ import SignUp from './components/forms/SignUp.jsx'
 import SignIn from './components/forms/SignIn.jsx'
 import OrderPage from './components/userOrder/OrderPage.jsx'
 import ProfilePage from './userProfile/ProfilePage.jsx'
+import { ToastContainer } from 'react-toastify'
 
 const router = createBrowserRouter([{
     path: '/',
@@ -18,7 +19,7 @@ const router = createBrowserRouter([{
     path: '/restaurants',
     element: <Restaurants />
 }, {
-    path: '/restaurants/:restaurantId',
+    path: '/restaurants/:restaurantName',
     element: <RestaurantMenu />
 }, {
     path: '/signup',

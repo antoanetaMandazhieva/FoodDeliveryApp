@@ -41,7 +41,7 @@ const SearchBar = ({ sortIsClicked, handleSortChange, filterIsClicked, handleFil
 
                     {/* Sort 1 */} 
 
-                    <div id='sort-1' className='flex flex-col justify-between items-center mr-5' onClick={handleSortChange} data-value='top-rated'>
+                    <button id='sort-1' className='flex flex-col justify-between items-center mr-5' onClick={handleSortChange} disabled={filterIsClicked.clicked} data-value='top-rated'>
                         <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' 
                             stroke-width='1.5' stroke='currentColor' 
                             className={`fill-none rounded-full max-sm:size-6 sm:size-7 md:size-8 lg:size-9 max-sm:mb-3 hover:bg-peach-400 ${(sortIsClicked.clicked && sortIsClicked.elementId === 'sort-1') ? 'bg-peach-400' : 'bg-peach-100'}`}   
@@ -51,11 +51,11 @@ const SearchBar = ({ sortIsClicked, handleSortChange, filterIsClicked, handleFil
                         <h2 className='max-sm:text-sm sm:text-sm lg:text-md font-quicksand'>
                             Rating
                         </h2>
-                    </div>
+                    </button>
 
                     {/* Sort 2 */}
 
-                    <div id='sort-2' className='flex flex-col justify-between items-center mr-5' onClick={handleSortChange} data-value='sorted/asc'>
+                    <button id='sort-2' className='flex flex-col justify-between items-center mr-5' onClick={handleSortChange} disabled={filterIsClicked.clicked} data-value='sorted/asc'>
                         <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' 
                             stroke-width='1.5' stroke='currentColor' 
                             className={`rounded-full max-sm:size-6 sm:size-7 md:size-8 lg:size-9 hover:bg-peach-400 ${(sortIsClicked.clicked && sortIsClicked.elementId === 'sort-2') ? 'bg-peach-400' : 'bg-peach-100'}`}
@@ -65,11 +65,11 @@ const SearchBar = ({ sortIsClicked, handleSortChange, filterIsClicked, handleFil
                         <h2 className='max-sm:text-xs sm:text-sm lg:text-md font-quicksand'>
                             A-Z Asc
                         </h2>
-                    </div>
+                    </button>
 
                     {/* Sort 3 */}
 
-                    <div id='sort-3' className='flex flex-col justify-between items-center mr-5' onClick={handleSortChange} data-value='sorted/desc'>
+                    <button id='sort-3' className='flex flex-col justify-between items-center mr-5' onClick={handleSortChange} disabled={filterIsClicked.clicked} data-value='sorted/desc'>
                         <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' 
                             stroke-width='1.5' stroke='currentColor' 
                             className={`fill-ivory rounded-full max-sm:size-6 sm:size-7 md:size-8 lg:size-9 hover:bg-peach-400 ${(sortIsClicked.clicked && sortIsClicked.elementId === 'sort-3') ? 'bg-peach-400' : 'bg-peach-100'}`}
@@ -79,7 +79,7 @@ const SearchBar = ({ sortIsClicked, handleSortChange, filterIsClicked, handleFil
                         <h2 className='max-sm:text-xs sm:text-sm lg:text-md font-quicksand'>
                             A-Z Desc
                         </h2>
-                    </div>
+                    </button>
                 </div>
             </div>
 
@@ -107,9 +107,9 @@ const SearchBar = ({ sortIsClicked, handleSortChange, filterIsClicked, handleFil
 
                     {/* Filter 1 */}
 
-                    <div id='filter-1' className='flex flex-col justify-between items-center pt-3' onClick={handleFilterChange} data-value='japanese'>
+                    <button id='4' className='flex flex-col justify-between items-center pt-3' onClick={handleFilterChange} disabled={filterIsClicked.elementId !== '4' && filterIsClicked.clicked} data-value='japanese'>
                         <svg
-                            className={`fill-black rounded-full max-sm:size-6 sm:size-7 md:size-8 lg:size-9 max-sm:mb-3 hover:bg-peach-400 ${(filterIsClicked.clicked && filterIsClicked.elementId === 'filter-1') ? 'bg-peach-400' : 'bg-peach-100'}`}
+                            className={`fill-black rounded-full max-sm:size-6 sm:size-7 md:size-8 lg:size-9 max-sm:mb-3 hover:bg-peach-400 ${(filterIsClicked.clicked && filterIsClicked.elementId === '4') ? 'bg-peach-400' : 'bg-peach-100'}`}
                             version='1.1'
                             xmlns='http://www.w3.org/2000/svg'
                             xmlnsXlink='http://www.w3.org/1999/xlink'
@@ -133,12 +133,12 @@ const SearchBar = ({ sortIsClicked, handleSortChange, filterIsClicked, handleFil
                         <h2 className='max-sm:text-sm sm:text-sm lg:text-md font-quicksand'>
                             Japanese
                         </h2>
-                    </div>
+                    </button>
 
                     {/* Filter 2 */}
 
-                    <div id='filter-2' className='flex flex-col justify-between items-center pt-3' onClick={handleFilterChange} data-value='italian'>
-                        <svg className={`fill-none rounded-full max-sm:size-6 sm:size-7 md:size-8 lg:size-9 max-sm:mb-3 hover:bg-peach-400 ${(filterIsClicked.clicked && filterIsClicked.elementId === 'filter-2') ? 'bg-peach-400' : 'bg-peach-100'}`}
+                    <button id='1' className='flex flex-col justify-between items-center pt-3' onClick={handleFilterChange} disabled={filterIsClicked.elementId !== '1' && filterIsClicked.clicked} data-value='italian'>
+                        <svg className={`fill-none rounded-full max-sm:size-6 sm:size-7 md:size-8 lg:size-9 max-sm:mb-3 hover:bg-peach-400 ${(filterIsClicked.clicked && filterIsClicked.elementId === '1') ? 'bg-peach-400' : 'bg-peach-100'}`}
                             viewBox='0 -0.5 25 25'
                             xmlns='http://www.w3.org/2000/svg'>
                             <path fill-rule='evenodd' clip-rule='evenodd' d='M18.284 10.459C19.3566 12.615 19.7406 15.0485 19.384 17.43L16.86 17.53L5.5 18L11.576 8.182L12.926 6C15.1365 6.88592 17.0113 8.44622 18.284 10.459Z' stroke='#000000' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/>
@@ -153,13 +153,13 @@ const SearchBar = ({ sortIsClicked, handleSortChange, filterIsClicked, handleFil
                         <h2 className='max-sm:text-sm sm:text-sm lg:text-md font-quicksand'>
                             Italian
                         </h2>
-                    </div>
+                    </button>
 
                     {/* Filter 3 */}
 
-                    <div id='filter-3' className='flex flex-col justify-between items-center pt-3' onClick={handleFilterChange} data-value='seafood'>
+                    <button id='12' className='flex flex-col justify-between items-center pt-3' onClick={handleFilterChange} disabled={filterIsClicked.elementId !== '12' && filterIsClicked.clicked} data-value='seafood'>
                         <svg 
-                            className={`fill-black rounded-full max-sm:size-6 sm:size-7 md:size-8 lg:size-9 max-sm:mb-3 hover:bg-peach-400 ${(filterIsClicked.clicked && filterIsClicked.elementId === 'filter-3') ? 'bg-peach-400' : 'bg-peach-100'}`}
+                            className={`fill-black rounded-full max-sm:size-6 sm:size-7 md:size-8 lg:size-9 max-sm:mb-3 hover:bg-peach-400 ${(filterIsClicked.clicked && filterIsClicked.elementId === '12') ? 'bg-peach-400' : 'bg-peach-100'}`}
                             version='1.1' id='Layer_1' 
                             xmlns='http://www.w3.org/2000/svg' 
                             xmlns:xlink='http://www.w3.org/1999/xlink' 
@@ -234,7 +234,7 @@ const SearchBar = ({ sortIsClicked, handleSortChange, filterIsClicked, handleFil
                         <h2 className='max-sm:text-sm sm:text-sm lg:text-md font-quicksand'>
                             Seafood
                         </h2>
-                    </div>
+                    </button>
 
                     {/* Filter 4 */}
 

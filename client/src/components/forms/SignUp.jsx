@@ -44,8 +44,7 @@ const SignUp = () => {
 
     return (
         <div className='min-h-screen w-full flex justify-center p-5 bg-ivory relative overflow-hidden'>
-            <form className='min-h-[80%] w-[80%] form p-6 rounded-4xl
-                flex flex-col justify-between items-center' onSubmit={handleSubmit(onSubmit)}>
+            <form className='user-order' onSubmit={handleSubmit(onSubmit)}>
 
                 <input className='form-input' type='text' placeholder='Name' {
                     ...register('name', {

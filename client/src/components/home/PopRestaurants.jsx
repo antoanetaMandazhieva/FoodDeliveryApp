@@ -1,12 +1,29 @@
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+import { getRestaurantLogoUrl } from '../../util/getImageURL';
 
 const PopRestaurants = () => {
+    const [restaurants, setRestaurants] = useState([]);
+
+    useEffect(() => {
+        const handleRestaurants = async () => {
+            const { data } = await axios.get('http://localhost:8080/api/restaurants/sorted/asc', {
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            setRestaurants(data.splice(0, 6));
+        }
+        handleRestaurants();
+    }, []);
+
     useGSAP(() => {
         gsap.registerPlugin(ScrollTrigger); 
 
-        gsap.fromTo('.item', {
+        gsap.fromTo('#pop-rest-bottom', {
             x: -80,
             y: 80,
             opacity: 0
@@ -22,7 +39,7 @@ const PopRestaurants = () => {
                 start: 'top top'
             }
         })
-    }, [])
+    }, []);
 
     return (
         <section className='w-full bg-ivory mt-0 max-md:pb-14 md:pb-20 lg:pb-28 xl:pb-32'>
@@ -41,26 +58,15 @@ const PopRestaurants = () => {
 
             {/* bottom */}
 
-            <div id='pop-rest-bottom' className='h-full grid grid-rows-2 grid-cols-3 gap-x-4 gap-y-10 px-4'>
-                {/* placeholders */}
-                <svg className='aspect-406/251 item' viewBox='0 0 406 251' fill='none' xmlns='http://www.w3.org/2000/svg'>
-                    <rect width='406' height='251' rx='56' fill='#D9D9D9'/>
-                </svg>
-                <svg className='aspect-406/251 item' viewBox='0 0 406 251' fill='none' xmlns='http://www.w3.org/2000/svg'>
-                    <rect width='406' height='251' rx='56' fill='#D9D9D9'/>
-                </svg>
-                <svg className='aspect-406/251 item' viewBox='0 0 406 251' fill='none' xmlns='http://www.w3.org/2000/svg'>
-                    <rect width='406' height='251' rx='56' fill='#D9D9D9'/>
-                </svg>
-                <svg className='aspect-406/251 item' viewBox='0 0 406 251' fill='none' xmlns='http://www.w3.org/2000/svg'>
-                    <rect width='406' height='251' rx='56' fill='#D9D9D9'/>
-                </svg>
-                <svg className='aspect-406/251 item' viewBox='0 0 406 251' fill='none' xmlns='http://www.w3.org/2000/svg'>
-                    <rect width='406' height='251' rx='56' fill='#D9D9D9'/>
-                </svg>
-                <svg className='aspect-406/251 item' viewBox='0 0 406 251' fill='none' xmlns='http://www.w3.org/2000/svg'>
-                    <rect width='406' height='251' rx='56' fill='#D9D9D9'/>
-                </svg>
+            <div id='pop-rest-bottom' className='grid grid-rows-2 grid-cols-3 gap-x-4 gap-y-10 px-4'>
+                {restaurants.map(restaurant => (
+                    <div key={restaurant.id} className='aspect-406/251 item'>
+                        <img 
+                            src={getRestaurantLogoUrl('restaurant_images', `logo_${restaurant.id}.png`)}
+                            className='h-[251px] w-[406px] rounded-4xl item'
+                        />
+                    </div>
+                ))}
             </div>
         </section>
 

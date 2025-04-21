@@ -19,7 +19,7 @@ const Jobs = () => {
             ease: 'power2.inOut',
             scrollTrigger: {
                 trigger: '#jobs-top',
-                start: 'top-=400 top'
+                start: 'top top'
             }
         })
     }, []);

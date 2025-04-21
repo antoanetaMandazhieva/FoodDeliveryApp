@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 
 public class ProductDto {
 
+
+    private Long id;
     private String name;
     private BigDecimal price;
     private String description;
@@ -11,6 +13,14 @@ public class ProductDto {
     private boolean isAvailable;
     private String cuisineName;
     private String restaurantName;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;
