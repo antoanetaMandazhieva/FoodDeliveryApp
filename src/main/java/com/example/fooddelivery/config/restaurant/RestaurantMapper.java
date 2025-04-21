@@ -1,6 +1,7 @@
 package com.example.fooddelivery.config.restaurant;
 
 import com.example.fooddelivery.config.cuisine.CuisineMapper;
+import com.example.fooddelivery.config.product.ProductMapper;
 import com.example.fooddelivery.dto.restaurant.RestaurantCreateDto;
 import com.example.fooddelivery.dto.restaurant.RestaurantDto;
 import com.example.fooddelivery.entity.cuisine.Cuisine;
@@ -16,10 +17,12 @@ public class RestaurantMapper {
 
     private final ModelMapper mapper;
     private final CuisineMapper cuisineMapper;
+    private final ProductMapper productMapper;
 
-    public RestaurantMapper(ModelMapper mapper, CuisineMapper cuisineMapper) {
+    public RestaurantMapper(ModelMapper mapper, CuisineMapper cuisineMapper, ProductMapper productMapper) {
         this.mapper = mapper;
         this.cuisineMapper = cuisineMapper;
+        this.productMapper = productMapper;
     }
 
     public Restaurant mapToEntity(RestaurantCreateDto dto, Set<Cuisine> cuisines) {
@@ -38,6 +41,12 @@ public class RestaurantMapper {
         restaurantDto.setCuisineDtos(
                 restaurant.getCuisines().stream()
                         .map(cuisineMapper::mapToDto)
+                        .collect(Collectors.toSet())
+        );
+
+        restaurantDto.setProducts(
+                restaurant.getProducts().stream()
+                        .map(productMapper::mapToProductDto)
                         .collect(Collectors.toSet())
         );
 

@@ -38,26 +38,27 @@ public class RestaurantController {
         return ResponseEntity.ok(restaurantService.getProductFromRestaurantByName(restaurantName, productName));
     }
 
+    // Tested!
     @PostMapping("/create/{employeeId}")
     public ResponseEntity<RestaurantDto> createRestaurant(@PathVariable Long employeeId,
                                                           @RequestBody RestaurantCreateDto dto) {
         return ResponseEntity.ok(restaurantService.createRestaurant(dto, employeeId));
     }
 
+    // Tested!
     @PostMapping("/{restaurantId}/products/add")
-    public ResponseEntity<Void> addProductToRestaurant(@PathVariable Long restaurantId,
-                                                       @RequestParam Long employeeId,
-                                                       @RequestBody ProductDto productDto) {
-        restaurantService.addProductToRestaurant(employeeId, restaurantId, productDto);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<RestaurantDto> addProductsToRestaurant(@PathVariable Long restaurantId,
+                                                                 @RequestParam Long employeeId,
+                                                                 @RequestBody List<ProductDto> productDtos) {
+        return ResponseEntity.ok(restaurantService.addProductsToRestaurant(employeeId, restaurantId, productDtos));
     }
 
+    // Tested!
     @PutMapping("/{restaurantId}/remove-product/{productId}/by/{employeeId}")
-    public ResponseEntity<Void> removeProductFromRestaurant(@PathVariable Long restaurantId,
-                                                            @PathVariable Long productId,
-                                                            @PathVariable Long employeeId) {
-        restaurantService.removeProductFromRestaurant(employeeId, restaurantId, productId);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<RestaurantDto> removeProductFromRestaurant(@PathVariable Long restaurantId,
+                                                                     @PathVariable Long productId,
+                                                                     @PathVariable Long employeeId) {
+        return ResponseEntity.ok(restaurantService.removeProductFromRestaurant(employeeId, restaurantId, productId));
     }
 
     // Tested!
@@ -67,7 +68,6 @@ public class RestaurantController {
     }
 
     /**
-     *
      * @return All restaurants with average rating > 3.5
      */
 

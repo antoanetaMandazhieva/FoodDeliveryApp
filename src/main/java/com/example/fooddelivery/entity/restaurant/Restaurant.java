@@ -19,17 +19,17 @@ public class Restaurant extends IdEntity {
     @Column(name = "name", length = 50, nullable = false)
     private String name;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "address_id", nullable = false)
     private Address address;
 
     @Column(name = "average_rating", precision = 2, scale = 1)
     private BigDecimal averageRating = BigDecimal.ZERO;
 
-    @OneToMany(mappedBy = "restaurant", targetEntity = Order.class, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "restaurant", targetEntity = Order.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private Set<Order> orders;
 
-    @OneToMany(mappedBy = "restaurant", targetEntity = Product.class, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "restaurant", targetEntity = Product.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private Set<Product> products;
 
     @ManyToMany(mappedBy = "restaurants", targetEntity = Cuisine.class, cascade = {CascadeType.PERSIST, CascadeType.MERGE})

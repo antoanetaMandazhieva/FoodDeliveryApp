@@ -37,9 +37,9 @@ public class ProductMapper {
     public Product mapToProduct(ProductDto productDto) {
         Product product = new Product();
 
-        product.setName(product.getName());
-        product.setPrice(product.getPrice());
-        product.setDescription(product.getDescription());
+        product.setName(productDto.getName());
+        product.setPrice(productDto.getPrice());
+        product.setDescription(productDto.getDescription());
         product.setCategory(Category.valueOf(productDto.getCategory()));
 
         Cuisine cuisine = cuisineRepository.findByName(productDto.getCuisineName())

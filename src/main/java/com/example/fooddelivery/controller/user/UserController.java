@@ -49,12 +49,13 @@ public class UserController {
 
     // Tested!
     @PutMapping("/{adminId}/change-role/{userId}")
-    public ResponseEntity<Void> changeUserRole(@PathVariable Long adminId,
+    public ResponseEntity<String> changeUserRole(@PathVariable Long adminId,
                                                @PathVariable Long userId,
                                                @RequestParam String role) throws AccessDeniedException {
         userService.changeUserRole(adminId, userId, role);
 
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(String.format("Successfully changed role for User with ID: %d\n" +
+                "New role: %s", userId, role.toUpperCase()));
     }
 
     // Tested!

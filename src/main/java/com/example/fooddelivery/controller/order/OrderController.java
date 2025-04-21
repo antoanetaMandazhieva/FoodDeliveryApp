@@ -6,6 +6,7 @@ import com.example.fooddelivery.dto.order.OrderResponseDto;
 import com.example.fooddelivery.dto.order.OrderStatusUpdateDto;
 import com.example.fooddelivery.enums.OrderStatus;
 import com.example.fooddelivery.service.order.OrderService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -166,10 +167,12 @@ public class OrderController {
      * @param adminId
      * @return
      */
+    // Tested!
     @GetMapping("/revenue")
-    public ResponseEntity<BigDecimal> getRevenue(@RequestParam("from") LocalDateTime from,
-                                                 @RequestParam("to") LocalDateTime to,
-                                                 @RequestParam("adminId") Long adminId) {
+    public ResponseEntity<BigDecimal> getRevenue(
+            @RequestParam("from") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
+            @RequestParam("to") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to,
+            @RequestParam("adminId") Long adminId) {
         return ResponseEntity.ok(orderService.getTotalRevenueBetween(from, to, adminId));
     }
 }
