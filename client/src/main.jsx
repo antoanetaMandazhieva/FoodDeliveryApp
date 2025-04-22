@@ -9,8 +9,11 @@ import RestaurantMenu from './components/menu/RestaurantMenu.jsx'
 import SignUp from './components/forms/SignUp.jsx'
 import SignIn from './components/forms/SignIn.jsx'
 import OrderPage from './components/userOrder/OrderPage.jsx'
-import ProfilePage from './userProfile/ProfilePage.jsx'
-import { ToastContainer } from 'react-toastify'
+import ProfilePage from './components/userProfile/ProfilePage.jsx'
+import RestaurantReviewForm from './components/forms/RestaurantReviewForm.jsx'
+import SupplierReviewForm from './components/forms/SupplierReviewForm.jsx'
+import UserOrdersHistory from './components/userProfile/UserOrdersHistory.jsx'
+
 
 const router = createBrowserRouter([{
     path: '/',
@@ -33,6 +36,15 @@ const router = createBrowserRouter([{
 }, {
     path: '/profile/:userId',
     element: <ProfilePage />
+}, {
+    path: '/profile/:userId/restaurant-review',
+    element: <RestaurantReviewForm />
+}, {
+    path: '/profile/:userId/supplier-review',
+    element: <SupplierReviewForm />
+}, {
+    path: '/profile/:userId/orders',
+    element: <UserOrdersHistory />
 }])
 
 createRoot(document.getElementById('root')).render(
