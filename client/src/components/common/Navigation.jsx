@@ -1,27 +1,22 @@
 import { useGSAP } from '@gsap/react';
 import main_logo_ivory from '../../assets/images/page_images/main_logo_ivory.png';
 import { useState, useEffect, useRef } from 'react';   
-import { Link, useNavigate } from 'react-router-dom';  
+import { Link } from 'react-router-dom';  
 import gsap from 'gsap'; 
 import { deleteCookie, getCookie } from '../../util/cookies';
 
 const Navigation = () => {
     const [isSmall, setIsSmall] = useState(() => false);
-    const [userRole, setUserRole] = useState(null);
-    const [userId, setUserId] = useState(null);
+    const [userRole, setUserRole] = useState();
+    const [userId, setUserId] = useState();
 
     const navRef = useRef(null);
     const smallNavRef = useRef(null);
 
-    const navigate = useNavigate();
-
     const logout = () => {
-        deleteCookie('userId');
         deleteCookie('userRole');
-        setUserId(null);
-        setUserRole(null);
         confirm('Logged out successfully');
-        navigate('/');
+        window.location.reload();
     }
 
     // TODO: get user role
@@ -79,12 +74,12 @@ const Navigation = () => {
     // TODO: set the rest of the links
     const navElements = <div className={`${isSmall && 'inline-block'}`}>
         <ul className={`${isSmall ? 'max-sm:block' : 'max-md:hidden'} flex items-center justify-evenly h-full mx-2 min-w-[60%]`}>
-            {userId && <Link to='/restaurants'>
+            <Link to='/restaurants'>
                 <li className='text-black mx-6 md:text-md lg:text-lg hover:text-peach-400 hover:scale-110 font-playfair'>
                     Restaurants
                 </li>
-            </Link>}
-            {userId && <Link to={`/profile/${userId}`}>
+            </Link>
+            {userRole === 'CLIENT' && <Link to={`/profile/:${userId}`}>
                 <li className='text-black mx-6 md:text-md lg:text-lg hover:text-peach-400 hover:scale-110 font-playfair'>
                     User Profile
                 </li>

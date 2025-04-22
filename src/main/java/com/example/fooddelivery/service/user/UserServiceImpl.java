@@ -83,8 +83,13 @@ public class UserServiceImpl implements UserService {
 
 
         for (Address addressFromDto : addressesFromDto) {
-            if (!user.getAddresses().contains(addressFromDto)) {
-                user.addAddress(addressFromDto);
+            for (Address addressFromUserEntity : user.getAddresses()) {
+
+                if (!addressFromDto.getStreet().equals(addressFromUserEntity.getStreet()) &&
+                    !addressFromDto.getCity().equals(addressFromUserEntity.getStreet())) {
+
+                    user.addAddress(addressFromDto);
+                }
             }
         }
 

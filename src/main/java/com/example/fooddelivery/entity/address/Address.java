@@ -5,8 +5,6 @@ import com.example.fooddelivery.entity.restaurant.Restaurant;
 import com.example.fooddelivery.entity.user.User;
 import jakarta.persistence.*;
 
-import java.util.Objects;
-
 @Entity
 @Table(name = "Addresses")
 public class Address extends IdEntity {
@@ -99,21 +97,5 @@ public class Address extends IdEntity {
             this.restaurant.setAddress(null);
             this.restaurant = null;
         }
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Address address = (Address) o;
-        return Objects.equals(this.street, address.getStreet()) &&
-                Objects.equals(this.city, address.getCity()) &&
-                Objects.equals(this.postalCode, address.getPostalCode()) &&
-                Objects.equals(this.country, address.getCountry());
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(street, city, postalCode, country);
     }
 }
