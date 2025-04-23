@@ -4,9 +4,11 @@ import com.example.fooddelivery.config.address.AddressMapper;
 import com.example.fooddelivery.config.order.OrderMapper;
 import com.example.fooddelivery.config.user.UserMapper;
 import com.example.fooddelivery.dto.address.AddressDto;
+import com.example.fooddelivery.dto.order.OrderResponseDto;
 import com.example.fooddelivery.dto.user.UserDto;
 import com.example.fooddelivery.dto.user.UserProfileDto;
 import com.example.fooddelivery.entity.address.Address;
+import com.example.fooddelivery.entity.order.Order;
 import com.example.fooddelivery.entity.role.Role;
 import com.example.fooddelivery.entity.user.User;
 import com.example.fooddelivery.enums.Gender;
@@ -20,7 +22,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.modelmapper.ModelMapper;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
+import java.nio.file.AccessDeniedException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -110,13 +114,11 @@ class UserServiceImplTest {
 
     @Test
     void getUserById_shouldThrowException_whenUserNotFound() {
-        // Arrange
         setUpWithMockMappers();
         Long userId = 99L;
 
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
-        // Act & Assert
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
                 () -> userService.getUserById(userId));
 
@@ -142,10 +144,8 @@ class UserServiceImplTest {
 
         when(userRepository.findAll()).thenReturn(List.of(user1, user2));
 
-        // Act
         List<UserDto> result = userService.getAllUsers();
 
-        // Assert
         assertEquals(2, result.size());
         assertEquals("user1", result.get(0).getUsername());
         assertEquals("USER", result.get(0).getRole());
@@ -156,7 +156,7 @@ class UserServiceImplTest {
     }
     @Test
     void updateUser_shouldUpdateFieldsAndAddNewAddress() {
-        setUpWithMockMappers(); // <-- Използва mock мапъри
+        setUpWithMockMappers();
 
         Long userId = 1L;
         AddressDto addressDto = new AddressDto();
@@ -235,7 +235,6 @@ class UserServiceImplTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
         when(userRepository.findByUsername("takenUsername")).thenReturn(Optional.of(otherUser));
 
-        // When / Then
         IllegalArgumentException ex = assertThrows(
                 IllegalArgumentException.class,
                 () -> userService.updateUser(userId, dto)
@@ -279,12 +278,221 @@ class UserServiceImplTest {
         when(addressMapper.mapToAddress(any())).thenReturn(sameAddress);
         when(userMapper.mapToUserProfileDto(any())).thenReturn(dto);
 
-        // When
         UserProfileDto result = userService.updateUser(userId, dto);
 
-        // Then
         assertEquals(1, user.getAddresses().size());
         verify(userRepository).save(user);
         assertEquals(dto, result);
+    }
+    @Test
+    void deleteUser_shouldDetachRelationsAndDeleteUser() {
+        setUpWithMockMappers();
+
+        Long userId = 1L;
+        User user = mock(User.class); // mock-ваме User, за да проверим detachAllRelations
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+
+        userService.deleteUser(userId);
+
+        verify(userRepository).findById(userId);
+        verify(user).detachAllRelations();
+        verify(userRepository).delete(user);
+    }
+    @Test
+    void deleteUser_shouldThrowException_whenUserNotFound() {
+        setUpWithMockMappers();
+        Long userId = 99L;
+
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
+
+        EntityNotFoundException ex = assertThrows(
+                EntityNotFoundException.class,
+                () -> userService.deleteUser(userId)
+        );
+
+        assertEquals("User not found", ex.getMessage());
+        verify(userRepository).findById(userId);
+        verify(userRepository, never()).delete(any());
+    }
+    @Test
+    void changeUserRole_shouldChangeUserRole_whenAdminRequests() throws Exception{
+        setUpWithMockMappers();
+
+        Long adminId = 1L;
+        Long userId = 2L;
+        String newRoleName = "MODERATOR";
+
+        Role adminRole = new Role();
+        adminRole.setName("ADMIN");
+
+        User admin = new User();
+        admin.setRole(adminRole);
+
+        Role oldRole = spy(new Role());
+        User user = new User();
+        user.setRole(oldRole);
+
+        Role newRole = spy(new Role());
+
+        when(userRepository.findById(adminId)).thenReturn(Optional.of(admin));
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(roleRepository.findByName("MODERATOR")).thenReturn(Optional.of(newRole));
+
+        userService.changeUserRole(adminId, userId, newRoleName);
+
+        verify(oldRole).removeUser(user);
+        verify(newRole).addUser(user);
+        verify(userRepository).save(user);
+    }
+    @Test
+    void changeUserRole_shouldThrow_whenRequesterIsNotAdmin() {
+        setUpWithMockMappers();
+
+        Long adminId = 1L;
+        Long userId = 2L;
+
+        Role userRole = new Role();
+        userRole.setName("USER");
+
+        User requester = new User();
+        requester.setRole(userRole);
+
+        when(userRepository.findById(adminId)).thenReturn(Optional.of(requester));
+
+        AccessDeniedException ex = assertThrows(
+                AccessDeniedException.class,
+                () -> userService.changeUserRole(adminId, userId, "ADMIN")
+        );
+
+        assertEquals("Only admins can change roles", ex.getMessage());
+        verify(userRepository, never()).save(any());
+    }
+    @Test
+    void changeUserRole_shouldThrow_whenNewRoleIsInvalid() {
+        setUpWithMockMappers();
+
+        Long adminId = 1L;
+        Long userId = 2L;
+
+        Role adminRole = new Role();
+        adminRole.setName("ADMIN");
+
+        User admin = new User();
+        admin.setRole(adminRole);
+
+        User user = new User();
+        user.setRole(new Role());
+
+        when(userRepository.findById(adminId)).thenReturn(Optional.of(admin));
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+        when(roleRepository.findByName("UNKNOWN")).thenReturn(Optional.empty());
+
+        IllegalArgumentException ex = assertThrows(
+                IllegalArgumentException.class,
+                () -> userService.changeUserRole(adminId, userId, "UNKNOWN")
+        );
+
+        assertEquals("Invalid role", ex.getMessage());
+        verify(userRepository, never()).save(any());
+    }
+    @Test
+    void getUserIdFromUsername_shouldReturnUserId_whenUserExists() {
+        setUpWithMockMappers();
+        String username = "testUser";
+        Long expectedId = 42L;
+
+        User user = new User();
+        user.setUsername(username);
+        ReflectionTestUtils.setField(user, "id", expectedId);
+
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
+
+        Long result = userService.getUserIdFromUsername(username);
+
+        assertEquals(expectedId, result);
+        verify(userRepository).findByUsername(username);
+    }
+    @Test
+    void getOrdersByClientUsername_shouldReturnMappedDtos_whenClientExists() {
+        setUpWithMockMappers();
+        String username = "clientUser";
+        Long userId = 1L;
+
+        User client = new User();
+        client.setUsername(username);
+        ReflectionTestUtils.setField(client, "id", userId);
+
+        OrderResponseDto dto = new OrderResponseDto();
+        Order order = new Order();
+
+        when(userRepository.findByUsername(username)).thenReturn(Optional.of(client));
+        when(orderRepository.findByClientId(userId)).thenReturn(List.of(order));
+        when(orderMapper.toResponseDto(order)).thenReturn(dto);
+
+        List<OrderResponseDto> result = userService.getOrdersByClientUsername(username);
+
+        assertEquals(1, result.size());
+        assertEquals(dto, result.get(0));
+        verify(userRepository).findByUsername(username);
+        verify(orderRepository).findByClientId(userId);
+        verify(orderMapper).toResponseDto(order);
+    }
+    @Test
+    void getOrdersBySupplierUsername_shouldReturnDtos_whenWorkerAuthorized() {
+        setUpWithMockMappers();
+        String supplierUsername = "supplier";
+        Long workerId = 10L;
+        Long supplierId = 20L;
+
+        User worker = new User();
+        Role workerRole = new Role();
+        workerRole.setName("ADMIN");
+        worker.setRole(workerRole);
+        ReflectionTestUtils.setField(worker, "id", workerId);
+
+        User supplier = new User();
+        supplier.setUsername(supplierUsername);
+        ReflectionTestUtils.setField(supplier, "id", supplierId);
+
+        Order order = new Order();
+        OrderResponseDto dto = new OrderResponseDto();
+
+        when(userRepository.findById(workerId)).thenReturn(Optional.of(worker));
+        when(userRepository.findByUsername(supplierUsername)).thenReturn(Optional.of(supplier));
+        when(orderRepository.findBySupplierId(supplierId)).thenReturn(List.of(order));
+        when(orderMapper.toResponseDto(order)).thenReturn(dto);
+
+        List<OrderResponseDto> result = userService.getOrdersBySupplierUsername(supplierUsername, workerId);
+
+        assertEquals(1, result.size());
+        assertEquals(dto, result.get(0));
+        verify(userRepository).findById(workerId);
+        verify(userRepository).findByUsername(supplierUsername);
+        verify(orderRepository).findBySupplierId(supplierId);
+        verify(orderMapper).toResponseDto(order);
+    }
+
+    @Test
+    void getOrdersBySupplierUsername_shouldThrow_whenSupplierNotFound() {
+        setUpWithMockMappers();
+        Long workerId = 1L;
+        String supplierUsername = "missingSupplier";
+
+        User worker = new User();
+        Role role = new Role();
+        role.setName("EMPLOYEE");
+        worker.setRole(role);
+        ReflectionTestUtils.setField(worker, "id", workerId);
+
+        when(userRepository.findById(workerId)).thenReturn(Optional.of(worker));
+        when(userRepository.findByUsername(supplierUsername)).thenReturn(Optional.empty());
+
+        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
+                () -> userService.getOrdersBySupplierUsername(supplierUsername, workerId));
+
+        assertEquals("Supplier not found", ex.getMessage());
+        verify(userRepository).findById(workerId);
+        verify(userRepository).findByUsername(supplierUsername);
     }
 }
