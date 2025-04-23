@@ -83,13 +83,8 @@ public class UserServiceImpl implements UserService {
 
 
         for (Address addressFromDto : addressesFromDto) {
-            for (Address addressFromUserEntity : user.getAddresses()) {
-
-                if (!addressFromDto.getStreet().equals(addressFromUserEntity.getStreet()) &&
-                    !addressFromDto.getCity().equals(addressFromUserEntity.getStreet())) {
-
-                    user.addAddress(addressFromDto);
-                }
+            if (!user.getAddresses().contains(addressFromDto)) {
+                user.addAddress(addressFromDto);
             }
         }
 
@@ -174,6 +169,18 @@ public class UserServiceImpl implements UserService {
                 .map(orderMapper::toResponseDto)
                 .toList();
     }
+
+    public Long getSupplierIdByUsername(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        if (!"SUPPLIER".equals(user.getRole().getName())) {
+            throw new IllegalArgumentException("User don't have SUPPLIER role");
+        }
+
+        return user.getId();
+    }
+
 
     private void validateUsernameEmailAndPhoneNumber(User user, UserProfileDto dto) {
         if (!dto.getUsername().equals(user.getUsername()) && userRepository.findByUsername(dto.getUsername()).isPresent()) {

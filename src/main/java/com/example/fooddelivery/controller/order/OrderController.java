@@ -146,8 +146,9 @@ public class OrderController {
      */
     // Tested!
     @GetMapping("/status/{status}")
-    public ResponseEntity<List<OrderResponseDto>> getOrdersByStatus(@PathVariable String status) {
-        return ResponseEntity.ok(orderService.getOrdersByStatus(OrderStatus.valueOf(status)));
+    public ResponseEntity<List<OrderResponseDto>> getOrdersByStatus(@PathVariable String status,
+                                                                    @PathVariable Long employeeId) {
+        return ResponseEntity.ok(orderService.getOrdersByStatus(OrderStatus.valueOf(status), employeeId));
     }
 
     /**
@@ -156,8 +157,8 @@ public class OrderController {
      */
     // Tested!
     @GetMapping("/available")
-    public ResponseEntity<List<OrderResponseDto>> getAvailableOrders() {
-        return ResponseEntity.ok(orderService.getAvailableOrdersForSuppliers());
+    public ResponseEntity<List<OrderResponseDto>> getAvailableOrders(@PathVariable Long supplierId) {
+        return ResponseEntity.ok(orderService.getAvailableOrdersForSuppliers(supplierId));
     }
 
     /**

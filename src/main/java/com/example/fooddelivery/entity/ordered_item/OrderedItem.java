@@ -4,6 +4,8 @@ import com.example.fooddelivery.entity.order.Order;
 import com.example.fooddelivery.entity.product.Product;
 import jakarta.persistence.*;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "ordered_items")
 public class OrderedItem {
@@ -75,5 +77,9 @@ public class OrderedItem {
 
     public void setQuantity(int quantity) {
         this.quantity = quantity;
+    }
+
+    public BigDecimal calculateTotalPrice() {
+        return this.product.getPrice().multiply(BigDecimal.valueOf(this.quantity));
     }
 }

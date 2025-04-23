@@ -14,6 +14,7 @@ import com.example.fooddelivery.enums.OrderStatus;
 import com.example.fooddelivery.repository.*;
 import com.example.fooddelivery.service.discount.DiscountService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.OptimisticLockException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -105,78 +106,90 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderDto assignOrderToSupplier(Long orderId, Long supplierId) {
-        User supplier = userRepository.findById(supplierId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        try {
+            User supplier = userRepository.findById(supplierId)
+                    .orElseThrow(() -> new EntityNotFoundException("User not found"));
 
-        if (!"SUPPLIER".equals(supplier.getRole().getName())) {
-            throw new IllegalArgumentException("Only users with SUPPLIER role can take orders");
+            if (!"SUPPLIER".equals(supplier.getRole().getName())) {
+                throw new IllegalArgumentException("Only users with SUPPLIER role can take orders");
+            }
+
+            Order order = orderRepository.findById(orderId)
+                    .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+
+            if (order.getSupplier() != null) {
+                throw new IllegalStateException("Order already has a supplier");
+            }
+
+            OrderStatus status = order.getOrderStatus();
+            if ((status != OrderStatus.ACCEPTED) && (status != OrderStatus.PREPARING)) {
+                throw new IllegalStateException("Order cannot be taken");
+            }
+
+            order.setSupplier(supplier);
+            orderRepository.save(order);
+
+            return orderMapper.mapFromOrderToDto(order);
+
+        } catch (OptimisticLockException e) {
+            throw new IllegalStateException("Order was taken by another supplier", e);
         }
-
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
-
-        OrderStatus status = order.getOrderStatus();
-
-        if ((status != OrderStatus.ACCEPTED) && (status != OrderStatus.PREPARING)) {
-            throw new IllegalStateException("Order cannot be taken");
-        }
-
-        if (order.getSupplier() != null) {
-            throw new IllegalStateException("Order already has a supplier");
-        }
-
-        order.setSupplier(supplier);
-        orderRepository.save(order);
-
-        return orderMapper.mapFromOrderToDto(order);
     }
 
     @Override
+    @Transactional
     public void acceptOrder(Long orderId, Long employeeId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+        try {
+            Order order = orderRepository.findById(orderId)
+                    .orElseThrow(() -> new EntityNotFoundException("Order not found"));
 
-        User employee = userRepository.findById(employeeId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+            User user = getUser(employeeId);
 
-        if (!"EMPLOYEE".equals(employee.getRole().getName())) {
-            throw new IllegalStateException("Only employees can accept orders");
+            String message = "Only EMPLOYEES can accept order";
+            validateIfIsEmployee(user, message);
+
+
+            order.setOrderStatus(OrderStatus.ACCEPTED);
+            orderRepository.save(order);
+
+        } catch (OptimisticLockException e) {
+            throw new IllegalStateException("Order was modified by another employee. Please try again.", e);
         }
-
-        order.setOrderStatus(OrderStatus.ACCEPTED);
-        orderRepository.save(order);
     }
 
     @Override
     @Transactional
     public OrderStatusUpdateDto updateOrderStatus(Long orderId, Long employeeId) {
-        User employee = userRepository.findById(employeeId)
-                .orElseThrow(() -> new EntityNotFoundException("Employee not found"));
+        try {
+            User employee = userRepository.findById(employeeId)
+                    .orElseThrow(() -> new EntityNotFoundException("Employee not found"));
 
-        if (!"EMPLOYEE".equals(employee.getRole().getName())) {
-            throw new IllegalStateException("Only employees can update order statuses");
+            if (!"EMPLOYEE".equals(employee.getRole().getName())) {
+                throw new IllegalStateException("Only employees can update order statuses");
+            }
+
+            Order order = orderRepository.findById(orderId)
+                    .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+
+            OrderStatus currentStatus = order.getOrderStatus();
+
+            if (currentStatus != OrderStatus.ACCEPTED) {
+                throw new IllegalStateException("You cannot change status currently");
+            }
+
+            order.setOrderStatus(OrderStatus.PREPARING);
+
+            orderRepository.save(order);
+
+            OrderStatusUpdateDto dto = new OrderStatusUpdateDto();
+            dto.setOrderId(orderId);
+            dto.setNewStatus(String.valueOf(OrderStatus.PREPARING));
+
+            return dto;
+
+        } catch (OptimisticLockException e) {
+            throw new IllegalStateException("Order was modified concurrently. Try again.", e);
         }
-
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
-
-        OrderStatus currentStatus = order.getOrderStatus();
-
-        OrderStatus newStatus = switch (currentStatus) {
-            case PENDING -> OrderStatus.ACCEPTED;
-            case ACCEPTED -> OrderStatus.PREPARING;
-            default -> throw new IllegalStateException("You cannot change status currently.");
-        };
-
-        order.setOrderStatus(newStatus);
-
-        orderRepository.save(order);
-
-        OrderStatusUpdateDto dto = new OrderStatusUpdateDto();
-        dto.setOrderId(orderId);
-        dto.setNewStatus(String.valueOf(newStatus));
-
-        return dto;
     }
 
     @Override
@@ -266,7 +279,13 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public List<OrderResponseDto> getOrdersByStatus(OrderStatus status) {
+    public List<OrderResponseDto> getOrdersByStatus(OrderStatus status, Long employeeId) {
+        User employee = getUser(employeeId);
+
+        String message = "Only EMPLOYEES can see all orders with given status";
+        validateIfIsEmployee(employee, message);
+
+
         return orderRepository.findByOrderStatus(status).stream()
                 .map(orderMapper::toResponseDto)
                 .toList();
@@ -274,10 +293,12 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public BigDecimal getTotalRevenueBetween(LocalDateTime start, LocalDateTime end, Long adminId) {
-        User user = userRepository.findById(adminId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        User admin = getUser(adminId);
 
-        if (!user.getRole().getName().equals("ADMIN")) {
+        String message = "Only ADMINS can see total revenue between dates";
+        validateIfIsAdmin(admin, message);
+
+        if (!admin.getRole().getName().equals("ADMIN")) {
             throw new RuntimeException("Access denied: Only admins can view revenue");
         }
 
@@ -288,7 +309,13 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public List<OrderResponseDto> getAvailableOrdersForSuppliers() {
+    public List<OrderResponseDto> getAvailableOrdersForSuppliers(Long supplierId) {
+        User user = getUser(supplierId);
+
+        String message = "You need SUPPLIER role to see available orders";
+        validateIfIsSupplier(user, message);
+
+
         List<Order> availableOrders = orderRepository.findByOrderStatusAndSupplierIsNull(OrderStatus.PREPARING);
         availableOrders.addAll(orderRepository.findByOrderStatusAndSupplierIsNull(OrderStatus.ACCEPTED));
 
@@ -297,9 +324,6 @@ public class OrderServiceImpl implements OrderService {
                 .map(orderMapper::toResponseDto)
                 .toList();
     }
-
-
-
 
     private Address getOrderAddress(Address orderAddress, User client) {
         return addressRepository.findByStreetAndCityAndCountryAndUserId(orderAddress.getStreet(), orderAddress.getCity(),
@@ -362,5 +386,28 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return discountService.checkAndGiveWorkerDiscount(client);
+    }
+
+    private User getUser(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+    }
+
+    private void validateIfIsSupplier(User user, String message) {
+        if (!"SUPPLIER".equals(user.getRole().getName())) {
+            throw new IllegalStateException(message);
+        }
+    }
+
+    private void validateIfIsEmployee(User user, String message) {
+        if (!"EMPLOYEE".equals(user.getRole().getName())) {
+            throw new IllegalStateException(message);
+        }
+    }
+
+    private void validateIfIsAdmin(User user, String message) {
+        if (!"ADMIN".equals(user.getRole().getName())) {
+            throw new IllegalStateException(message);
+        }
     }
 }

@@ -30,9 +30,9 @@ public interface OrderService {
 
     List<OrderResponseDto> getOrdersBySupplier(Long supplierId);
 
-    List<OrderResponseDto> getOrdersByStatus(OrderStatus status);
+    List<OrderResponseDto> getOrdersByStatus(OrderStatus status, Long employeeId);
 
     BigDecimal getTotalRevenueBetween(LocalDateTime start, LocalDateTime end, Long employeeId);
 
-    List<OrderResponseDto> getAvailableOrdersForSuppliers();
+    List<OrderResponseDto> getAvailableOrdersForSuppliers(Long supplierId);
 }

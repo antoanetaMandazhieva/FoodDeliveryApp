@@ -25,7 +25,6 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     private final RestaurantRepository restaurantRepository;
     private final ProductRepository productRepository;
-    private final AddressRepository addressRepository;
     private final CuisineRepository cuisineRepository;
     private final UserRepository userRepository;
     private final RestaurantMapper restaurantMapper;
@@ -34,7 +33,6 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     public RestaurantServiceImpl(RestaurantRepository restaurantRepository,
                                  ProductRepository productRepository,
-                                 AddressRepository addressRepository,
                                  CuisineRepository cuisineRepository,
                                  UserRepository userRepository,
                                  RestaurantMapper restaurantMapper,
@@ -42,7 +40,6 @@ public class RestaurantServiceImpl implements RestaurantService {
                                  AddressMapper addressMapper) {
         this.restaurantRepository = restaurantRepository;
         this.productRepository = productRepository;
-        this.addressRepository = addressRepository;
         this.cuisineRepository = cuisineRepository;
         this.userRepository = userRepository;
         this.restaurantMapper = restaurantMapper;
@@ -56,6 +53,14 @@ public class RestaurantServiceImpl implements RestaurantService {
         return restaurantRepository.findByName(restaurantName)
                 .map(restaurantMapper::mapToDto)
                 .orElseThrow(() -> new EntityNotFoundException("Restaurant with this name is not found"));
+    }
+
+    // Tested!
+    @Override
+    public List<RestaurantDto> getRestaurantByPartName(String partName) {
+        return restaurantRepository.findByNameIgnoreCaseContaining(partName).stream()
+                .map(restaurantMapper::mapToDto)
+                .toList();
     }
 
     @Override

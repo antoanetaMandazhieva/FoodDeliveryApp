@@ -27,4 +27,6 @@ public interface RestaurantService {
     List<RestaurantDto> getRestaurantsByNameAsc();
 
     List<RestaurantDto> getRestaurantsByNameDesc();
+
+    List<RestaurantDto> getRestaurantByPartName(String partName);
 }

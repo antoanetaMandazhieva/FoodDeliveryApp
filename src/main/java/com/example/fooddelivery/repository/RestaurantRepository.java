@@ -20,4 +20,6 @@ public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
     Optional<Restaurant> findByName(String restaurantName);
 
     List<Restaurant> findAllByAverageRatingGreaterThanOrderByAverageRatingDesc(double minRating);
+
+    List<Restaurant> findByNameIgnoreCaseContaining(String text);
 }
