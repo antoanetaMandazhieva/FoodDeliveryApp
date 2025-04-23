@@ -18,6 +18,9 @@ import java.util.*;
 @Table(name = "Orders")
 public class Order extends IdEntity {
 
+    @Version
+    private Integer version;
+
     @ManyToOne
     @JoinColumn(name = "client_id", nullable = false)
     private User client;
@@ -86,7 +89,7 @@ public class Order extends IdEntity {
 
     public void calculateTotalPrice(BigDecimal discountAmount) {
         this.totalPrice = this.orderedItems.stream()
-                .map(item -> item.getProduct().getPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                .map(OrderedItem::calculateTotalPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         this.totalPrice = totalPrice.multiply(BigDecimal.ONE.subtract(discountAmount));

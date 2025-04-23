@@ -24,4 +24,6 @@ public interface UserService {
     List<OrderResponseDto> getOrdersByClientUsername(String clientUsername);
 
     List<OrderResponseDto> getOrdersBySupplierUsername(String supplierUsername, Long workerId);
+
+    Long getSupplierIdByUsername(String username);
 }

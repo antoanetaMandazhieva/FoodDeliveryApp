@@ -70,4 +70,10 @@ public class UserController {
                                                                           @RequestParam ("id") Long workerId) {
         return ResponseEntity.ok(userService.getOrdersBySupplierUsername(username, workerId));
     }
+
+    // Tested!
+    @GetMapping("/supplier/{username}")
+    public ResponseEntity<Long> getSupplierIdByUsername(@PathVariable String username) {
+        return ResponseEntity.ok(userService.getSupplierIdByUsername(username));
+    }
 }

@@ -26,6 +26,12 @@ public class RestaurantController {
     }
 
     // Tested!
+    @GetMapping("part-name/{partName}")
+    public ResponseEntity<List<RestaurantDto>> getRestaurantByPartName(String partName) {
+        return ResponseEntity.ok(restaurantService.getRestaurantByPartName(partName));
+    }
+
+    // Tested!
     @GetMapping("/{name}/products")
     public ResponseEntity<List<ProductDto>> getAllAvailableProducts(@PathVariable String name) {
         return ResponseEntity.ok(restaurantService.getAllAvailableProductsFromRestaurant(name));

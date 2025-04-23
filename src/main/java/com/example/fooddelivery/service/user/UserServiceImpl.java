@@ -170,6 +170,18 @@ public class UserServiceImpl implements UserService {
                 .toList();
     }
 
+    public Long getSupplierIdByUsername(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        if (!"SUPPLIER".equals(user.getRole().getName())) {
+            throw new IllegalArgumentException("User don't have SUPPLIER role");
+        }
+
+        return user.getId();
+    }
+
+
     private void validateUsernameEmailAndPhoneNumber(User user, UserProfileDto dto) {
         if (!dto.getUsername().equals(user.getUsername()) && userRepository.findByUsername(dto.getUsername()).isPresent()) {
             throw new IllegalArgumentException("Username is already taken");
