@@ -17,10 +17,6 @@ import com.example.fooddelivery.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -55,7 +51,7 @@ public class RestaurantServiceImplTest {
         addressMapper = mock(AddressMapper.class);
 
         restaurantService = new RestaurantServiceImpl(
-                restaurantRepository, productRepository, addressRepository,
+                restaurantRepository, productRepository,
                 cuisineRepository, userRepository, restaurantMapper, productMapper, addressMapper
         );
     }
