@@ -45,6 +45,8 @@ const router = createBrowserRouter([{
 }, {
     path: '/profile/:userId/orders',
     element: <UserOrdersHistory />
+}, {
+    path: '/profile/:employeeId'
 }])
 
 createRoot(document.getElementById('root')).render(

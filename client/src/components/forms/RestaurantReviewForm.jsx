@@ -1,12 +1,14 @@
 import { set, useForm } from 'react-hook-form';
 import Navigation from '../common/Navigation';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
 const RestaurantReviewForm = () => {
     const { register, handleSubmit, formState: {errors, isSubmitting} } = useForm();
     const { userId } = useParams();
+
+    const navigate = useNavigate();
 
     const [restaurants, setRestaurants] = useState([]);
     
@@ -43,6 +45,8 @@ const RestaurantReviewForm = () => {
                 );
                 console.log(data);
                 confirm('Successfully posted review');
+
+                navigate(`/profile/${userId}`);
             }
             catch (e) {
                 console.warn(e.message);

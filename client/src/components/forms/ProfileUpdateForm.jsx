@@ -2,6 +2,8 @@ import axios from 'axios';
 import { useForm } from 'react-hook-form';
 import { useEffect, useState } from 'react';
 import { getCookie } from '../../util/cookies';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const ProfileUpdateForm = ({ userDetails, setUserDetails, setDisplayForm }) => {
     const { register, handleSubmit, formState: {errors, isSubmitting} } = useForm({
@@ -46,6 +48,8 @@ const ProfileUpdateForm = ({ userDetails, setUserDetails, setDisplayForm }) => {
             });
             console.log(data);
             setUserDetails(data);
+
+            toast.success('Updated User Details!', { autoClose: 2000 });
         }
         catch (e) {
             console.error(e.message);
@@ -56,7 +60,7 @@ const ProfileUpdateForm = ({ userDetails, setUserDetails, setDisplayForm }) => {
 
     return (
         <div className='h-[45rem] w-full md:w-[40%] max-md:mb-8 flex flex-col justify-between items-center bg-peach-400 rounded-4xl p-4'>
-
+            <ToastContainer />
             <form className='user-order' onSubmit={handleSubmit(onSubmit)}>
 
                 <input className='rounded-4xl text-center font-quicksand 
