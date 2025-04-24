@@ -129,6 +129,19 @@ public class OrderController {
     }
 
     /**
+     * 9. Метод който връща конкретен метод на клиент при натискане на бутон
+     * @param orderId
+     * @param clientId
+     * @return
+     */
+    @GetMapping("/get-order-info/{orderId}")
+    public ResponseEntity<OrderResponseDto> getOrderInfoById(@PathVariable Long orderId,
+                                                              @RequestParam Long clientId) {
+        return ResponseEntity.ok(orderService.getOrderInfoById(orderId, clientId));
+    }
+
+
+    /**
      * 9. Заявки по доставчик
      * @param supplierId
      * @return

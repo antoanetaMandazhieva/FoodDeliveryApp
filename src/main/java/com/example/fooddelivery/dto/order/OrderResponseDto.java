@@ -12,6 +12,7 @@ public class OrderResponseDto {
     private BigDecimal totalPrice;
     private String orderStatus;
     private LocalDateTime createdAt;
+    private String discount;
 
 
 
@@ -69,5 +70,13 @@ public class OrderResponseDto {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getDiscount() {
+        return discount;
+    }
+
+    public void setDiscount(String discount) {
+        this.discount = discount;
     }
 }

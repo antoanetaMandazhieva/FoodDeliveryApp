@@ -35,4 +35,6 @@ public interface OrderService {
     BigDecimal getTotalRevenueBetween(LocalDateTime start, LocalDateTime end, Long employeeId);
 
     List<OrderResponseDto> getAvailableOrdersForSuppliers(Long supplierId);
+
+    OrderResponseDto getOrderInfoById(Long orderId, Long clientId);
 }

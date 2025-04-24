@@ -9,15 +9,22 @@ import com.example.fooddelivery.dto.auth.RegisterRequestDto;
 import com.example.fooddelivery.entity.address.Address;
 import com.example.fooddelivery.entity.role.Role;
 import com.example.fooddelivery.entity.user.User;
+import com.example.fooddelivery.exception.auth.InvalidCredentialsException;
+import com.example.fooddelivery.exception.role.RoleNotFoundException;
+import com.example.fooddelivery.exception.auth.UserAlreadyExistsException;
 import com.example.fooddelivery.repository.RoleRepository;
 import com.example.fooddelivery.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static com.example.fooddelivery.util.Messages.SUCCESSFUL_LOGIN_MESSAGE;
+import static com.example.fooddelivery.util.SystemErrors.Auth.*;
+import static com.example.fooddelivery.util.SystemErrors.Role.NO_CLIENT_ROLE;
+
 @Service
 public class AuthServiceImpl implements AuthService {
 
-    private static final String SUCCESSFUL_LOGIN_MESSAGE = "Login Successful";
+    private final static String CLIENT_ROLE = "CLIENT";
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -34,7 +41,9 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     @Override
     public void register(RegisterRequestDto registerRequestDto) {
-        User user = configureUser(registerRequestDto);
+        validateUserUniqueness(registerRequestDto);
+
+        User user = buildUserFromDto(registerRequestDto);
 
         userRepository.save(user);
     }
@@ -42,47 +51,45 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginResponseDto login(LoginRequestDto loginRequestDto) {
         User user = userRepository.findByUsername(loginRequestDto.getUsername())
-                .orElseThrow(() -> new RuntimeException("Invalid username."));
+                .orElseThrow(() -> new InvalidCredentialsException(INVALID_USERNAME));
 
         if (!user.checkPassword(loginRequestDto.getPassword())) {
-            throw new RuntimeException("Invalid password!");
+            throw new InvalidCredentialsException(INVALID_PASSWORD);
         }
 
-        LoginResponseDto loginResponseDto = new LoginResponseDto(user.getId(), user.getRole().getName());
-        loginResponseDto.setMessage(SUCCESSFUL_LOGIN_MESSAGE);
-
-        return loginResponseDto;
+        return new LoginResponseDto(user.getId(), user.getRole().getName(), SUCCESSFUL_LOGIN_MESSAGE);
     }
 
-    private User configureUser(RegisterRequestDto registerRequestDto) {
+
+    private void validateUserUniqueness(RegisterRequestDto dto) {
+        if (userRepository.findByUsername(dto.getUsername()).isPresent()) {
+            throw new UserAlreadyExistsException(USERNAME_ALREADY_TAKEN);
+        }
+
+        if (userRepository.findByEmail(dto.getEmail()).isPresent()) {
+            throw new UserAlreadyExistsException(EMAIL_ALREADY_TAKEN);
+        }
+
+        if (userRepository.findByPhoneNumber(dto.getPhoneNumber()).isPresent()) {
+            throw new UserAlreadyExistsException(PHONE_NUMBER_ALREADY_TAKEN);
+        }
+    }
+
+    private User buildUserFromDto(RegisterRequestDto registerRequestDto) {
         User user = userMapper.mapToUser(registerRequestDto);
 
-        if (isUserExistsInDb(user.getUsername())) {
-            throw new RuntimeException("User with this username already exists.");
-        }
 
-        if (userRepository.findByEmail(registerRequestDto.getEmail()).isPresent()) {
-            throw new RuntimeException("Email is already taken");
-        }
-
-        if (userRepository.findByPhoneNumber(registerRequestDto.getPhoneNumber()).isPresent()) {
-            throw new RuntimeException("Phone number is already taken");
-        }
-
-        Role clientRole = roleRepository.findByName("CLIENT")
-                .orElseThrow(() -> new RuntimeException("There is no CLIENT role!"));
+        Role clientRole = roleRepository.findByName(CLIENT_ROLE)
+                .orElseThrow(() -> new RoleNotFoundException(NO_CLIENT_ROLE));
 
         clientRole.addUser(user);
 
         AddressDto addressDto = registerRequestDto.getAddress();
         Address address = addressMapper.mapToAddress(addressDto);
 
+        // Всеки клиент има един адрес при регистрация
         user.addAddress(address);
 
         return user;
-    }
-
-    private boolean isUserExistsInDb(String username) {
-        return userRepository.findByUsername(username).isPresent();
     }
 }

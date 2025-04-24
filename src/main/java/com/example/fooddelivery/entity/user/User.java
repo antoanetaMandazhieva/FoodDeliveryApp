@@ -115,8 +115,6 @@ public class User extends IdEntity {
     }
 
     public void setName(String name) {
-        validateName(name);
-
         this.name = name;
     }
 
@@ -125,8 +123,6 @@ public class User extends IdEntity {
     }
 
     public void setSurname(String surname) {
-        validateName(surname);
-
         this.surname = surname;
     }
 
@@ -192,16 +188,6 @@ public class User extends IdEntity {
         this.role = role;
     }
 
-    private void validateName(String name) {
-        if (!name.matches("^[A-Z][a-z]+$")) {
-            throw new IllegalArgumentException(INVALID_NAME);
-        }
-    }
-
-    private String hashPassword(String password) {
-        return BCrypt.hashpw(password, BCrypt.gensalt());
-    }
-
     public void addAddress(Address address) {
         this.addresses.add(address);
         address.setUser(this);
@@ -232,5 +218,9 @@ public class User extends IdEntity {
         this.addresses.forEach(address -> address.setUser(null));
         this.discounts.forEach(discount -> discount.setUser(null));
         this.orders.forEach(order -> order.setClient(null));
+    }
+
+    private String hashPassword(String password) {
+        return BCrypt.hashpw(password, BCrypt.gensalt());
     }
 }

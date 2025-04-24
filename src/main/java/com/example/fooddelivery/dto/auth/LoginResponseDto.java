@@ -6,9 +6,10 @@ public class LoginResponseDto {
     private String role;
     private String message;
 
-    public LoginResponseDto(Long id, String role) {
+    public LoginResponseDto(Long id, String role, String message) {
         this.id = id;
         this.role = role;
+        this.message = message;
     }
 
     public Long getId() {

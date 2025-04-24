@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -89,6 +90,20 @@ public class OrderMapper {
 
         if (orderResponseDto.getClientPhone() == null) {
             orderResponseDto.setClientPhone(order.getClient().getPhoneNumber());
+        }
+
+        if (order.getDiscount() != null) {
+            BigDecimal discountAmount = order.getDiscount().getDiscountAmount();
+
+            // BigDecimal.equals -> Сравянва и scale -> 0.1 != 0.10
+
+            if (discountAmount.compareTo(BigDecimal.valueOf(0.1)) == 0) {
+                orderResponseDto.setDiscount("10%");
+            } else if (discountAmount.compareTo(BigDecimal.valueOf(0.20)) == 0) {
+                orderResponseDto.setDiscount("20%");
+            } else if (discountAmount.compareTo(BigDecimal.valueOf(0.30)) == 0) {
+                orderResponseDto.setDiscount("30%");
+            }
         }
 
         return orderResponseDto;

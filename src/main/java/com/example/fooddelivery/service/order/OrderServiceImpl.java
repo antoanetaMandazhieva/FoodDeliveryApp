@@ -148,6 +148,9 @@ public class OrderServiceImpl implements OrderService {
             String message = "Only EMPLOYEES can accept order";
             validateIfIsEmployee(user, message);
 
+            if (order.getOrderStatus() != OrderStatus.PENDING) {
+                throw new IllegalArgumentException("You cannot accept order currently");
+            }
 
             order.setOrderStatus(OrderStatus.ACCEPTED);
             orderRepository.save(order);
@@ -323,6 +326,22 @@ public class OrderServiceImpl implements OrderService {
                 .stream()
                 .map(orderMapper::toResponseDto)
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    public OrderResponseDto getOrderInfoById(Long orderId, Long clientId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+
+        User user = userRepository.findById(clientId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        if (order.getClient().getId() != user.getId()) {
+            throw new IllegalStateException("This order is not yours");
+        }
+
+        return orderMapper.toResponseDto(order);
     }
 
     private Address getOrderAddress(Address orderAddress, User client) {

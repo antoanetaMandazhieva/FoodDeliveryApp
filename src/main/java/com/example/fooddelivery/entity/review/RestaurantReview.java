@@ -7,7 +7,7 @@ import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
 
-import static com.example.fooddelivery.util.Messages.INVALID_RATING;
+import static com.example.fooddelivery.util.SystemErrors.Review.INVALID_RATING;
 
 
 @Entity
