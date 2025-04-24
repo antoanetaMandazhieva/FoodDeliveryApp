@@ -2,12 +2,10 @@ package com.example.fooddelivery.config.order;
 
 import com.example.fooddelivery.config.address.AddressMapper;
 import com.example.fooddelivery.config.ordered_item.OrderedItemMapper;
-import com.example.fooddelivery.config.product.ProductMapper;
 import com.example.fooddelivery.dto.address.AddressDto;
 import com.example.fooddelivery.dto.order.OrderDto;
 import com.example.fooddelivery.dto.order.OrderProductDto;
 import com.example.fooddelivery.dto.order.OrderResponseDto;
-import com.example.fooddelivery.dto.product.ProductDto;
 import com.example.fooddelivery.entity.discount.Discount;
 import com.example.fooddelivery.entity.order.Order;
 import org.modelmapper.ModelMapper;
@@ -16,8 +14,6 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
