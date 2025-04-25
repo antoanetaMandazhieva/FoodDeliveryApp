@@ -11,6 +11,8 @@ import com.example.fooddelivery.entity.restaurant.Restaurant;
 import com.example.fooddelivery.entity.user.User;
 import com.example.fooddelivery.enums.Category;
 import com.example.fooddelivery.enums.OrderStatus;
+import com.example.fooddelivery.exception.order.*;
+import com.example.fooddelivery.exception.role.InvalidRoleException;
 import com.example.fooddelivery.repository.*;
 import com.example.fooddelivery.service.discount.DiscountService;
 import jakarta.persistence.EntityNotFoundException;
@@ -22,8 +24,16 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static com.example.fooddelivery.util.SystemErrors.Order.*;
+import static com.example.fooddelivery.util.SystemErrors.Product.*;
+import static com.example.fooddelivery.util.SystemErrors.Restaurant.RESTAURANT_NOT_FOUND;
+import static com.example.fooddelivery.util.SystemErrors.User.*;
+
 @Service
 public class OrderServiceImpl implements OrderService {
+
+    private static final String SUPPLIER_ROLE = "SUPPLIER";
+    private static final String EMPLOYEE_ROLE = "EMPLOYEE";
 
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
@@ -55,23 +65,13 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderDto createOrder(OrderCreateDto orderCreateDto, Long clientId) {
-        User client = userRepository.findById(clientId)
-                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
+        User user = getUser(clientId);
 
-        Address orderAddress = getOrderAddress(addressMapper.mapToAddress(orderCreateDto.getAddress()), client);
+        Address orderAddress = resolveClientAddress(orderCreateDto, user);
 
-        if (!client.getAddresses().contains(orderAddress)) {
-            throw new IllegalArgumentException("Client doesn't have this address");
-        }
+        Restaurant restaurant = getRestaurant(orderCreateDto.getRestaurantId());
 
-        Restaurant restaurant = restaurantRepository.findById(orderCreateDto.getRestaurantId())
-                .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
-
-        Order order = new Order();
-
-        order.setClient(client);
-        order.setRestaurant(restaurant);
-        order.setAddress(orderAddress);
+        Order order = createInitialOrder(user, restaurant, orderAddress);
 
 
         // Важно: Нарочно се запазва тук за да имаме валидно id за поръчката което се използва в OrderedItem!
@@ -81,23 +81,23 @@ public class OrderServiceImpl implements OrderService {
         Map<Long, Integer> productQuantityMap = getProductsAndTheirQuantity(orderCreateDto);
 
         // Този метод добавя продуктите към поръчката, ако всичко е успено. Ако не хвърля Exception
-        addProductsToOrder(order, restaurant, client, productQuantityMap);
+        addProductsToOrder(order, restaurant, user, productQuantityMap);
 
         // Връща отстъпката за конкретния потребител (може и null, ако няма такава)
-        Discount discount = getDiscount(client);
+        Discount discount = getDiscount(user);
 
 
-        BigDecimal discountAmount;
+        BigDecimal discountAmount = (discount != null) ? discount.getDiscountAmount() : BigDecimal.ZERO;
 
         if (discount != null) {
+            // Свързва се отстъпката с поръчката
             discount.addOrder(order);
-            discountAmount = discount.getDiscountAmount();
-        } else {
-            discountAmount = BigDecimal.ZERO;
         }
 
+        // Изчисляване на крайната цена на поръчката
         order.calculateTotalPrice(discountAmount);
 
+        // Задава се начален статус на поръчката
         order.setOrderStatus(OrderStatus.PENDING);
 
         return orderMapper.mapFromOrderToDto(orderRepository.save(order));
@@ -107,23 +107,16 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderDto assignOrderToSupplier(Long orderId, Long supplierId) {
         try {
-            User supplier = userRepository.findById(supplierId)
-                    .orElseThrow(() -> new EntityNotFoundException("User not found"));
+            User supplier = getUser(supplierId);
+            validateIsSupplier(supplier, ONLY_SUPPLIER_ASSIGN_ORDERS);
 
-            if (!"SUPPLIER".equals(supplier.getRole().getName())) {
-                throw new IllegalArgumentException("Only users with SUPPLIER role can take orders");
-            }
+            Order order = getOrder(orderId);
 
-            Order order = orderRepository.findById(orderId)
-                    .orElseThrow(() -> new EntityNotFoundException("Order not found"));
-
-            if (order.getSupplier() != null) {
-                throw new IllegalStateException("Order already has a supplier");
-            }
+            validateOrderHasNoSupplier(order);
 
             OrderStatus status = order.getOrderStatus();
             if ((status != OrderStatus.ACCEPTED) && (status != OrderStatus.PREPARING)) {
-                throw new IllegalStateException("Order cannot be taken");
+                throw new InvalidOrderStatusException(WRONG_ORDER_STATUS_TO_TAKE_ORDER);
             }
 
             order.setSupplier(supplier);
@@ -132,7 +125,7 @@ public class OrderServiceImpl implements OrderService {
             return orderMapper.mapFromOrderToDto(order);
 
         } catch (OptimisticLockException e) {
-            throw new IllegalStateException("Order was taken by another supplier", e);
+            throw new ConcurrentlyTakenOrderException(CONCURRENTLY_TAKEN_ORDER, e);
         }
     }
 
@@ -140,23 +133,21 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public void acceptOrder(Long orderId, Long employeeId) {
         try {
-            Order order = orderRepository.findById(orderId)
-                    .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+            Order order = getOrder(orderId);
 
-            User user = getUser(employeeId);
+            User employee = getUser(employeeId);
 
-            String message = "Only EMPLOYEES can accept order";
-            validateIfIsEmployee(user, message);
+            validateIsEmployee(employee, ONLY_EMPLOYEE_ACCEPT_ORDERS);
 
             if (order.getOrderStatus() != OrderStatus.PENDING) {
-                throw new IllegalArgumentException("You cannot accept order currently");
+                throw new InvalidOrderStatusException(NOT_PENDING_STATUS);
             }
 
             order.setOrderStatus(OrderStatus.ACCEPTED);
             orderRepository.save(order);
 
         } catch (OptimisticLockException e) {
-            throw new IllegalStateException("Order was modified by another employee. Please try again.", e);
+            throw new ConcurrentlyModifiedOrderException(CONCURRENTLY_MODIFIED_ORDER, e);
         }
     }
 
@@ -164,20 +155,15 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderStatusUpdateDto updateOrderStatus(Long orderId, Long employeeId) {
         try {
-            User employee = userRepository.findById(employeeId)
-                    .orElseThrow(() -> new EntityNotFoundException("Employee not found"));
+            User employee = getUser(employeeId);
+            validateIsEmployee(employee, ONLY_EMPLOYEE_UPDATE_ORDERS);
 
-            if (!"EMPLOYEE".equals(employee.getRole().getName())) {
-                throw new IllegalStateException("Only employees can update order statuses");
-            }
-
-            Order order = orderRepository.findById(orderId)
-                    .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+            Order order = getOrder(orderId);
 
             OrderStatus currentStatus = order.getOrderStatus();
 
             if (currentStatus != OrderStatus.ACCEPTED) {
-                throw new IllegalStateException("You cannot change status currently");
+                throw new IllegalStateException(WRONG_ORDER_STATUS_TO_UPDATE_ORDER);
             }
 
             order.setOrderStatus(OrderStatus.PREPARING);
@@ -191,24 +177,19 @@ public class OrderServiceImpl implements OrderService {
             return dto;
 
         } catch (OptimisticLockException e) {
-            throw new IllegalStateException("Order was modified concurrently. Try again.", e);
+            throw new ConcurrentlyModifiedOrderException(CONCURRENTLY_MODIFIED_ORDER, e);
         }
     }
 
     @Override
     public void takeOrder(Long orderId, Long supplierId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+        Order order = getOrder(orderId);
 
-        User supplier = userRepository.findById(supplierId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
-
-        if (!"SUPPLIER".equals(supplier.getRole().getName())) {
-            throw new IllegalArgumentException("Only users with SUPPLIER role can take orders");
-        }
+        User supplier = getUser(supplierId);
+        validateIsSupplier(supplier, ONLY_SUPPLIER_TAKE_ORDERS);
 
         if (order.getSupplier() == null || order.getSupplier().getId() != supplierId) {
-            throw new IllegalArgumentException("You can't take order which is not for you");
+            throw new InvalidOrderSupplierException(ORDER_NOT_FOR_SUPPLIER);
         }
 
         order.setOrderStatus(OrderStatus.IN_DELIVERY);
@@ -218,19 +199,14 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderDto finishOrder(Long orderId, Long supplierId) {
-        User supplier = userRepository.findById(supplierId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        User supplier = getUser(supplierId);
+        validateIsSupplier(supplier, ORDER_SUPPLIER_FINISH_ORDERS);
 
-        if (!"SUPPLIER".equals(supplier.getRole().getName())) {
-            throw new IllegalStateException("Only suppliers can finish orders");
-        }
-
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+        Order order = getOrder(orderId);
 
         if (order.getOrderStatus() != OrderStatus.IN_DELIVERY) {
-            throw new IllegalStateException(String.format(
-                    "Order can't be finished unless it's in IN_DELIVERY status. Current status: %s",
+            throw new InvalidOrderStatusException(String.format(
+                    WRONG_ORDER_STATUS_TO_FINISH_ORDER,
                     order.getOrderStatus()));
         }
 
@@ -244,17 +220,12 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderDto cancelOrderByClient(Long orderId, Long clientId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+        Order order = getOrder(orderId);
 
-        if (!(order.getClient().getId() == clientId)) {
-            throw new IllegalArgumentException("This order does not belong to the client");
-        }
+        validateIsOrderForClient(order, clientId);
 
         if (order.getOrderStatus() != OrderStatus.PENDING) {
-            throw new IllegalStateException(String.format(
-                    "Cannot cancel order with status: %s. Only PENDING orders can be cancelled.",
-                    order.getOrderStatus()));
+            throw new InvalidOrderStatusException(String.format(WRONG_ORDER_STATUS_TO_CANCEL_ORDER, order.getOrderStatus()));
         }
 
         order.setOrderStatus(OrderStatus.CANCELLED);
@@ -262,7 +233,6 @@ public class OrderServiceImpl implements OrderService {
 
         return orderMapper.mapFromOrderToDto(order);
     }
-
 
     @Override
     @Transactional
@@ -275,15 +245,11 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderResponseDto getOrderInfoById(Long orderId, Long clientId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+        Order order = getOrder(orderId);
 
-        User user = userRepository.findById(clientId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        User user = getUser(clientId);
 
-        if (order.getClient().getId() != user.getId()) {
-            throw new IllegalStateException("This order is not yours");
-        }
+        validateIsOrderForClient(order, clientId);
 
         return orderMapper.toResponseDto(order);
     }
@@ -300,10 +266,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public List<OrderResponseDto> getOrdersByStatus(OrderStatus status, Long employeeId) {
         User employee = getUser(employeeId);
-
-        String message = "Only EMPLOYEES can see all orders with given status";
-        validateIfIsEmployee(employee, message);
-
+        validateIsEmployee(employee, ONLY_EMPLOYEE_SEE_ORDER_BY_STATUS);
 
         return orderRepository.findByOrderStatus(status).stream()
                 .map(orderMapper::toResponseDto)
@@ -313,13 +276,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public BigDecimal getTotalRevenueBetween(LocalDateTime start, LocalDateTime end, Long adminId) {
         User admin = getUser(adminId);
-
-        String message = "Only ADMINS can see total revenue between dates";
-        validateIfIsAdmin(admin, message);
-
-        if (!admin.getRole().getName().equals("ADMIN")) {
-            throw new RuntimeException("Access denied: Only admins can view revenue");
-        }
+        validateIsAdmin(admin, ONLY_ADMIN_CHECK_TOTAL_REVENUE);
 
         return orderRepository.findByCreatedAtBetween(start, end).stream()
                 .map(Order::getTotalPrice)
@@ -330,9 +287,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public List<OrderResponseDto> getAvailableOrdersForSuppliers(Long supplierId) {
         User user = getUser(supplierId);
-
-        String message = "You need SUPPLIER role to see available orders";
-        validateIfIsSupplier(user, message);
+        validateIsSupplier(user, ONLY_SUPPLIER_SEE_AVAILABLE_ORDERS);
 
 
         List<Order> availableOrders = orderRepository.findByOrderStatusAndSupplierIsNull(OrderStatus.PREPARING);
@@ -344,12 +299,33 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
     }
 
-    private Address getOrderAddress(Address orderAddress, User client) {
-        return addressRepository.findByStreetAndCityAndCountryAndUserId(orderAddress.getStreet(), orderAddress.getCity(),
-                                                               orderAddress.getCountry(), client.getId())
-                            .orElseThrow(() -> new EntityNotFoundException(String.format("Client: %s %s doesn't have this address",
-                                    client.getName(), client.getSurname())));
+    private User getUser(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND));
     }
+
+    private Address resolveClientAddress(OrderCreateDto dto, User user) {
+        Address address = getOrderAddress(addressMapper.mapToAddress(dto.getAddress()), user);
+
+        validateUserAddress(user, address);
+
+        return address;
+    }
+
+    private Restaurant getRestaurant(Long restaurantId) {
+        return restaurantRepository.findById(restaurantId)
+                        .orElseThrow(() -> new EntityNotFoundException(RESTAURANT_NOT_FOUND));
+    }
+
+    private Order createInitialOrder(User user, Restaurant restaurant, Address orderAddress) {
+        Order order = new Order();
+        order.setClient(user);
+        order.setRestaurant(restaurant);
+        order.setAddress(orderAddress);
+
+        return order;
+    }
+
 
     private Map<Long, Integer> getProductsAndTheirQuantity(OrderCreateDto orderCreateDto) {
         Map<Long, Integer> productQuantityMap = new HashMap<>();
@@ -360,8 +336,7 @@ public class OrderServiceImpl implements OrderService {
             int quantity = dto.getQuantity();
 
             if (quantity <= 0) {
-                throw new IllegalArgumentException(String.format("Quantity for product with ID: %d must be greater than 0",
-                        productId));
+                throw new InvalidProductQuantityException(String.format(PRODUCT_QUANTITY_LESS_THAN_0, productId));
             }
 
 
@@ -375,28 +350,31 @@ public class OrderServiceImpl implements OrderService {
         return productQuantityMap;
     }
 
-
     private void addProductsToOrder(Order order, Restaurant restaurant, User client, Map<Long, Integer> productQuantityMap) {
         for (Map.Entry<Long, Integer> entry : productQuantityMap.entrySet()) {
             Long productId = entry.getKey();
             int quantity = entry.getValue();
 
-            Product product = productRepository.findById(productId)
-                    .orElseThrow(() -> new EntityNotFoundException("Product not found"));
+            Product product = getProduct(productId);
 
             if (!restaurant.getProducts().contains(product)) {
-                throw new IllegalArgumentException(String.format("Product: %s is not in Restaurant: %s",
+                throw new InvalidProductInRestaurantException(String.format(PRODUCT_NOT_IN_RESTAURANT,
                         product.getName(), restaurant.getName()));
             }
 
             if (product.getCategory() == Category.ALCOHOLS) {
                 if (!client.isOver18()) {
-                    throw new IllegalArgumentException("You are underage and cannot order alcohol");
+                    throw new UnderageUserException(UNDERAGE_USER_CANNOT_ORDER_ALCOHOL);
                 }
             }
 
             order.addOrderedItem(product, quantity);
         }
+    }
+
+    private Product getProduct(Long productId) {
+        return productRepository.findById(productId)
+                .orElseThrow(() -> new EntityNotFoundException(PRODUCT_NOT_FOUND));
     }
 
     private Discount getDiscount(User client) {
@@ -407,26 +385,51 @@ public class OrderServiceImpl implements OrderService {
         return discountService.checkAndGiveWorkerDiscount(client);
     }
 
-    private User getUser(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
-    }
-
-    private void validateIfIsSupplier(User user, String message) {
-        if (!"SUPPLIER".equals(user.getRole().getName())) {
-            throw new IllegalStateException(message);
+    private void validateIsSupplier(User user, String message) {
+        if (!SUPPLIER_ROLE.equals(user.getRole().getName())) {
+            throw new InvalidRoleException(message);
         }
     }
 
-    private void validateIfIsEmployee(User user, String message) {
-        if (!"EMPLOYEE".equals(user.getRole().getName())) {
-            throw new IllegalStateException(message);
+    private Order getOrder(Long orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new EntityNotFoundException(ORDER_NOT_FOUND));
+    }
+
+    private void validateOrderHasNoSupplier(Order order) {
+        if (order.getSupplier() != null) {
+            throw new AlreadyTakenOrderException(ALREADY_TAKEN_ORDER);
         }
     }
 
-    private void validateIfIsAdmin(User user, String message) {
+    private void validateIsEmployee(User user, String message) {
+        if (!EMPLOYEE_ROLE.equals(user.getRole().getName())) {
+            throw new InvalidRoleException(message);
+        }
+    }
+
+    private void validateIsAdmin(User user, String message) {
         if (!"ADMIN".equals(user.getRole().getName())) {
-            throw new IllegalStateException(message);
+            throw new InvalidRoleException(message);
+        }
+    }
+
+    private Address getOrderAddress(Address orderAddress, User user) {
+        return addressRepository.findByStreetAndCityAndCountryAndUserId(orderAddress.getStreet(), orderAddress.getCity(),
+                        orderAddress.getCountry(), user.getId())
+                .orElseThrow(() -> new WrongUserAddressException(String.format(USER_ADDRESS_NOT_FOUND,
+                        user.getName(), user.getSurname())));
+    }
+
+    private void validateUserAddress(User user, Address address) {
+        if (!user.getAddresses().contains(address)) {
+            throw new WrongUserAddressException(String.format(USER_ADDRESS_NOT_FOUND, user.getName(), user.getSurname()));
+        }
+    }
+
+    private void validateIsOrderForClient(Order order, Long clientId) {
+        if (!(order.getClient().getId() == clientId)) {
+            throw new InvalidOrderClientException(ORDER_NOT_FOR_CLIENT);
         }
     }
 }

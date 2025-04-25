@@ -161,7 +161,7 @@ public class OrderController {
     @GetMapping("/status/{status}")
     public ResponseEntity<List<OrderResponseDto>> getOrdersByStatus(@PathVariable String status,
                                                                     @PathVariable Long employeeId) {
-        return ResponseEntity.ok(orderService.getOrdersByStatus(OrderStatus.valueOf(status), employeeId));
+        return ResponseEntity.ok(orderService.getOrdersByStatus(OrderStatus.valueOf(status.toUpperCase()), employeeId));
     }
 
     /**

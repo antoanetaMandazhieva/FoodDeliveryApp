@@ -17,6 +17,9 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 
+import static com.example.fooddelivery.util.SystemErrors.Restaurant.RESTAURANT_NOT_FOUND;
+import static com.example.fooddelivery.util.SystemErrors.User.USER_NOT_FOUND;
+
 @Service
 public class RestaurantReviewServiceImpl implements RestaurantReviewService {
 
@@ -38,18 +41,11 @@ public class RestaurantReviewServiceImpl implements RestaurantReviewService {
     @Override
     @Transactional
     public RestaurantReviewDto addReview(Long clientId, Long restaurantId, int rating, String comment) {
-        User client = userRepository.findById(clientId)
-                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
+        User user = getUser(clientId);
 
-        Restaurant restaurant = restaurantRepository.findById(restaurantId)
-                .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
+        Restaurant restaurant = getRestaurant(restaurantId);
 
-        RestaurantReview review = new RestaurantReview();
-        review.setReviewer(client);
-        review.setRestaurant(restaurant);
-        review.setRating(rating);
-        review.setComment(comment);
-
+        RestaurantReview review = createReview(user, restaurant, rating, comment);
         reviewRepository.save(review);
 
         updateRestaurantAverageRating(restaurantId);
@@ -66,18 +62,43 @@ public class RestaurantReviewServiceImpl implements RestaurantReviewService {
                 .toList();
     }
 
+    private User getUser(Long clientId) {
+        return userRepository.findById(clientId)
+                .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND));
+    }
+
+    private Restaurant getRestaurant(Long restaurantId) {
+        return restaurantRepository.findById(restaurantId)
+                .orElseThrow(() -> new EntityNotFoundException(RESTAURANT_NOT_FOUND));
+    }
+
+    private RestaurantReview createReview(User user, Restaurant restaurant, int rating, String comment) {
+        RestaurantReview review = new RestaurantReview();
+
+        review.setReviewer(user);
+        review.setRestaurant(restaurant);
+        review.setRating(rating);
+        review.setComment(comment);
+
+        return review;
+    }
+
+
     private void updateRestaurantAverageRating(Long restaurantId) {
         List<RestaurantReview> reviews = reviewRepository.findByRestaurantId(restaurantId);
 
-        BigDecimal avg = BigDecimal.valueOf(
-                reviews.stream().mapToInt(RestaurantReview::getRating).average().orElse(0)
-        ).setScale(1, RoundingMode.HALF_UP);
+        BigDecimal avg = calculateAverageRating(reviews);
 
-        Restaurant restaurant = restaurantRepository.findById(restaurantId)
-                .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
+        Restaurant restaurant = getRestaurant(restaurantId);
 
         restaurant.setAverageRating(avg);
 
         restaurantRepository.save(restaurant);
+    }
+
+    private BigDecimal calculateAverageRating(List<RestaurantReview> reviews) {
+        return BigDecimal.valueOf(
+                reviews.stream().mapToInt(RestaurantReview::getRating).average().orElse(0)
+        ).setScale(1, RoundingMode.HALF_UP);
     }
 }
