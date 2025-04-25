@@ -22,5 +22,9 @@ public class SystemErrors {
         public final static String INVALID_RATING = "Invalid rating.";
     }
 
+    public static final class Discount {
+        public final static String NOT_CLIENT_ROLE_FOR_DISCOUNT = "Only clients are eligible for client discounts.";
+    }
+
     private SystemErrors() {}
 }

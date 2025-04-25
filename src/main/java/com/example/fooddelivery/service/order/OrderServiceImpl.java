@@ -274,6 +274,22 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
+    public OrderResponseDto getOrderInfoById(Long orderId, Long clientId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
+
+        User user = userRepository.findById(clientId)
+                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+
+        if (order.getClient().getId() != user.getId()) {
+            throw new IllegalStateException("This order is not yours");
+        }
+
+        return orderMapper.toResponseDto(order);
+    }
+
+    @Override
+    @Transactional
     public List<OrderResponseDto> getOrdersBySupplier(Long supplierId) {
         return orderRepository.findBySupplierId(supplierId).stream()
                 .map(orderMapper::toResponseDto)
@@ -328,22 +344,6 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
     }
 
-    @Override
-    @Transactional
-    public OrderResponseDto getOrderInfoById(Long orderId, Long clientId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new EntityNotFoundException("Order not found"));
-
-        User user = userRepository.findById(clientId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
-
-        if (order.getClient().getId() != user.getId()) {
-            throw new IllegalStateException("This order is not yours");
-        }
-
-        return orderMapper.toResponseDto(order);
-    }
-
     private Address getOrderAddress(Address orderAddress, User client) {
         return addressRepository.findByStreetAndCityAndCountryAndUserId(orderAddress.getStreet(), orderAddress.getCity(),
                                                                orderAddress.getCountry(), client.getId())
@@ -351,7 +351,7 @@ public class OrderServiceImpl implements OrderService {
                                     client.getName(), client.getSurname())));
     }
 
-    private static Map<Long, Integer> getProductsAndTheirQuantity(OrderCreateDto orderCreateDto) {
+    private Map<Long, Integer> getProductsAndTheirQuantity(OrderCreateDto orderCreateDto) {
         Map<Long, Integer> productQuantityMap = new HashMap<>();
 
 

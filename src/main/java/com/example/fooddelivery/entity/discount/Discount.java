@@ -3,6 +3,7 @@ package com.example.fooddelivery.entity.discount;
 import com.example.fooddelivery.entity.id_mapped_superclass.IdEntity;
 import com.example.fooddelivery.entity.order.Order;
 import com.example.fooddelivery.entity.user.User;
+import com.example.fooddelivery.enums.DiscountType;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -22,6 +23,9 @@ public class Discount extends IdEntity {
 
     @Column(name = "discount_amount", precision = 10, scale = 2, nullable = false)
     private BigDecimal discountAmount;
+
+    @Enumerated(EnumType.STRING)
+    private DiscountType discountType;
 
     public Discount() {
         this.orders = new HashSet<>();
@@ -51,5 +55,13 @@ public class Discount extends IdEntity {
 
     public void setDiscountAmount(BigDecimal discountAmount) {
         this.discountAmount = discountAmount;
+    }
+
+    public DiscountType getDiscountType() {
+        return discountType;
+    }
+
+    public void setDiscountType(DiscountType discountType) {
+        this.discountType = discountType;
     }
 }

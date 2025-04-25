@@ -1,5 +1,6 @@
-package com.example.fooddelivery.controller.global_exception_handler;
+package com.example.fooddelivery.config.global_exception_handler;
 
+import com.example.fooddelivery.exception.base.BaseException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,11 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(BaseException.class)
+    public ResponseEntity<Object> handleBaseException(BaseException ex) {
+        return buildResponse(ex.getStatus(), ex.getMessage());
+    }
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<Object> handleEntityNotFound(EntityNotFoundException ex) {
