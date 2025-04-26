@@ -116,6 +116,8 @@ public class Order extends IdEntity {
         return Collections.unmodifiableSet(this.orderedItems);
     }
 
+    public void setOrderedItems(Set<OrderedItem> orderedItems) { this.orderedItems = orderedItems; }
+
     public void addOrderedItem(Product product, int quantity) {
         OrderedItem item = new OrderedItem(this, product, quantity);
         this.orderedItems.add(item);

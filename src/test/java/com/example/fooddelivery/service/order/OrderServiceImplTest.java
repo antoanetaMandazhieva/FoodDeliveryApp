@@ -3,16 +3,13 @@ package com.example.fooddelivery.service.order;
 import com.example.fooddelivery.dto.order.OrderResponseDto;
 import com.example.fooddelivery.entity.role.Role;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import com.example.fooddelivery.config.address.AddressMapper;
 import com.example.fooddelivery.config.order.OrderMapper;
 import com.example.fooddelivery.dto.order.OrderCreateDto;
 import com.example.fooddelivery.dto.order.OrderDto;
 import com.example.fooddelivery.entity.order.Order;
 import com.example.fooddelivery.entity.user.User;
 import com.example.fooddelivery.repository.OrderRepository;
-import com.example.fooddelivery.repository.ProductRepository;
 import com.example.fooddelivery.repository.UserRepository;
-import com.example.fooddelivery.service.discount.DiscountService;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,12 +17,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import com.example.fooddelivery.enums.OrderStatus;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -35,10 +30,7 @@ class OrderServiceImplTest {
 
     @Mock private OrderRepository orderRepository;
     @Mock private UserRepository userRepository;
-    @Mock private ProductRepository productRepository;
-    @Mock private AddressMapper addressMapper;
     @Mock private OrderMapper orderMapper;
-    @Mock private DiscountService discountService;
 
     @InjectMocks
     private OrderServiceImpl orderService;
@@ -85,7 +77,12 @@ class OrderServiceImplTest {
         Long orderId = 10L;
         Long supplierId = 5L;
         Order order = new Order();
+        order.setOrderStatus(OrderStatus.ACCEPTED);
         User supplier = mock(User.class);
+        Role supplierRole = new Role();
+        supplierRole.setName("SUPPLIER");
+        when(supplier.getRole()).thenReturn(supplierRole);
+
         OrderDto expectedDto = new OrderDto();
         expectedDto.setId(orderId);
 
@@ -93,6 +90,7 @@ class OrderServiceImplTest {
         when(userRepository.findById(supplierId)).thenReturn(Optional.of(supplier));
         when(orderRepository.save(order)).thenReturn(order);
         when(orderMapper.mapFromOrderToDto(order)).thenReturn(expectedDto);
+
         OrderDto result = orderService.assignOrderToSupplier(orderId, supplierId);
 
         assertNotNull(result);
@@ -102,18 +100,26 @@ class OrderServiceImplTest {
         verify(orderRepository).save(order);
         verify(orderMapper).mapFromOrderToDto(order);
     }
-    //Тест ако order-а не съществува
+
     @Test
     void assignOrderToSupplier_shouldThrowEntityNotFoundException_whenOrderNotFound() {
         Long orderId = 10L;
         Long supplierId = 5L;
 
+        // Mock: няма order
         when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
 
+        // Act & Assert
         assertThrows(EntityNotFoundException.class, () -> orderService.assignOrderToSupplier(orderId, supplierId));
-        verify(userRepository, never()).findById(anyLong());
-        verify(orderRepository, never()).save(any(Order.class));
+
+        // Verify: userRepository НЕ трябва да е извикван изобщо
+        verify(userRepository, times(0)).findById(any());
+
+        // Verify: orderRepository.save също не трябва да е извикван
+        verify(orderRepository, times(0)).save(any(Order.class));
     }
+
+
     //Тест ако Supplier-a не съществува
     @Test
     void assignOrderToSupplier_shouldThrowEntityNotFoundException_whenSupplierNotFound() {
