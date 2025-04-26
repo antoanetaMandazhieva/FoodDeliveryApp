@@ -81,7 +81,7 @@ public class AuthServiceImplTest {
         when(userRepository.findByUsername("existingUser")).thenReturn(Optional.of(user));
         RuntimeException exception = assertThrows(RuntimeException.class, () -> authService.register(dto));
 
-        assertEquals("User with this username already exists.", exception.getMessage());
+        assertEquals("Username is already taken.", exception.getMessage());
     }
     //Проверява дали вече има регистриран профил с такъв email в БД
     @Test
@@ -97,7 +97,7 @@ public class AuthServiceImplTest {
         when(userRepository.findByEmail("used@example.com")).thenReturn(Optional.of(user));
         RuntimeException exception = assertThrows(RuntimeException.class, () -> authService.register(dto));
 
-        assertEquals("Email is already taken", exception.getMessage());
+        assertEquals("Email is already taken.", exception.getMessage());
     }
     // Проверява дали вече има регистриран профил с такъв phone number в БД
     @Test
@@ -115,7 +115,7 @@ public class AuthServiceImplTest {
         when(userRepository.findByPhoneNumber("1234567890")).thenReturn(Optional.of(user));
         RuntimeException exception = assertThrows(RuntimeException.class, () -> authService.register(dto));
 
-        assertEquals("Phone number is already taken", exception.getMessage());
+        assertEquals("Phone number is already taken.", exception.getMessage());
     }
     // Проверява какво се случва ако въведен грешен username
     @Test
@@ -140,7 +140,7 @@ public class AuthServiceImplTest {
         when(user.checkPassword("wrongPassword")).thenReturn(false);
         RuntimeException exception = assertThrows(RuntimeException.class, () -> authService.login(loginRequest));
 
-        assertEquals("Invalid password!", exception.getMessage());
+        assertEquals("Invalid password.", exception.getMessage());
 
         verify(userRepository).findByUsername("testUser");
         verify(user).checkPassword("wrongPassword");

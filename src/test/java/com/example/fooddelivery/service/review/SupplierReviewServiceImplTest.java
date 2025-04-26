@@ -5,6 +5,8 @@ import com.example.fooddelivery.dto.review.SupplierReviewDto;
 import com.example.fooddelivery.entity.review.SupplierReview;
 import com.example.fooddelivery.entity.role.Role;
 import com.example.fooddelivery.entity.user.User;
+import com.example.fooddelivery.exception.review.SameClientAndSupplierException;
+import com.example.fooddelivery.exception.role.InvalidRoleException;
 import com.example.fooddelivery.repository.SupplierReviewRepository;
 import com.example.fooddelivery.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -15,7 +17,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -51,7 +52,6 @@ public class SupplierReviewServiceImplTest {
         role.setName("SUPPLIER");
         supplier.setRole(role);
 
-        SupplierReview review = new SupplierReview();
         SupplierReview savedReview = new SupplierReview();
         SupplierReviewDto dto = new SupplierReviewDto();
 
@@ -76,7 +76,7 @@ public class SupplierReviewServiceImplTest {
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
                 () -> reviewService.addReview(1L, supplierId, 5, "Test"));
 
-        assertEquals("Supplier not found", ex.getMessage());
+        assertEquals("Supplier not found.", ex.getMessage());
     }
     @Test
     void addReview_shouldThrow_whenSupplierIsNotASupplier() {
@@ -91,10 +91,10 @@ public class SupplierReviewServiceImplTest {
 
         when(userRepository.findById(supplierId)).thenReturn(Optional.of(supplier));
 
-        IllegalStateException ex = assertThrows(IllegalStateException.class,
+        InvalidRoleException ex = assertThrows(InvalidRoleException.class,
                 () -> reviewService.addReview(clientId, supplierId, 5, "Bad"));
 
-        assertEquals("Reviews are only possible for suppliers", ex.getMessage());
+        assertEquals("Reviews are only possible for suppliers.", ex.getMessage());
     }
     @Test
     void addReview_shouldThrow_whenClientReviewsThemselves() {
@@ -108,10 +108,10 @@ public class SupplierReviewServiceImplTest {
 
         when(userRepository.findById(id)).thenReturn(Optional.of(supplier));
 
-        IllegalStateException ex = assertThrows(IllegalStateException.class,
+        SameClientAndSupplierException ex = assertThrows(SameClientAndSupplierException.class,
                 () -> reviewService.addReview(id, id, 4, "Self-review"));
 
-        assertEquals("No permission to review yourself", ex.getMessage());
+        assertEquals("No permission to review yourself.", ex.getMessage());
     }
     @Test
     void addReview_shouldThrow_whenClientNotFound() {
@@ -130,7 +130,7 @@ public class SupplierReviewServiceImplTest {
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
                 () -> reviewService.addReview(clientId, supplierId, 5, "Test"));
 
-        assertEquals("Client not found", ex.getMessage());
+        assertEquals("User not found.", ex.getMessage());
     }
    /* @Test
     void getReviewsForSupplier_shouldReturnMappedDto() {

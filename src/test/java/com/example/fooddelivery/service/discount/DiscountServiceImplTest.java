@@ -4,6 +4,7 @@ import com.example.fooddelivery.dto.order.OrderResponseDto;
 import com.example.fooddelivery.entity.discount.Discount;
 import com.example.fooddelivery.entity.role.Role;
 import com.example.fooddelivery.entity.user.User;
+import com.example.fooddelivery.exception.discount.InvalidDiscountUserException;
 import com.example.fooddelivery.repository.DiscountRepository;
 import com.example.fooddelivery.service.user.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,9 +44,9 @@ public class DiscountServiceImplTest {
         role.setName("EMPLOYEE");
         user.setRole(role);
 
-        IllegalStateException exception = assertThrows(IllegalStateException.class,
+        InvalidDiscountUserException exception = assertThrows(InvalidDiscountUserException.class,
                 () -> discountService.checkAndGiveClientDiscount(user));
-        assertEquals("You cannot have client discount", exception.getMessage());
+        assertEquals("Only clients are eligible for client discounts.", exception.getMessage());
     }
     //Проверя дали клиент получава правилно отстъпка при 10 поръчки
     @Test

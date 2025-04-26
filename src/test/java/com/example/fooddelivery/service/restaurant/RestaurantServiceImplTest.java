@@ -13,313 +13,410 @@ import com.example.fooddelivery.entity.product.Product;
 import com.example.fooddelivery.entity.restaurant.Restaurant;
 import com.example.fooddelivery.entity.role.Role;
 import com.example.fooddelivery.entity.user.User;
+import com.example.fooddelivery.enums.Category;
 import com.example.fooddelivery.repository.*;
 import jakarta.persistence.EntityNotFoundException;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.lang.reflect.Field;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.math.BigDecimal;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 public class RestaurantServiceImplTest {
+    @Mock private RestaurantRepository restaurantRepository;
+    @Mock private ProductRepository productRepository;
+    @Mock private CuisineRepository cuisineRepository;
+    @Mock private UserRepository userRepository;
+    @Mock private RestaurantMapper restaurantMapper;
+    @Mock private ProductMapper productMapper;
+    @Mock private AddressMapper addressMapper;
 
-    private RestaurantRepository restaurantRepository;
-    private ProductRepository productRepository;
-    private AddressRepository addressRepository;
-    private CuisineRepository cuisineRepository;
-    private UserRepository userRepository;
-    private RestaurantMapper restaurantMapper;
-    private ProductMapper productMapper;
-    private AddressMapper addressMapper;
-
+    @InjectMocks
     private RestaurantServiceImpl restaurantService;
 
-    @BeforeEach
-    void setUp() {
-        restaurantRepository = mock(RestaurantRepository.class);
-        productRepository = mock(ProductRepository.class);
-        addressRepository = mock(AddressRepository.class);
-        cuisineRepository = mock(CuisineRepository.class);
-        userRepository = mock(UserRepository.class);
-        restaurantMapper = mock(RestaurantMapper.class);
-        productMapper = mock(ProductMapper.class);
-        addressMapper = mock(AddressMapper.class);
-
-        restaurantService = new RestaurantServiceImpl(
-                restaurantRepository, productRepository,
-                cuisineRepository, userRepository, restaurantMapper, productMapper, addressMapper
-        );
-    }
-    private void setId(Object target, long id) throws Exception {
-        Field field = target.getClass().getSuperclass().getDeclaredField("id");
-        field.setAccessible(true);
-        field.set(target, id);
-    }
-
     @Test
-    void createRestaurant_withValidEmployeeAndValidCuisines_shouldCreateRestaurantSuccessfully() throws Exception {
-        // Setup employee
-        User employee = new User();
-        setId(employee, 10L);
-        Role role = new Role();
-        role.setName("EMPLOYEE");
-        employee.setRole(role);
-
-        when(userRepository.findById(10L)).thenReturn(Optional.of(employee));
-
-        // Setup cuisine
-        Cuisine cuisine1 = new Cuisine();
-        setId(cuisine1, 1L);
-        Cuisine cuisine2 = new Cuisine();
-        setId(cuisine2, 2L);
-
-        when(cuisineRepository.findById(1L)).thenReturn(Optional.of(cuisine1));
-        when(cuisineRepository.findById(2L)).thenReturn(Optional.of(cuisine2));
-
-        AddressDto addressDto = new AddressDto();
-        Address address = new Address();
-        setId(address, 100L);
-
-        when(addressMapper.mapToAddress(addressDto)).thenReturn(address);
-
-        RestaurantCreateDto dto = new RestaurantCreateDto();
-        dto.setName("Test Restaurant");
-        dto.setAddress(addressDto);
-        dto.setCuisineIds(Set.of(1L, 2L));
-
-        Restaurant restaurant = new Restaurant("Test Restaurant", address);
-        restaurant.addCuisine(cuisine1);
-        restaurant.addCuisine(cuisine2);
-        setId(restaurant, 50L);
-
-        when(restaurantMapper.mapToEntity(dto, Set.of(cuisine1, cuisine2))).thenReturn(restaurant);
-
-        Restaurant savedRestaurant = new Restaurant();
-        setId(savedRestaurant, 50L);
-        when(restaurantRepository.save(restaurant)).thenReturn(savedRestaurant);
+    void testGetRestaurantByName_whenFound_returnsDto() {
+        // Arrange
+        String name = "Testaurant";
+        Restaurant restaurant = new Restaurant();
+        restaurant.setName(name);
 
         RestaurantDto restaurantDto = new RestaurantDto();
-        restaurantDto.setId(50L);
-        restaurantDto.setName("Test Restaurant");
+        restaurantDto.setName(name);
 
-        when(restaurantMapper.mapToDto(savedRestaurant)).thenReturn(restaurantDto);
+        when(restaurantRepository.findByName(name)).thenReturn(Optional.of(restaurant));
+        when(restaurantMapper.mapToDto(restaurant)).thenReturn(restaurantDto);
 
         // Act
-        RestaurantDto result = restaurantService.createRestaurant(dto, 10L);
+        RestaurantDto result = restaurantService.getRestaurantByName(name);
 
         // Assert
-        assertNotNull(result);
-        assertEquals(50L, result.getId());
-        assertEquals("Test Restaurant", result.getName());
-
-        verify(userRepository).findById(10L);
-        verify(cuisineRepository).findById(1L);
-        verify(cuisineRepository).findById(2L);
-        verify(addressMapper).mapToAddress(addressDto);
-        verify(restaurantRepository).save(restaurant);
-        verify(restaurantMapper).mapToDto(savedRestaurant);
-    }
-    @Test
-    void createRestaurant_shouldThrowException_whenUserIsNotEmployee() throws Exception {
-        // Arrange
-        User user = new User();
-        setId(user, 2L);//here
-        user.setRole(new Role("CLIENT")); // или "SUPPLIER" или null
-        when(userRepository.findById(2L)).thenReturn(Optional.of(user));
-
-        RestaurantCreateDto dto = new RestaurantCreateDto();
-
-        IllegalArgumentException  exception = assertThrows(
-                IllegalArgumentException .class,
-                () -> restaurantService.createRestaurant(dto, 2L)
-        );
-
-        assertEquals("Only employees can create restaurants", exception.getMessage());
-    }
-    @Test
-    void getRestaurantByName_shouldReturnDto_whenRestaurantExists() throws Exception{
-        Restaurant restaurant = new Restaurant("Testaurant", new Address());
-        setId(restaurant, 1L);//here
-
-        when(restaurantRepository.findByName("Testaurant")).thenReturn(Optional.of(restaurant));
-        when(restaurantMapper.mapToDto(restaurant)).thenReturn(new RestaurantDto());
-
-        RestaurantDto result = restaurantService.getRestaurantByName("Testaurant");
-
-        assertNotNull(result);
-        verify(restaurantRepository).findByName("Testaurant");
+        assertEquals(name, result.getName());
+        verify(restaurantRepository).findByName(name);
         verify(restaurantMapper).mapToDto(restaurant);
     }
     @Test
-    void getRestaurantByName_shouldThrowException_whenRestaurantDoesNotExist() {
-        when(restaurantRepository.findByName("Unknown")).thenReturn(Optional.empty());
+    void testGetRestaurantByName_whenNotFound_throwsException() {
+        String name = "Unknown";
 
-        EntityNotFoundException exception = assertThrows(
-                EntityNotFoundException.class,
-                () -> restaurantService.getRestaurantByName("Unknown")
-        );
+        when(restaurantRepository.findByName(name)).thenReturn(Optional.empty());
 
-        assertEquals("Restaurant with this name is not found", exception.getMessage());
+        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
+                () -> restaurantService.getRestaurantByName(name));
+
+        assertEquals("Restaurant with this name is not found", ex.getMessage());
     }
+
     @Test
-    void getAllAvailableProductsFromRestaurant_shouldReturnProducts_whenRestaurantExists() throws Exception{
-        RestaurantDto restaurantDto = new RestaurantDto();
-        restaurantDto.setId(1L);
+    void testGetRestaurantByPartName_returnsMatchingRestaurants() {
+        String partName = "Grill";
+        Restaurant restaurant = new Restaurant();
+        restaurant.setName("Grill House");
 
-        Product product = new Product();
-        setId(product, 1L); //here
+        RestaurantDto dto = new RestaurantDto();
+        dto.setName("Grill House");
 
-        ProductDto productDto = new ProductDto();
+        when(restaurantRepository.findByNameIgnoreCaseContaining(partName))
+                .thenReturn(List.of(restaurant));
+        when(restaurantMapper.mapToDto(restaurant)).thenReturn(dto);
 
-        when(restaurantRepository.findByName("Testaurant"))
-                .thenReturn(Optional.of(new Restaurant("Testaurant", new Address())));
-        when(restaurantMapper.mapToDto(any())).thenReturn(restaurantDto);
-        when(productRepository.findAllByRestaurantIdAndIsAvailableTrue(1L)).thenReturn(List.of(product));
-        when(productMapper.mapToProductDto(product)).thenReturn(productDto);
-
-        List<ProductDto> result = restaurantService.getAllAvailableProductsFromRestaurant("Testaurant");
+        List<RestaurantDto> result = restaurantService.getRestaurantByPartName(partName);
 
         assertEquals(1, result.size());
-        assertEquals(productDto, result.get(0));
+        assertEquals("Grill House", result.get(0).getName());
     }
     @Test
-    void getAllAvailableProductsFromRestaurant_shouldThrowException_whenRestaurantNotFound() {
-        when(restaurantRepository.findByName("Missing")).thenReturn(Optional.empty());
+    void testGetAllAvailableProductsFromRestaurant_returnsAvailableProducts() {
+        String restaurantName = "Veggie Spot";
+        long restaurantId = 99L;
 
-        EntityNotFoundException exception = assertThrows(
-                EntityNotFoundException.class,
-                () -> restaurantService.getAllAvailableProductsFromRestaurant("Missing")
-        );
-
-        assertEquals("Restaurant with this name is not found", exception.getMessage());
-    }
-    @Test
-    void getProductFromRestaurantByName_shouldReturnProductDto_whenFound() throws Exception{
-        Restaurant restaurant = new Restaurant("Testaurant", new Address());
-        setId(restaurant, 10L);//here
+        RestaurantDto dto = new RestaurantDto();
+        setField(dto, "id", restaurantId); // Reflection to set ID (IdEntity pattern)
+        dto.setName(restaurantName);
 
         Product product = new Product();
-        setId(product, 20L);//here
-        product.setName("Pizza");
+        product.setAvailable(true);
+        product.setName("Salad");
 
         ProductDto productDto = new ProductDto();
+        productDto.setName("Salad");
 
-        when(restaurantRepository.findByName("Testaurant")).thenReturn(Optional.of(restaurant));
-        when(productRepository.findByNameAndRestaurantName("Pizza", "Testaurant")).thenReturn(Optional.of(product));
+        when(restaurantRepository.findByName(restaurantName)).thenReturn(Optional.of(new Restaurant()));
+        when(restaurantMapper.mapToDto(any())).thenReturn(dto);
+        when(productRepository.findAllByRestaurantIdAndIsAvailableTrue(restaurantId)).thenReturn(List.of(product));
         when(productMapper.mapToProductDto(product)).thenReturn(productDto);
 
-        ProductDto result = restaurantService.getProductFromRestaurantByName("Testaurant", "Pizza");
+        List<ProductDto> result = restaurantService.getAllAvailableProductsFromRestaurant(restaurantName);
 
-        assertEquals(productDto, result);
+        assertEquals(1, result.size());
+        assertEquals("Salad", result.get(0).getName());
+    }
+    private void setField(Object target, String fieldName, Object value) {
+        try {
+            Field field = target.getClass().getDeclaredField(fieldName);
+            field.setAccessible(true);
+            field.set(target, value);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Test
+    void testGetAllAvailableProductsFromRestaurant_whenRestaurantNotFound_throwsException() {
+        when(restaurantRepository.findByName("Ghost Restaurant")).thenReturn(Optional.empty());
+
+        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
+                () -> restaurantService.getAllAvailableProductsFromRestaurant("Ghost Restaurant"));
+
+        assertEquals("Restaurant with this name is not found", ex.getMessage());
     }
     @Test
-    void getProductFromRestaurantByName_shouldThrow_whenRestaurantNotFound() {
-        when(restaurantRepository.findByName("Ghostaurant")).thenReturn(Optional.empty());
+    void getProductFromRestaurantByName_shouldReturnProductDto() {
+        Restaurant restaurant = new Restaurant();
+        restaurant.setName("Sushi Palace");
 
-        EntityNotFoundException exception = assertThrows(
-                EntityNotFoundException.class,
-                () -> restaurantService.getProductFromRestaurantByName("Ghostaurant", "Burger")
-        );
+        Product product = new Product();
+        product.setName("Dragon Roll");
+        product.setRestaurant(restaurant);
+
+        ProductDto expectedDto = new ProductDto();
+        expectedDto.setName("Dragon Roll");
+
+        when(restaurantRepository.findByName("Sushi Palace")).thenReturn(Optional.of(restaurant));
+        when(productRepository.findByNameAndRestaurantName("Dragon Roll", "Sushi Palace")).thenReturn(Optional.of(product));
+        when(productMapper.mapToProductDto(product)).thenReturn(expectedDto);
+
+        ProductDto result = restaurantService.getProductFromRestaurantByName("Sushi Palace", "Dragon Roll");
+
+        assertNotNull(result);
+        assertEquals("Dragon Roll", result.getName());
+    }
+    @Test
+    void getProductFromRestaurantByName_shouldThrowIfRestaurantNotFound() {
+        when(restaurantRepository.findByName("Ghost Kitchen")).thenReturn(Optional.empty());
+
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () ->
+                restaurantService.getProductFromRestaurantByName("Ghost Kitchen", "Burger"));
 
         assertEquals("Restaurant not found", exception.getMessage());
     }
     @Test
-    void getProductFromRestaurantByName_shouldThrow_whenProductNotFound() throws Exception{
-        Restaurant restaurant = new Restaurant("Testaurant", new Address());
-        setId(restaurant, 99L);
+    void getProductFromRestaurantByName_shouldThrowIfProductNotFound() {
+        Restaurant restaurant = new Restaurant();
+        restaurant.setName("BBQ House");
 
-        when(restaurantRepository.findByName("Testaurant")).thenReturn(Optional.of(restaurant));
-        when(productRepository.findByNameAndRestaurantName("Burger", "Testaurant")).thenReturn(Optional.empty());
+        when(restaurantRepository.findByName("BBQ House")).thenReturn(Optional.of(restaurant));
+        when(productRepository.findByNameAndRestaurantName("Ribs", "BBQ House")).thenReturn(Optional.empty());
 
-        EntityNotFoundException exception = assertThrows(
-                EntityNotFoundException.class,
-                () -> restaurantService.getProductFromRestaurantByName("Testaurant", "Burger")
-        );
+        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () ->
+                restaurantService.getProductFromRestaurantByName("BBQ House", "Ribs"));
 
-        assertEquals("Product: Burger not found in Restaurant: Testaurant", exception.getMessage());
+        assertEquals("Product: Ribs not found in Restaurant: BBQ House", exception.getMessage());
     }
     @Test
-    void testAddProductsToRestaurant_Success() throws Exception{
+    void createRestaurant_shouldCreateSuccessfully() {
         Long employeeId = 1L;
-        Long restaurantId = 2L;
 
         Role employeeRole = new Role();
-        employeeRole.setName("EMPLOYEE");
+        setField(employeeRole, "name", "EMPLOYEE");
 
         User employee = new User();
-        setId(employee, employeeId); //here
-        employee.setRole(employeeRole);
-
-        Restaurant restaurant = new Restaurant();
-        setId(restaurant, restaurantId);
-        restaurant.setName("Test Restaurant");
+        setField(employee, "role", employeeRole);
 
         Cuisine cuisine = new Cuisine();
-        cuisine.setName("Italian");
-        Set<Cuisine> cuisines = Set.of(cuisine);
+        // не сетваме ID, тъй като няма да се използва като ключ
 
-        Field cuisinesField = Restaurant.class.getDeclaredField("cuisines");
-        cuisinesField.setAccessible(true);
-        cuisinesField.set(restaurant, cuisines);
+        AddressDto addressDto = new AddressDto();
+        addressDto.setCity("Sofia");
 
-        ProductDto productDto = new ProductDto();
-        productDto.setName("Pizza");
-        productDto.setCuisineName("Italian");
-        productDto.setRestaurantName("Test Restaurant");
+        RestaurantCreateDto dto = new RestaurantCreateDto();
+        dto.setName("Italiano");
+        dto.setAddress(addressDto);
+        dto.setCuisineIds(Set.of(10L));
 
-        Product product = new Product();
-        setId(product, 3L);
-        product.setName("Pizza");
+        Address address = new Address();
+        Restaurant restaurant = new Restaurant();
+        restaurant.setName("Italiano");
 
-        List<ProductDto> productDtos = List.of(productDto);
+        Restaurant savedRestaurant = new Restaurant();
+        savedRestaurant.setName("Italiano");
+
+        RestaurantDto restaurantDto = new RestaurantDto();
+        restaurantDto.setName("Italiano");
 
         when(userRepository.findById(employeeId)).thenReturn(Optional.of(employee));
-        when(restaurantRepository.findById(restaurantId)).thenReturn(Optional.of(restaurant));
-        when(productMapper.mapToProduct(productDto)).thenReturn(product);
-        when(restaurantRepository.save(any(Restaurant.class))).thenReturn(restaurant);
-        when(restaurantMapper.mapToDto(any(Restaurant.class))).thenReturn(new RestaurantDto());
+        when(cuisineRepository.findById(10L)).thenReturn(Optional.of(cuisine));
+        when(addressMapper.mapToAddress(addressDto)).thenReturn(address);
+        when(restaurantRepository.save(any(Restaurant.class))).thenReturn(savedRestaurant);
+        when(restaurantMapper.mapToDto(savedRestaurant)).thenReturn(restaurantDto);
+        when(restaurantMapper.mapToEntity(dto, Set.of(cuisine))).thenReturn(restaurant);
 
-        RestaurantDto result = restaurantService.addProductsToRestaurant(employeeId, restaurantId, productDtos);
+        RestaurantDto result = restaurantService.createRestaurant(dto, employeeId);
 
         assertNotNull(result);
-        verify(restaurantRepository, times(1)).save(restaurant);
+        assertEquals("Italiano", result.getName());
+        verify(restaurantRepository).save(restaurant);
     }
-   /* @Test
-    void addProductsToRestaurant_shouldThrowException_whenProductCuisineNotInRestaurant() throws Exception {
-        Long employeeId = 1L;
-        Long restaurantId = 2L;
 
-        Role employeeRole = new Role();
-        employeeRole.setName("EMPLOYEE");
+
+    @Test
+    void createRestaurant_shouldThrow_whenUserNotFound() {
+        RestaurantCreateDto dto = new RestaurantCreateDto();
+        dto.setCuisineIds(Set.of(1L));
+
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () ->
+                restaurantService.createRestaurant(dto, 1L));
+
+        assertEquals("User not found", ex.getMessage());
+    }
+
+    @Test
+    void createRestaurant_shouldThrow_whenUserNotEmployee() {
+        RestaurantCreateDto dto = new RestaurantCreateDto();
+        dto.setCuisineIds(Set.of(1L));
+
+        User user = new User();
+        Role role = new Role();
+        role.setName("CLIENT");
+        user.setRole(role);
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+                restaurantService.createRestaurant(dto, 1L));
+
+        assertEquals("Only employees can create restaurants", ex.getMessage());
+    }
+
+    @Test
+    void createRestaurant_shouldThrow_whenCuisineNotFound() {
+        RestaurantCreateDto dto = new RestaurantCreateDto();
+        dto.setCuisineIds(Set.of(99L));
 
         User employee = new User();
-        employee.setRole(employeeRole);
+        Role role = new Role();
+        role.setName("EMPLOYEE");
+        employee.setRole(role);
 
-        Restaurant restaurant = new Restaurant();
-        restaurant.setName("PizzaPlace");
+        when(userRepository.findById(1L)).thenReturn(Optional.of(employee));
+        when(cuisineRepository.findById(99L)).thenReturn(Optional.empty());
 
-        // Set cuisines using reflection
+        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () ->
+                restaurantService.createRestaurant(dto, 1L));
+
+        assertEquals("Cuisine not found", ex.getMessage());
+    }
+
+    @Test
+    void addProductsToRestaurant_shouldAddProductsSuccessfully() {
+        User employee = new User();
+        Role role = new Role();
+        role.setName("EMPLOYEE");
+        employee.setRole(role);
+
         Cuisine cuisine = new Cuisine();
         cuisine.setName("Italian");
-        Set<Cuisine> cuisines = Set.of(cuisine);
-        FieldSetter.setField(restaurant, restaurant.getClass().getDeclaredField("cuisines"), cuisines);
+
+        Restaurant restaurant = new Restaurant();
+        restaurant.setName("Pizza World");
+        restaurant.addCuisine(cuisine);
 
         ProductDto productDto = new ProductDto();
-        productDto.setCuisineName("Chinese");
-        productDto.setRestaurantName("PizzaPlace");
+        productDto.setName("Margherita");
+        productDto.setCategory("MAIN");
+        productDto.setPrice(new BigDecimal("12.99"));
+        productDto.setCuisineName("Italian");
+        productDto.setRestaurantName("Pizza World");
 
-        when(userRepository.findById(employeeId)).thenReturn(Optional.of(employee));
-        when(restaurantRepository.findById(restaurantId)).thenReturn(Optional.of(restaurant));
+        Product product = new Product();
+        product.setName("Margherita");
+        product.setPrice(new BigDecimal("12.99"));
+        product.setDescription("Classic pizza");
+        product.setCategory(Category.MAIN);
+        product.setCuisine(cuisine);
+        product.setRestaurant(restaurant);
 
-        Exception exception = assertThrows(IllegalArgumentException.class,
-                () -> restaurantService.addProductsToRestaurant(employeeId, restaurantId, List.of(productDto)));
+        restaurant.addProduct(product);
 
-        assertTrue(exception.getMessage().contains("don't have the cuisine"));
-    }*/
+        // Мапнат ProductDto обратно за връщане в RestaurantDto
+        ProductDto mappedProductDto = new ProductDto();
+        mappedProductDto.setName("Margherita");
+        mappedProductDto.setPrice(new BigDecimal("12.99"));
+        mappedProductDto.setCategory("MAIN");
+        mappedProductDto.setCuisineName("Italian");
+        mappedProductDto.setRestaurantName("Pizza World");
 
+        RestaurantDto restaurantDto = new RestaurantDto();
+        restaurantDto.setName("Pizza World");
+        restaurantDto.setProducts(Set.of(mappedProductDto));
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(employee));
+        when(restaurantRepository.findById(10L)).thenReturn(Optional.of(restaurant));
+        when(productMapper.mapToProduct(productDto)).thenReturn(product);
+        when(restaurantRepository.save(any(Restaurant.class))).thenReturn(restaurant);
+        when(restaurantMapper.mapToDto(restaurant)).thenReturn(restaurantDto);
+
+        RestaurantDto result = restaurantService.addProductsToRestaurant(1L, 10L, List.of(productDto));
+
+        /* Debug
+        System.out.println("Result: " + result);
+        System.out.println("Restaurant name: " + result.getName());
+        result.getProducts().forEach(p -> System.out.println("Product: " + p.getName() + ", price: " + p.getPrice()));*/
+
+        assertNotNull(result);
+        assertEquals("Pizza World", result.getName());
+        assertEquals(1, result.getProducts().size());
+        assertEquals("Margherita", result.getProducts().iterator().next().getName());
+
+        verify(restaurantRepository).save(restaurant);
+    }
+
+    @Test
+    void addProductsToRestaurant_shouldThrowIfUserNotFound() {
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () ->
+                restaurantService.addProductsToRestaurant(1L, 10L, List.of(new ProductDto())));
+
+        assertEquals("User not found", ex.getMessage());
+    }
+
+    @Test
+    void addProductsToRestaurant_shouldThrowIfUserIsNotEmployee() {
+        User user = new User();
+        Role role = new Role();
+        role.setName("CLIENT");
+        user.setRole(role);
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        IllegalStateException ex = assertThrows(IllegalStateException.class, () ->
+                restaurantService.addProductsToRestaurant(1L, 10L, List.of(new ProductDto())));
+
+        assertEquals("Only employee can add products", ex.getMessage());
+    }
+
+    @Test
+    void addProductsToRestaurant_shouldThrowIfProductCuisineIsInvalid() {
+        User employee = new User();
+        Role role = new Role();
+        role.setName("EMPLOYEE");
+        employee.setRole(role);
+
+        Cuisine cuisine = new Cuisine();
+        cuisine.setName("Mexican");
+
+        Restaurant restaurant = new Restaurant();
+        restaurant.setName("Taco Place");
+        restaurant.addCuisine(cuisine);
+
+        ProductDto productDto = new ProductDto();
+        productDto.setCuisineName("Italian");
+        productDto.setRestaurantName("Taco Place");
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(employee));
+        when(restaurantRepository.findById(10L)).thenReturn(Optional.of(restaurant));
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+                restaurantService.addProductsToRestaurant(1L, 10L, List.of(productDto)));
+
+        assertTrue(ex.getMessage().contains("don't have the cuisine"));
+    }
+
+    @Test
+    void addProductsToRestaurant_shouldThrowIfProductHasWrongRestaurantName() {
+        User employee = new User();
+        Role role = new Role();
+        role.setName("EMPLOYEE");
+        employee.setRole(role);
+
+        Cuisine cuisine = new Cuisine();
+        cuisine.setName("Japanese");
+
+        Restaurant restaurant = new Restaurant();
+        restaurant.setName("Sushi Bar");
+        restaurant.addCuisine(cuisine);
+
+        ProductDto productDto = new ProductDto();
+        productDto.setCuisineName("Japanese");
+        productDto.setRestaurantName("Wrong Name");
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(employee));
+        when(restaurantRepository.findById(10L)).thenReturn(Optional.of(restaurant));
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+                restaurantService.addProductsToRestaurant(1L, 10L, List.of(productDto)));
+
+        assertEquals("Wrong restaurant name", ex.getMessage());
+    }
 }
