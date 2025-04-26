@@ -82,7 +82,7 @@ public class RestaurantReviewServiceImplTest {
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
                 () -> reviewService.addReview(1L, 2L, 5, "Nice"));
 
-        assertEquals("Client not found", ex.getMessage());
+        assertEquals("User not found.", ex.getMessage());
     }
     @Test
     void addReview_shouldThrowWhenRestaurantNotFound() {
@@ -95,7 +95,7 @@ public class RestaurantReviewServiceImplTest {
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
                 () -> reviewService.addReview(1L, 2L, 5, "Nice"));
 
-        assertEquals("Restaurant not found", ex.getMessage());
+        assertEquals("Restaurant not found.", ex.getMessage());
     }
     @Test
     void getReviewsForRestaurant_shouldReturnMappedDtos() {
