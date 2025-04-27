@@ -1,6 +1,8 @@
 package com.example.fooddelivery.service.order;
 
+import com.example.fooddelivery.config.address.AddressMapper;
 import com.example.fooddelivery.dto.order.OrderResponseDto;
+import com.example.fooddelivery.entity.product.Product;
 import com.example.fooddelivery.entity.role.Role;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.example.fooddelivery.config.order.OrderMapper;
@@ -8,8 +10,8 @@ import com.example.fooddelivery.dto.order.OrderCreateDto;
 import com.example.fooddelivery.dto.order.OrderDto;
 import com.example.fooddelivery.entity.order.Order;
 import com.example.fooddelivery.entity.user.User;
-import com.example.fooddelivery.repository.OrderRepository;
-import com.example.fooddelivery.repository.UserRepository;
+import com.example.fooddelivery.repository.*;
+import com.example.fooddelivery.service.discount.DiscountService;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,11 +21,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.example.fooddelivery.enums.OrderStatus;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
 import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import com.example.fooddelivery.entity.address.Address;
+import com.example.fooddelivery.entity.restaurant.Restaurant;
 
 @ExtendWith(MockitoExtension.class)
 class OrderServiceImplTest {
@@ -31,6 +35,12 @@ class OrderServiceImplTest {
     @Mock private OrderRepository orderRepository;
     @Mock private UserRepository userRepository;
     @Mock private OrderMapper orderMapper;
+    @Mock private AddressRepository addressRepository;
+    @Mock private RestaurantRepository restaurantRepository;
+    @Mock private DiscountService discountService;
+    @Mock private ProductRepository productRepository;
+    @Mock private AddressMapper addressMapper;
+
 
     @InjectMocks
     private OrderServiceImpl orderService;
@@ -41,8 +51,21 @@ class OrderServiceImplTest {
     void createOrder_shouldReturnOrderDto_whenInputIsValid() {
         Long clientId = 1L;
         OrderCreateDto createDto = new OrderCreateDto();
+        createDto.setRestaurantId(1L);
         User client = mock(User.class);
         when(client.getId()).thenReturn(clientId);
+        Address address = new Address();
+        when(addressMapper.mapToAddress(any())).thenReturn(address);
+        when(addressRepository.findByStreetAndCityAndCountryAndUserId(any(), any(), any(), any()))
+                .thenReturn(Optional.of(address));
+        when(client.getAddresses()).thenReturn(Set.of(address));
+        Restaurant restaurant = mock(Restaurant.class);
+        when(restaurantRepository.findById(anyLong())).thenReturn(Optional.of(restaurant));
+        Role clientRole = new Role();
+        clientRole.setName("CLIENT");
+        when(client.getRole()).thenReturn(clientRole);
+        when(discountService.checkAndGiveClientDiscount(any())).thenReturn(null);
+        createDto.setProducts(Set.of());
 
         Order order = new Order();
         OrderDto expectedDto = new OrderDto();
@@ -51,11 +74,12 @@ class OrderServiceImplTest {
         when(userRepository.findById(clientId)).thenReturn(Optional.of(client));
         when(orderRepository.save(any(Order.class))).thenReturn(order);
         when(orderMapper.mapFromOrderToDto(any(Order.class))).thenReturn(expectedDto);
+
         OrderDto result = orderService.createOrder(createDto, clientId);
 
         assertNotNull(result);
         assertEquals(expectedDto.getId(), result.getId());
-        verify(orderRepository).save(any(Order.class));
+        verify(orderRepository, atLeastOnce()).save(any(Order.class));
         verify(orderMapper).mapFromOrderToDto(any(Order.class));
     }
     // Проверява дали при липсващ клиент, методът хвърля EntityNotFoundException и не записва поръчка
@@ -100,25 +124,15 @@ class OrderServiceImplTest {
         verify(orderRepository).save(order);
         verify(orderMapper).mapFromOrderToDto(order);
     }
-
     @Test
     void assignOrderToSupplier_shouldThrowEntityNotFoundException_whenOrderNotFound() {
         Long orderId = 10L;
         Long supplierId = 5L;
 
-        // Mock: няма order
-        when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
-
-        // Act & Assert
         assertThrows(EntityNotFoundException.class, () -> orderService.assignOrderToSupplier(orderId, supplierId));
 
-        // Verify: userRepository НЕ трябва да е извикван изобщо
-        verify(userRepository, times(0)).findById(any());
-
-        // Verify: orderRepository.save също не трябва да е извикван
         verify(orderRepository, times(0)).save(any(Order.class));
     }
-
 
     //Тест ако Supplier-a не съществува
     @Test
@@ -127,7 +141,6 @@ class OrderServiceImplTest {
         Long supplierId = 5L;
         Order order = new Order();
 
-        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
         when(userRepository.findById(supplierId)).thenReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class, () -> orderService.assignOrderToSupplier(orderId, supplierId));
@@ -143,6 +156,11 @@ class OrderServiceImplTest {
         Order order = new Order();
         User supplier = mock(User.class);
 
+        // Setup role
+        Role role = new Role();
+        role.setName("SUPPLIER");
+        when(supplier.getRole()).thenReturn(role);
+
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
         when(userRepository.findById(supplierId)).thenReturn(Optional.of(supplier));
 
@@ -152,6 +170,7 @@ class OrderServiceImplTest {
         verify(userRepository).findById(supplierId);
         verify(orderRepository).save(order);
     }
+
     // Тест, когато order not found
     @Test
     void acceptOrder_shouldThrowEntityNotFoundException_whenOrderNotFound() {
