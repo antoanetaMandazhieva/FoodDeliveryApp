@@ -13,6 +13,12 @@ import ProfilePage from './components/userProfile/ProfilePage.jsx'
 import RestaurantReviewForm from './components/forms/RestaurantReviewForm.jsx'
 import SupplierReviewForm from './components/forms/SupplierReviewForm.jsx'
 import UserOrdersHistory from './components/userProfile/UserOrdersHistory.jsx'
+import EmployeePage from './components/employee/EmployeePage.jsx'
+import CreateRestaurant from './components/forms/CreateRestaurant.jsx'
+import AddProduct from './components/forms/AddProduct.jsx'
+import RemoveProduct from './components/forms/RemoveProduct.jsx'
+import EmployeeOrdersDashboard from './components/employee/EmployeeOrdersDashboard.jsx'
+import SupplierPage from './components/supplier/SupplierPage.jsx'
 
 
 const router = createBrowserRouter([{
@@ -46,7 +52,23 @@ const router = createBrowserRouter([{
     path: '/profile/:userId/orders',
     element: <UserOrdersHistory />
 }, {
-    path: '/profile/:employeeId'
+    path: '/profile/employee/:employeeId',
+    element: <EmployeePage />
+}, {
+    path: '/profile/employee/:employeeId/add-product',
+    element: <AddProduct />
+}, {
+    path: '/profile/employee/:employeeId/remove-product',
+    element: <RemoveProduct />
+}, {
+    path: '/profile/employee/:employeeId/create-restaurant',
+    element: <CreateRestaurant />
+}, {
+    path: '/profile/employee/:employeeId/orders-dashboard',
+    element: <EmployeeOrdersDashboard />
+}, {
+    path: 'profile/supplier/:supplierId/orders-dashboard',
+    element: <SupplierPage />
 }])
 
 createRoot(document.getElementById('root')).render(
