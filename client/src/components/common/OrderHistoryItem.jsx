@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 // ADD TRY/CATCH BLOCKS FOR BUTTONS
 
 const OrderHistoryItem = ({ orderId, clientAddress, clientPhone, 
-    restaurantName, totalPrice, orderStatus, createdAt, userRole, userId, isImpersonatingClient }) => {
+    restaurantName, totalPrice, orderStatus, createdAt, userRole, userId, deleteAssigned }) => {
     
     const buttonsLoad = () => {
         switch (userRole) {
@@ -14,13 +14,13 @@ const OrderHistoryItem = ({ orderId, clientAddress, clientPhone,
                 return (
                     <div className='grid-rows-subgrid row-span-2 grid-cols-subgrid col-span-6 flex justify-around items-center'>
                         <button 
-                            className='order-btn bg-peach-400'
+                            className={`order-btn bg-peach-400 ${(orderStatus === 'CANCELLED' || orderStatus === 'DELIVERED') && 'hidden'}`}
                             onClick={() => navigate(`/profile/${userId}/orders/track/${orderId}`)}
                         >
                             Track Order
                         </button>
                         <button 
-                            className='order-btn bg-red-700'
+                            className={`order-btn bg-red-700 ${orderStatus !== 'PENDING' && 'hidden'}`}
                             onClick={ async () => {
                                 try {
                                     const { data } = await axios.put(`http://localhost:8080/api/orders/${orderId}/cancel/${userId}`, {
@@ -47,7 +47,7 @@ const OrderHistoryItem = ({ orderId, clientAddress, clientPhone,
                 return (
                     <div className='grid-rows-subgrid row-span-2 grid-cols-subgrid col-span-6 flex justify-between items-center'>
                         <button
-                            className='order-btn bg-emerald-600'
+                            className={`order-btn bg-emerald-500 ${orderStatus === 'ACCEPTED' && 'hidden'}`}
                             onClick={ async () => {
                                 try {
                                     const { data } = await axios.put(`http://localhost:8080/api/orders/${orderId}/accept?employeeId=${userId}`, {
@@ -68,7 +68,7 @@ const OrderHistoryItem = ({ orderId, clientAddress, clientPhone,
                             Accept Order
                         </button>
                         <button 
-                            className='order-btn bg-amber-300'
+                            className={`order-btn bg-amber-300 ${orderStatus === 'PENDING' && 'hidden'}`}
                             onClick={ async () => {
                                 try {
                                     const { data } = await axios.put(`http://localhost:8080/api/orders/${orderId}/status?employeeId=${userId}`, {
@@ -105,7 +105,7 @@ const OrderHistoryItem = ({ orderId, clientAddress, clientPhone,
                                         }
                                     });
                                     console.log(data);
-                                    toast.success('Asigned order', { autoClose: 2000 });
+                                    toast.success('Assigned order', { autoClose: 2000 });
                                     window.location.reload();
                                 }
                                 catch (e) {

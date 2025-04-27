@@ -158,7 +158,7 @@ public class OrderController {
      * @return
      */
     // Tested!
-    @GetMapping("/status/{status}")
+    @GetMapping("/status/{status}/{employeeId}")
     public ResponseEntity<List<OrderResponseDto>> getOrdersByStatus(@PathVariable String status,
                                                                     @PathVariable Long employeeId) {
         return ResponseEntity.ok(orderService.getOrdersByStatus(OrderStatus.valueOf(status.toUpperCase()), employeeId));
@@ -169,7 +169,7 @@ public class OrderController {
      * @return
      */
     // Tested!
-    @GetMapping("/available")
+    @GetMapping("/available/{supplierId}")
     public ResponseEntity<List<OrderResponseDto>> getAvailableOrders(@PathVariable Long supplierId) {
         return ResponseEntity.ok(orderService.getAvailableOrdersForSuppliers(supplierId));
     }
