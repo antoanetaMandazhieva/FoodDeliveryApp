@@ -148,7 +148,7 @@ class OrderServiceImplTest {
     }
 
     //acceptOrder
-    // Позитивен тест, дали всичко е топ ако и ордъра и доставчика съществуват
+    // Позитивен тест, дали всичко е топ ако и ордъра и доставчика съществува
     @Test
     void acceptOrder_shouldAcceptSuccessfully_whenOrderAndSupplierExist() {
         Long orderId = 20L;
