@@ -1,11 +1,11 @@
 package com.example.fooddelivery;
 
-import com.example.fooddelivery.config.address.AddressMapper;
 import com.example.fooddelivery.entity.address.Address;
 import com.example.fooddelivery.entity.cuisine.Cuisine;
 import com.example.fooddelivery.entity.product.Product;
 import com.example.fooddelivery.entity.restaurant.Restaurant;
 import com.example.fooddelivery.enums.Category;
+import com.example.fooddelivery.mapper.address.AddressMapper;
 import com.example.fooddelivery.repository.*;
 import com.example.fooddelivery.service.auth.AuthService;
 import com.example.fooddelivery.service.order.OrderService;

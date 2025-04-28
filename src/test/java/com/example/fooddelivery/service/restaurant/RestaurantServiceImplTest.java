@@ -1,8 +1,5 @@
 package com.example.fooddelivery.service.restaurant;
 
-import com.example.fooddelivery.config.address.AddressMapper;
-import com.example.fooddelivery.config.product.ProductMapper;
-import com.example.fooddelivery.config.restaurant.RestaurantMapper;
 import com.example.fooddelivery.dto.address.AddressDto;
 import com.example.fooddelivery.dto.product.ProductDto;
 import com.example.fooddelivery.dto.restaurant.RestaurantCreateDto;
@@ -14,6 +11,11 @@ import com.example.fooddelivery.entity.restaurant.Restaurant;
 import com.example.fooddelivery.entity.role.Role;
 import com.example.fooddelivery.entity.user.User;
 import com.example.fooddelivery.enums.Category;
+import com.example.fooddelivery.exception.restaurant.ProductNotInRestaurantException;
+import com.example.fooddelivery.exception.role.InvalidRoleException;
+import com.example.fooddelivery.mapper.address.AddressMapper;
+import com.example.fooddelivery.mapper.product.ProductMapper;
+import com.example.fooddelivery.mapper.restaurant.RestaurantMapper;
 import com.example.fooddelivery.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.Test;
@@ -166,7 +168,7 @@ public class RestaurantServiceImplTest {
         EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () ->
                 restaurantService.getProductFromRestaurantByName("Ghost Kitchen", "Burger"));
 
-        assertEquals("Restaurant not found", exception.getMessage());
+        assertEquals("Restaurant not found.", exception.getMessage());
     }
     @Test
     void getProductFromRestaurantByName_shouldThrowIfProductNotFound() {
@@ -176,10 +178,10 @@ public class RestaurantServiceImplTest {
         when(restaurantRepository.findByName("BBQ House")).thenReturn(Optional.of(restaurant));
         when(productRepository.findByNameAndRestaurantName("Ribs", "BBQ House")).thenReturn(Optional.empty());
 
-        EntityNotFoundException exception = assertThrows(EntityNotFoundException.class, () ->
+        ProductNotInRestaurantException exception = assertThrows(ProductNotInRestaurantException.class, () ->
                 restaurantService.getProductFromRestaurantByName("BBQ House", "Ribs"));
 
-        assertEquals("Product: Ribs not found in Restaurant: BBQ House", exception.getMessage());
+        assertEquals("Product: %s not found in Restaurant: %s.", exception.getMessage());
     }
     @Test
     void createRestaurant_shouldCreateSuccessfully() {
@@ -360,10 +362,10 @@ public class RestaurantServiceImplTest {
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
-        IllegalStateException ex = assertThrows(IllegalStateException.class, () ->
+        InvalidRoleException ex = assertThrows(InvalidRoleException.class, () ->
                 restaurantService.addProductsToRestaurant(1L, 10L, List.of(new ProductDto())));
 
-        assertEquals("Only employee can add products", ex.getMessage());
+        assertEquals("Only EMPLOYEES can add products to restaurant.", ex.getMessage());
     }
 
     @Test

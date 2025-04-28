@@ -1,4 +1,4 @@
-package com.example.fooddelivery.config.address;
+package com.example.fooddelivery.mapper.address;
 
 import com.example.fooddelivery.dto.address.AddressDto;
 import com.example.fooddelivery.entity.address.Address;

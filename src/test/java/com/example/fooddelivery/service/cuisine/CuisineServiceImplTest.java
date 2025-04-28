@@ -1,9 +1,9 @@
 package com.example.fooddelivery.service.cuisine;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import com.example.fooddelivery.config.cuisine.CuisineMapper;
 import com.example.fooddelivery.dto.cuisine.CuisineDto;
 import com.example.fooddelivery.entity.cuisine.Cuisine;
+import com.example.fooddelivery.mapper.cuisine.CuisineMapper;
 import com.example.fooddelivery.repository.CuisineRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;

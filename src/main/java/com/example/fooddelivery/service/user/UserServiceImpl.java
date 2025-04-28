@@ -1,14 +1,16 @@
 package com.example.fooddelivery.service.user;
 
-import com.example.fooddelivery.config.address.AddressMapper;
-import com.example.fooddelivery.config.order.OrderMapper;
-import com.example.fooddelivery.config.user.UserMapper;
 import com.example.fooddelivery.dto.order.OrderResponseDto;
 import com.example.fooddelivery.dto.user.UserDto;
 import com.example.fooddelivery.dto.user.UserProfileDto;
 import com.example.fooddelivery.entity.address.Address;
 import com.example.fooddelivery.entity.role.Role;
 import com.example.fooddelivery.entity.user.User;
+import com.example.fooddelivery.exception.role.InvalidRoleException;
+import com.example.fooddelivery.exception.user.FieldAlreadyTakenException;
+import com.example.fooddelivery.mapper.address.AddressMapper;
+import com.example.fooddelivery.mapper.order.OrderMapper;
+import com.example.fooddelivery.mapper.user.UserMapper;
 import com.example.fooddelivery.repository.OrderRepository;
 import com.example.fooddelivery.repository.RoleRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -16,13 +18,19 @@ import org.springframework.stereotype.Service;
 import com.example.fooddelivery.repository.UserRepository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.example.fooddelivery.util.SystemErrors.Role.INVALID_ROLE;
+import static com.example.fooddelivery.util.SystemErrors.User.*;
+
 @Service
 public class UserServiceImpl implements UserService {
+
+    private static final String ADMIN_ROLE = "ADMIN";
+    private static final String EMPLOYEE_ROLE = "EMPLOYEE";
+    private static final String SUPPLIER_ROLE = "SUPPLIER";
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
@@ -47,8 +55,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserProfileDto getUserById(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        User user = getUser(id);
 
         return userMapper.mapToUserProfileDto(user);
     }
@@ -63,40 +70,19 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserProfileDto updateUser(Long id, UserProfileDto dto) {
-
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
-
+        User user = getUser(id);
         validateUsernameEmailAndPhoneNumber(user, dto);
 
-        user.setUsername(dto.getUsername());
-        user.setEmail(dto.getEmail());
-        user.setName(dto.getName());
-        user.setSurname(dto.getSurname());
-        user.setPhoneNumber(dto.getPhoneNumber());
-        user.setDateOfBirth(dto.getDateOfBirth());
-        user.setGender(dto.getGender());
-
-        Set<Address> addressesFromDto = dto.getAddresses().stream()
-                .map(addressMapper::mapToAddress)
-                .collect(Collectors.toSet());
+        updateBasicUserInfo(user, dto);
+        updateUserAddresses(user, dto);
 
 
-        for (Address addressFromDto : addressesFromDto) {
-            if (!user.getAddresses().contains(addressFromDto)) {
-                user.addAddress(addressFromDto);
-            }
-        }
-
-        userRepository.save(user);
-
-        return userMapper.mapToUserProfileDto(user);
+        return userMapper.mapToUserProfileDto(userRepository.save(user));
     }
 
     @Override
     public void deleteUser(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        User user = getUser(id);
 
         user.detachAllRelations();
 
@@ -105,22 +91,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void changeUserRole(Long adminId, Long userId, String newRole) throws AccessDeniedException {
-        User admin = userRepository.findById(adminId)
-                .orElseThrow(() -> new EntityNotFoundException("Requester not found"));
+    public void changeUserRole(Long adminId, Long userId, String newRole) {
+        User admin = getUser(adminId);
+        validateIsAdmin(admin);
 
-        if (!admin.getRole().getName().equalsIgnoreCase("ADMIN")) {
-            throw new AccessDeniedException("Only admins can change roles");
-        }
-
-        User targetUser = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        User targetUser = getUser(userId);
 
         Role currentRole = targetUser.getRole();
         currentRole.removeUser(targetUser);
 
-        Role updatedRole = roleRepository.findByName(newRole.toUpperCase())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid role"));
+
+        Role updatedRole = getRole(newRole);
 
         updatedRole.addUser(targetUser);
 
@@ -131,15 +112,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public Long getUserIdFromUsername(String username) {
         return userRepository.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"))
+                .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND))
                 .getId();
     }
 
     @Override
     @Transactional
     public List<OrderResponseDto> getOrdersByClientUsername(String clientUsername) {
-        User client = userRepository.findByUsername(clientUsername)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        User client = getUserByUsername(clientUsername);
 
         return orderRepository.findByClientId(client.getId())
                 .stream()
@@ -150,19 +130,13 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public List<OrderResponseDto> getOrdersBySupplierUsername(String supplierUsername, Long workerId) {
-        User worker = userRepository.findById(workerId)
-                .orElseThrow(() -> new EntityNotFoundException("Worker not found"));
-
+        User worker = getUser(workerId);
         String workerRole = worker.getRole().getName();
 
-        if (!workerRole.equals("ADMIN") && !workerRole.equals("EMPLOYEE")) {
-            throw new IllegalStateException("You don't have permission to see orders of supplier");
-        }
+        validateIsAdminOrEmployee(workerRole);
 
-
-        User supplier = userRepository.findByUsername(supplierUsername)
-                .orElseThrow(() -> new EntityNotFoundException("Supplier not found"));
-
+        User supplier = getUserByUsername(supplierUsername);
+        validateIsSupplier(supplier, ONLY_SUPPLIER_ORDERS_CAN_BE_CHECKED);
 
         return orderRepository.findBySupplierId(supplier.getId())
                 .stream()
@@ -170,30 +144,85 @@ public class UserServiceImpl implements UserService {
                 .toList();
     }
 
+    @Override
     public Long getSupplierIdByUsername(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        User supplier = getUserByUsername(username);
 
-        if (!"SUPPLIER".equals(user.getRole().getName())) {
-            throw new IllegalArgumentException("User don't have SUPPLIER role");
-        }
+        validateIsSupplier(supplier, SUPPLIER_NOT_FOUND);
 
-        return user.getId();
+        return supplier.getId();
     }
 
 
+
+    private User getUser(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND));
+    }
+
     private void validateUsernameEmailAndPhoneNumber(User user, UserProfileDto dto) {
         if (!dto.getUsername().equals(user.getUsername()) && userRepository.findByUsername(dto.getUsername()).isPresent()) {
-            throw new IllegalArgumentException("Username is already taken");
+            throw new FieldAlreadyTakenException(USERNAME_ALREADY_TAKEN);
         }
 
         if (!dto.getEmail().equals(user.getEmail()) && userRepository.findByUsername(dto.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("Email already taken");
+            throw new FieldAlreadyTakenException(EMAIL_ALREADY_TAKEN);
         }
 
         if (!dto.getPhoneNumber().equals(user.getPhoneNumber()) &&
                 userRepository.findByPhoneNumber(dto.getPhoneNumber()).isPresent()) {
-            throw new IllegalArgumentException("Phone number already taken");
+            throw new FieldAlreadyTakenException(PHONE_NUMBER_ALREADY_TAKEN);
+        }
+    }
+
+    private void updateBasicUserInfo(User user, UserProfileDto dto) {
+        user.setUsername(dto.getUsername());
+        user.setEmail(dto.getEmail());
+        user.setName(dto.getName());
+        user.setSurname(dto.getSurname());
+        user.setPhoneNumber(dto.getPhoneNumber());
+        user.setDateOfBirth(dto.getDateOfBirth());
+        user.setGender(dto.getGender());
+    }
+
+    private void updateUserAddresses(User user, UserProfileDto dto) {
+        Set<Address> addressesFromDto = dto.getAddresses().stream()
+                .map(addressMapper::mapToAddress)
+                .collect(Collectors.toSet());
+
+
+        for (Address addressFromDto : addressesFromDto) {
+            if (!user.getAddresses().contains(addressFromDto)) {
+                user.addAddress(addressFromDto);
+            }
+        }
+    }
+
+    private void validateIsAdmin(User admin) {
+        if (!ADMIN_ROLE.equals(admin.getRole().getName())) {
+            throw new InvalidRoleException(ONLY_ADMIN_CHANGE_ROLE);
+        }
+    }
+
+    private Role getRole(String newRole) {
+        return roleRepository.findByName(newRole.toUpperCase())
+                .orElseThrow(() -> new InvalidRoleException(INVALID_ROLE));
+    }
+
+    private User getUserByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND));
+    }
+
+    private void validateIsAdminOrEmployee(String workerRole) {
+        if (!ADMIN_ROLE.equals(workerRole) && !EMPLOYEE_ROLE.equals(workerRole)) {
+            throw new InvalidRoleException(NO_PERMISSION_TO_SEE_SUPPLIER_ORDERS);
+        }
+    }
+
+    private void validateIsSupplier(User supplier, String message) {
+        if (!SUPPLIER_ROLE.equals(supplier.getRole().getName())) {
+            throw new InvalidRoleException(message);
         }
     }
 }

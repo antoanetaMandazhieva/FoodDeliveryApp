@@ -1,15 +1,14 @@
 package com.example.fooddelivery.service.order;
 
-import com.example.fooddelivery.config.address.AddressMapper;
 import com.example.fooddelivery.dto.order.OrderResponseDto;
-import com.example.fooddelivery.entity.product.Product;
 import com.example.fooddelivery.entity.role.Role;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import com.example.fooddelivery.config.order.OrderMapper;
 import com.example.fooddelivery.dto.order.OrderCreateDto;
 import com.example.fooddelivery.dto.order.OrderDto;
 import com.example.fooddelivery.entity.order.Order;
 import com.example.fooddelivery.entity.user.User;
+import com.example.fooddelivery.mapper.address.AddressMapper;
+import com.example.fooddelivery.mapper.order.OrderMapper;
 import com.example.fooddelivery.repository.*;
 import com.example.fooddelivery.service.discount.DiscountService;
 import jakarta.persistence.EntityNotFoundException;

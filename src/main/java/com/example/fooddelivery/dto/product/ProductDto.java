@@ -9,7 +9,6 @@ public class ProductDto {
     private BigDecimal price;
     private String description;
     private String category;
-    private boolean isAvailable;
     private String cuisineName;
     private String restaurantName;
 
@@ -52,14 +51,6 @@ public class ProductDto {
 
     public void setCategory(String category) {
         this.category = category;
-    }
-
-    public boolean isAvailable() {
-        return isAvailable;
-    }
-
-    public void setAvailable(boolean available) {
-        isAvailable = available;
     }
 
     public String getCuisineName() {

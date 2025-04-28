@@ -14,6 +14,9 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.example.fooddelivery.util.Messages.ORDER_ACCEPTED_SUCCESSFUL;
+import static com.example.fooddelivery.util.Messages.ORDER_TAKEN_SUCCESSFULLY;
+
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
@@ -61,7 +64,7 @@ public class OrderController {
     public ResponseEntity<String> acceptOrder(@PathVariable Long orderId,
                                               @RequestParam Long employeeId) {
         orderService.acceptOrder(orderId, employeeId);
-        return ResponseEntity.ok("Order accepted successfully");
+        return ResponseEntity.ok(ORDER_ACCEPTED_SUCCESSFUL);
     }
 
     /**
@@ -88,7 +91,7 @@ public class OrderController {
     public ResponseEntity<String> takeOrder(@PathVariable Long orderId,
                                             @RequestParam Long supplierId) {
         orderService.takeOrder(orderId, supplierId);
-        return ResponseEntity.ok("Order taken successfully and is now in delivery");
+        return ResponseEntity.ok(ORDER_TAKEN_SUCCESSFULLY);
     }
 
     /**

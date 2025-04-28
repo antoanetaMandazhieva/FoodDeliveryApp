@@ -1,4 +1,4 @@
-package com.example.fooddelivery.config.cuisine;
+package com.example.fooddelivery.mapper.cuisine;
 
 import com.example.fooddelivery.dto.cuisine.CuisineDto;
 import com.example.fooddelivery.entity.cuisine.Cuisine;

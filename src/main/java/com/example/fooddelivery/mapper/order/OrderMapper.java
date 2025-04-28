@@ -1,13 +1,13 @@
-package com.example.fooddelivery.config.order;
+package com.example.fooddelivery.mapper.order;
 
-import com.example.fooddelivery.config.address.AddressMapper;
-import com.example.fooddelivery.config.ordered_item.OrderedItemMapper;
 import com.example.fooddelivery.dto.address.AddressDto;
 import com.example.fooddelivery.dto.order.OrderDto;
 import com.example.fooddelivery.dto.order.OrderProductDto;
 import com.example.fooddelivery.dto.order.OrderResponseDto;
 import com.example.fooddelivery.entity.discount.Discount;
 import com.example.fooddelivery.entity.order.Order;
+import com.example.fooddelivery.mapper.address.AddressMapper;
+import com.example.fooddelivery.mapper.ordered_item.OrderedItemMapper;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 

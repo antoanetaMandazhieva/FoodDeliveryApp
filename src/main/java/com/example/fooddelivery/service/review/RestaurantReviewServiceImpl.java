@@ -1,10 +1,10 @@
 package com.example.fooddelivery.service.review;
 
-import com.example.fooddelivery.config.review.ReviewMapper;
 import com.example.fooddelivery.dto.review.RestaurantReviewDto;
 import com.example.fooddelivery.entity.restaurant.Restaurant;
 import com.example.fooddelivery.entity.review.RestaurantReview;
 import com.example.fooddelivery.entity.user.User;
+import com.example.fooddelivery.mapper.review.ReviewMapper;
 import com.example.fooddelivery.repository.RestaurantRepository;
 import com.example.fooddelivery.repository.RestaurantReviewRepository;
 import com.example.fooddelivery.repository.UserRepository;

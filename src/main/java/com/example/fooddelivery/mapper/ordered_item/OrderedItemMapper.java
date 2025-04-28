@@ -1,4 +1,4 @@
-package com.example.fooddelivery.config.ordered_item;
+package com.example.fooddelivery.mapper.ordered_item;
 
 import com.example.fooddelivery.dto.order.OrderProductDto;
 import com.example.fooddelivery.entity.ordered_item.OrderedItem;

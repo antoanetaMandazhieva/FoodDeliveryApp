@@ -3,7 +3,7 @@ package com.example.fooddelivery.service.discount;
 import com.example.fooddelivery.entity.discount.Discount;
 import com.example.fooddelivery.entity.user.User;
 import com.example.fooddelivery.enums.DiscountType;
-import com.example.fooddelivery.exception.discount.InvalidDiscountUserException;
+import com.example.fooddelivery.exception.role.InvalidRoleException;
 import com.example.fooddelivery.repository.DiscountRepository;
 import com.example.fooddelivery.service.user.UserService;
 import org.springframework.stereotype.Service;
@@ -15,6 +15,8 @@ import static com.example.fooddelivery.util.SystemErrors.Discount.NOT_CLIENT_ROL
 
 @Service
 public class DiscountServiceImpl implements DiscountService {
+
+    private static final String CLIENT_ROLE = "CLIENT";
 
     private final UserService userService;
     private final DiscountRepository discountRepository;
@@ -28,19 +30,16 @@ public class DiscountServiceImpl implements DiscountService {
     @Transactional
     public Discount checkAndGiveClientDiscount(User client) {
 
-        if (!"CLIENT".equals(client.getRole().getName())) {
-            throw new InvalidDiscountUserException(NOT_CLIENT_ROLE_FOR_DISCOUNT);
+        if (!CLIENT_ROLE.equals(client.getRole().getName())) {
+            throw new InvalidRoleException(NOT_CLIENT_ROLE_FOR_DISCOUNT);
         }
 
         int countOrders = userService.getOrdersByClientUsername(client.getUsername()).size();
 
         if (countOrders % 10 == 0) {
-            Discount discount = new Discount();
-
             BigDecimal discountAmount = BigDecimal.valueOf(0.1);
+            Discount discount = createDiscount(discountAmount, DiscountType.CLIENT);
 
-            discount.setDiscountAmount(discountAmount);
-            discount.setDiscountType(DiscountType.CLIENT);
             client.addDiscount(discount);
 
 
@@ -52,12 +51,10 @@ public class DiscountServiceImpl implements DiscountService {
 
     @Override
     public Discount checkAndGiveWorkerDiscount(User worker) {
-
-        String role = worker.getRole().getName();
-
         BigDecimal discountAmount = BigDecimal.ZERO;
         DiscountType discountType = null;
 
+        String role = worker.getRole().getName();
         switch (role) {
             case "ADMIN" -> {
                 discountAmount = BigDecimal.valueOf(0.3);
@@ -73,12 +70,18 @@ public class DiscountServiceImpl implements DiscountService {
             }
         }
 
-        Discount discount = new Discount();
-
-        discount.setDiscountAmount(discountAmount);
-        discount.setDiscountType(discountType);
+        Discount discount = createDiscount(discountAmount, discountType);
         worker.addDiscount(discount);
 
         return discountRepository.save(discount);
+    }
+
+
+    private Discount createDiscount(BigDecimal discountAmount, DiscountType discountType) {
+        Discount discount = new Discount();
+        discount.setDiscountAmount(discountAmount);
+        discount.setDiscountType(discountType);
+
+        return discount;
     }
 }

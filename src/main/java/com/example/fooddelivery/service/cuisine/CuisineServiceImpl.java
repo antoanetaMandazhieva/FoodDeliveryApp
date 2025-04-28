@@ -1,7 +1,7 @@
 package com.example.fooddelivery.service.cuisine;
 
-import com.example.fooddelivery.config.cuisine.CuisineMapper;
 import com.example.fooddelivery.dto.cuisine.CuisineDto;
+import com.example.fooddelivery.mapper.cuisine.CuisineMapper;
 import com.example.fooddelivery.repository.CuisineRepository;
 import org.springframework.stereotype.Service;
 

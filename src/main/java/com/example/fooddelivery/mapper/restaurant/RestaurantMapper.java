@@ -1,11 +1,11 @@
-package com.example.fooddelivery.config.restaurant;
+package com.example.fooddelivery.mapper.restaurant;
 
-import com.example.fooddelivery.config.cuisine.CuisineMapper;
-import com.example.fooddelivery.config.product.ProductMapper;
 import com.example.fooddelivery.dto.restaurant.RestaurantCreateDto;
 import com.example.fooddelivery.dto.restaurant.RestaurantDto;
 import com.example.fooddelivery.entity.cuisine.Cuisine;
 import com.example.fooddelivery.entity.restaurant.Restaurant;
+import com.example.fooddelivery.mapper.cuisine.CuisineMapper;
+import com.example.fooddelivery.mapper.product.ProductMapper;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 

@@ -1,7 +1,5 @@
 package com.example.fooddelivery.service.auth;
 
-import com.example.fooddelivery.config.user.UserMapper;
-import com.example.fooddelivery.config.address.AddressMapper;
 import com.example.fooddelivery.dto.address.AddressDto;
 import com.example.fooddelivery.dto.auth.LoginRequestDto;
 import com.example.fooddelivery.dto.auth.LoginResponseDto;
@@ -12,6 +10,8 @@ import com.example.fooddelivery.entity.user.User;
 import com.example.fooddelivery.exception.auth.InvalidCredentialsException;
 import com.example.fooddelivery.exception.role.RoleNotFoundException;
 import com.example.fooddelivery.exception.auth.UserAlreadyExistsException;
+import com.example.fooddelivery.mapper.address.AddressMapper;
+import com.example.fooddelivery.mapper.user.UserMapper;
 import com.example.fooddelivery.repository.RoleRepository;
 import com.example.fooddelivery.repository.UserRepository;
 import org.springframework.stereotype.Service;

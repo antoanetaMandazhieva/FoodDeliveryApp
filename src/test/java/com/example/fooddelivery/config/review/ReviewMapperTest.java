@@ -5,6 +5,7 @@ import com.example.fooddelivery.dto.review.SupplierReviewDto;
 import com.example.fooddelivery.entity.review.RestaurantReview;
 import com.example.fooddelivery.entity.review.SupplierReview;
 import com.example.fooddelivery.entity.user.User;
+import com.example.fooddelivery.mapper.review.ReviewMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;

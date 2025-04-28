@@ -7,8 +7,9 @@ import com.example.fooddelivery.service.user.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.nio.file.AccessDeniedException;
 import java.util.List;
+
+import static com.example.fooddelivery.util.Messages.SUCCESSFULLY_CHANGED_ROLE;
 
 @RestController
 @RequestMapping("/api/users")
@@ -51,11 +52,10 @@ public class UserController {
     @PutMapping("/{adminId}/change-role/{userId}")
     public ResponseEntity<String> changeUserRole(@PathVariable Long adminId,
                                                @PathVariable Long userId,
-                                               @RequestParam String role) throws AccessDeniedException {
+                                               @RequestParam String role)  {
         userService.changeUserRole(adminId, userId, role);
 
-        return ResponseEntity.ok(String.format("Successfully changed role for User with ID: %d\n" +
-                "New role: %s", userId, role.toUpperCase()));
+        return ResponseEntity.ok(String.format(SUCCESSFULLY_CHANGED_ROLE, userId, role.toUpperCase()));
     }
 
     // Tested!

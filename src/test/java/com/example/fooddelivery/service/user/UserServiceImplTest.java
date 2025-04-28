@@ -1,8 +1,5 @@
 package com.example.fooddelivery.service.user;
 
-import com.example.fooddelivery.config.address.AddressMapper;
-import com.example.fooddelivery.config.order.OrderMapper;
-import com.example.fooddelivery.config.user.UserMapper;
 import com.example.fooddelivery.dto.address.AddressDto;
 import com.example.fooddelivery.dto.order.OrderResponseDto;
 import com.example.fooddelivery.dto.user.UserDto;
@@ -12,6 +9,9 @@ import com.example.fooddelivery.entity.order.Order;
 import com.example.fooddelivery.entity.role.Role;
 import com.example.fooddelivery.entity.user.User;
 import com.example.fooddelivery.enums.Gender;
+import com.example.fooddelivery.mapper.address.AddressMapper;
+import com.example.fooddelivery.mapper.order.OrderMapper;
+import com.example.fooddelivery.mapper.user.UserMapper;
 import com.example.fooddelivery.repository.OrderRepository;
 import com.example.fooddelivery.repository.RoleRepository;
 import com.example.fooddelivery.repository.UserRepository;

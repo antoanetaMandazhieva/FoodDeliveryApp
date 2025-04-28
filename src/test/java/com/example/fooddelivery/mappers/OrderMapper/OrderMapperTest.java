@@ -1,8 +1,5 @@
 package com.example.fooddelivery.mappers.OrderMapper;
 
-import com.example.fooddelivery.config.address.AddressMapper;
-import com.example.fooddelivery.config.order.OrderMapper;
-import com.example.fooddelivery.config.ordered_item.OrderedItemMapper;
 import com.example.fooddelivery.dto.order.OrderDto;
 import com.example.fooddelivery.dto.order.OrderProductDto;
 import com.example.fooddelivery.dto.order.OrderResponseDto;
@@ -13,6 +10,9 @@ import com.example.fooddelivery.entity.ordered_item.OrderedItemId;
 import com.example.fooddelivery.entity.restaurant.Restaurant;
 import com.example.fooddelivery.entity.user.User;
 import com.example.fooddelivery.enums.OrderStatus;
+import com.example.fooddelivery.mapper.address.AddressMapper;
+import com.example.fooddelivery.mapper.order.OrderMapper;
+import com.example.fooddelivery.mapper.ordered_item.OrderedItemMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;

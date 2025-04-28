@@ -1,12 +1,12 @@
 package com.example.fooddelivery.service.review;
 
-import com.example.fooddelivery.config.review.ReviewMapper;
 import com.example.fooddelivery.dto.review.SupplierReviewDto;
 import com.example.fooddelivery.entity.review.SupplierReview;
 import com.example.fooddelivery.entity.role.Role;
 import com.example.fooddelivery.entity.user.User;
 import com.example.fooddelivery.exception.review.SameClientAndSupplierException;
 import com.example.fooddelivery.exception.role.InvalidRoleException;
+import com.example.fooddelivery.mapper.review.ReviewMapper;
 import com.example.fooddelivery.repository.SupplierReviewRepository;
 import com.example.fooddelivery.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;

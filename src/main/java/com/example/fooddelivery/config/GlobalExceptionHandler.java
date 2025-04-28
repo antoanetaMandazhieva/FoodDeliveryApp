@@ -1,4 +1,4 @@
-package com.example.fooddelivery.config.global_exception_handler;
+package com.example.fooddelivery.config;
 
 import com.example.fooddelivery.exception.base.BaseException;
 import jakarta.persistence.EntityNotFoundException;

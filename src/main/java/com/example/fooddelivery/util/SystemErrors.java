@@ -16,6 +16,7 @@ public class SystemErrors {
 
     public static final class Role {
         public static final String NO_CLIENT_ROLE = "There is no CLIENT role!";
+        public static final String INVALID_ROLE = "Invalid role.";
     }
 
     public static final class Review {
@@ -25,7 +26,7 @@ public class SystemErrors {
     }
 
     public static final class Discount {
-        public static final String NOT_CLIENT_ROLE_FOR_DISCOUNT = "Only clients are eligible for client discounts.";
+        public static final String NOT_CLIENT_ROLE_FOR_DISCOUNT = "Only CLIENTS are eligible for client discounts.";
     }
 
     public static final class Order {
@@ -55,18 +56,36 @@ public class SystemErrors {
 
     public static final class Restaurant {
         public static final String RESTAURANT_NOT_FOUND = "Restaurant not found.";
+        public static final String RESTAURANT_WITH_THIS_NAME_NOT_FOUND = "Restaurant with this name is not found";
+        public static final String ONLY_EMPLOYEE_CREATE_RESTAURANT = "Only EMPLOYEES can create restaurants.";
+        public static final String RESTAURANT_NOT_HAVE_CUISINE =
+                "Restaurant: %s don't have the cuisine (%s) of the product you want to add. Restaurant cuisines: %s.";
+        public static final String WRONG_RESTAURANT_NAME = "Wrong restaurant name.";
     }
 
     public static final class Product {
         public static final String PRODUCT_NOT_FOUND = "Product not found.";
         public static final String PRODUCT_NOT_IN_RESTAURANT = "Product: %s is not in Restaurant: %s.";
         public static final String PRODUCT_QUANTITY_LESS_THAN_0 = "Quantity for product with ID: %d must be greater than 0.";
+        public static final String PRODUCT_IN_THIS_RESTAURANT_NOT_FOUND = "Product: %s not found in Restaurant: %s.";
+        public static final String ONLY_EMPLOYEE_ADD_PRODUCTS_TO_RESTAURANT = "Only EMPLOYEES can add products to restaurant.";
+        public static final String ONLY_EMPLOYEE_REMOVE_PRODUCT_FROM_RESTAURANT = "Only EMPLOYEES can remove product from restaurant.";
     }
 
     public static final class User {
         public static final String USER_NOT_FOUND = "User not found.";
         public static final String SUPPLIER_NOT_FOUND = "Supplier not found.";
-        public static final String USER_ADDRESS_NOT_FOUND = "User: %s %s doesn't have this address";
+        public static final String USER_ADDRESS_NOT_FOUND = "User: %s %s doesn't have this address.";
+        public static final String ONLY_ADMIN_CHANGE_ROLE = "Only ADMINS can change roles.";
+        public static final String NO_PERMISSION_TO_SEE_SUPPLIER_ORDERS = "You don't have permission to see orders of supplier.";
+        public static final String ONLY_SUPPLIER_ORDERS_CAN_BE_CHECKED = "You can't check orders of user which is not SUPPLIER.";
+        public static final String USERNAME_ALREADY_TAKEN = "Username is already taken.";
+        public static final String EMAIL_ALREADY_TAKEN = "Email is already taken.";
+        public static final String PHONE_NUMBER_ALREADY_TAKEN = "Phone number is already taken.";
+    }
+
+    public static final class Cuisine {
+        public static final String CUISINE_NOT_FOUND = "Cuisine not found.";
     }
 
     private SystemErrors() {}

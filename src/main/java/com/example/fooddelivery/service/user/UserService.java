@@ -17,7 +17,7 @@ public interface UserService {
 
     void deleteUser(Long id);
 
-    void changeUserRole(Long adminId, Long userId, String newRole) throws AccessDeniedException;
+    void changeUserRole(Long adminId, Long userId, String newRole);
 
     Long getUserIdFromUsername(String username);
 

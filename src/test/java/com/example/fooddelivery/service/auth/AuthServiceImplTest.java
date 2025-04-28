@@ -1,13 +1,15 @@
 package com.example.fooddelivery.service.auth;
 
-import com.example.fooddelivery.config.address.AddressMapper;
-import com.example.fooddelivery.config.user.UserMapper;
 import com.example.fooddelivery.dto.auth.LoginRequestDto;
+import com.example.fooddelivery.dto.auth.LoginResponseDto;
 import com.example.fooddelivery.dto.auth.RegisterRequestDto;
 import com.example.fooddelivery.dto.address.AddressDto;
 import com.example.fooddelivery.entity.address.Address;
 import com.example.fooddelivery.entity.role.Role;
 import com.example.fooddelivery.entity.user.User;
+import com.example.fooddelivery.exception.auth.InvalidCredentialsException;
+import com.example.fooddelivery.mapper.address.AddressMapper;
+import com.example.fooddelivery.mapper.user.UserMapper;
 import com.example.fooddelivery.repository.RoleRepository;
 import com.example.fooddelivery.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -138,11 +140,39 @@ public class AuthServiceImplTest {
         User user = mock(User.class);
         when(userRepository.findByUsername("testUser")).thenReturn(Optional.of(user));
         when(user.checkPassword("wrongPassword")).thenReturn(false);
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> authService.login(loginRequest));
+        InvalidCredentialsException exception = assertThrows(InvalidCredentialsException.class, () -> authService.login(loginRequest));
 
         assertEquals("Invalid password.", exception.getMessage());
 
         verify(userRepository).findByUsername("testUser");
         verify(user).checkPassword("wrongPassword");
+    }
+
+    // Проверява дали човек успешно се логва, ако всичко е наред
+    @Test
+    void login_shouldLogUser_whenValidDate() {
+        LoginRequestDto loginRequest = new LoginRequestDto();
+        loginRequest.setUsername("testUser");
+        loginRequest.setPassword("testPassword");
+
+        User user = mock(User.class);
+        Role role = mock(Role.class);
+
+
+        when(userRepository.findByUsername("testUser")).thenReturn(Optional.of(user));
+        when(user.checkPassword("testPassword")).thenReturn(true);
+        when(user.getId()).thenReturn(1L);
+        when(user.getRole()).thenReturn(role);
+        when(role.getName()).thenReturn("CLIENT");
+
+        LoginResponseDto response = authService.login(loginRequest);
+
+        assertEquals(1L, response.getId());
+        assertEquals("CLIENT", response.getRole());
+        assertEquals("Login Successful.", response.getMessage());
+
+
+        verify(userRepository).findByUsername("testUser");
+        verify(user).checkPassword("testPassword");
     }
 }

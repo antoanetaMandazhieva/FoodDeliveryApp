@@ -1,7 +1,5 @@
 package com.example.fooddelivery.service.order;
 
-import com.example.fooddelivery.config.address.AddressMapper;
-import com.example.fooddelivery.config.order.OrderMapper;
 import com.example.fooddelivery.dto.order.*;
 import com.example.fooddelivery.entity.address.Address;
 import com.example.fooddelivery.entity.discount.Discount;
@@ -13,6 +11,8 @@ import com.example.fooddelivery.enums.Category;
 import com.example.fooddelivery.enums.OrderStatus;
 import com.example.fooddelivery.exception.order.*;
 import com.example.fooddelivery.exception.role.InvalidRoleException;
+import com.example.fooddelivery.mapper.address.AddressMapper;
+import com.example.fooddelivery.mapper.order.OrderMapper;
 import com.example.fooddelivery.repository.*;
 import com.example.fooddelivery.service.discount.DiscountService;
 import jakarta.persistence.EntityNotFoundException;
@@ -222,7 +222,9 @@ public class OrderServiceImpl implements OrderService {
     public OrderDto cancelOrderByClient(Long orderId, Long clientId) {
         Order order = getOrder(orderId);
 
-        validateIsOrderForClient(order, clientId);
+        User client = getUser(clientId);
+
+        validateIsOrderForClient(order, client);
 
         if (order.getOrderStatus() != OrderStatus.PENDING) {
             throw new InvalidOrderStatusException(String.format(WRONG_ORDER_STATUS_TO_CANCEL_ORDER, order.getOrderStatus()));
@@ -246,10 +248,9 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderResponseDto getOrderInfoById(Long orderId, Long clientId) {
         Order order = getOrder(orderId);
+        User client = getUser(clientId);
 
-        User user = getUser(clientId);
-
-        validateIsOrderForClient(order, clientId);
+        validateIsOrderForClient(order, client);
 
         return orderMapper.toResponseDto(order);
     }
@@ -427,8 +428,8 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
-    private void validateIsOrderForClient(Order order, Long clientId) {
-        if (!(order.getClient().getId() == clientId)) {
+    private void validateIsOrderForClient(Order order, User client) {
+        if (!(order.getClient().getId() == client.getId())) {
             throw new InvalidOrderClientException(ORDER_NOT_FOR_CLIENT);
         }
     }

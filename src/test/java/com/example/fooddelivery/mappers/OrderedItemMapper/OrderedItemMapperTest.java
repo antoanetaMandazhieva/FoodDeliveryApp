@@ -1,9 +1,9 @@
 package com.example.fooddelivery.mappers.OrderedItemMapper;
 
-import com.example.fooddelivery.config.ordered_item.OrderedItemMapper;
 import com.example.fooddelivery.dto.order.OrderProductDto;
 import com.example.fooddelivery.entity.ordered_item.OrderedItem;
 import com.example.fooddelivery.entity.product.Product;
+import com.example.fooddelivery.mapper.ordered_item.OrderedItemMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;

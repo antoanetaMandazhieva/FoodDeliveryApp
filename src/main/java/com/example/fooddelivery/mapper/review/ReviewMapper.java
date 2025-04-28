@@ -1,4 +1,4 @@
-package com.example.fooddelivery.config.review;
+package com.example.fooddelivery.mapper.review;
 
 import com.example.fooddelivery.dto.review.RestaurantReviewDto;
 import com.example.fooddelivery.dto.review.SupplierReviewDto;

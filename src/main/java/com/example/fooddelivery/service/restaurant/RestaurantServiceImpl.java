@@ -1,9 +1,5 @@
 package com.example.fooddelivery.service.restaurant;
 
-import com.example.fooddelivery.config.address.AddressMapper;
-import com.example.fooddelivery.config.product.ProductMapper;
-import com.example.fooddelivery.config.restaurant.RestaurantMapper;
-import com.example.fooddelivery.dto.address.AddressDto;
 import com.example.fooddelivery.dto.product.ProductDto;
 import com.example.fooddelivery.dto.restaurant.RestaurantCreateDto;
 import com.example.fooddelivery.dto.restaurant.RestaurantDto;
@@ -12,6 +8,13 @@ import com.example.fooddelivery.entity.cuisine.Cuisine;
 import com.example.fooddelivery.entity.product.Product;
 import com.example.fooddelivery.entity.restaurant.Restaurant;
 import com.example.fooddelivery.entity.user.User;
+import com.example.fooddelivery.exception.restaurant.ProductNotInRestaurantException;
+import com.example.fooddelivery.exception.restaurant.RestaurantNotHaveCuisineException;
+import com.example.fooddelivery.exception.restaurant.WrongRestaurantNameException;
+import com.example.fooddelivery.exception.role.InvalidRoleException;
+import com.example.fooddelivery.mapper.address.AddressMapper;
+import com.example.fooddelivery.mapper.product.ProductMapper;
+import com.example.fooddelivery.mapper.restaurant.RestaurantMapper;
 import com.example.fooddelivery.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
@@ -20,8 +23,14 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.example.fooddelivery.util.SystemErrors.Product.*;
+import static com.example.fooddelivery.util.SystemErrors.Restaurant.*;
+import static com.example.fooddelivery.util.SystemErrors.User.USER_NOT_FOUND;
+
 @Service
 public class RestaurantServiceImpl implements RestaurantService {
+
+    private static final String EMPLOYEE_ROLE = "EMPLOYEE";
 
     private final RestaurantRepository restaurantRepository;
     private final ProductRepository productRepository;
@@ -52,7 +61,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     public RestaurantDto getRestaurantByName(String restaurantName) {
         return restaurantRepository.findByName(restaurantName)
                 .map(restaurantMapper::mapToDto)
-                .orElseThrow(() -> new EntityNotFoundException("Restaurant with this name is not found"));
+                .orElseThrow(() -> new EntityNotFoundException(RESTAURANT_WITH_THIS_NAME_NOT_FOUND));
     }
 
     // Tested!
@@ -76,14 +85,9 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Override
     @Transactional
     public ProductDto getProductFromRestaurantByName(String restaurantName, String productName) {
-        Restaurant restaurant = restaurantRepository.findByName(restaurantName)
-                .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
+        validateRestaurantExists(restaurantName);
 
-
-        Product product = productRepository.findByNameAndRestaurantName(productName, restaurantName)
-                .orElseThrow(() -> new EntityNotFoundException(String.format(
-                        "Product: %s not found in Restaurant: %s", productName, restaurantName
-                )));
+        Product product = getProductByNameAndRestaurantName(productName, restaurantName);
 
 
         return productMapper.mapToProductDto(product);
@@ -92,20 +96,10 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Override
     @Transactional
     public RestaurantDto createRestaurant(RestaurantCreateDto dto, Long employeeId) {
-        User employee = userRepository.findById(employeeId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
+        User employee = getUser(employeeId);
+        validateIsEmployee(employee, ONLY_EMPLOYEE_CREATE_RESTAURANT);
 
-        if (!("EMPLOYEE").equals(employee.getRole().getName())) {
-            throw new IllegalArgumentException("Only employees can create restaurants");
-        }
-
-
-        Set<Cuisine> cuisines = new HashSet<>();
-
-        for (Long cuisineId : dto.getCuisineIds()) {
-            cuisines.add(cuisineRepository.findById(cuisineId)
-                    .orElseThrow(() -> new EntityNotFoundException("Cuisine not found")));
-        }
+        Set<Cuisine> cuisines = getCuisinesFromDto(dto);
 
         Restaurant restaurant = restaurantMapper.mapToEntity(dto, cuisines);
 
@@ -118,12 +112,8 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Transactional
     @Override
     public RestaurantDto addProductsToRestaurant(Long employeeId, Long restaurantId, List<ProductDto> productDtos) {
-        User employee = userRepository.findById(employeeId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
-
-        if (!"EMPLOYEE".equals(employee.getRole().getName())) {
-            throw new IllegalStateException("Only employee can add products");
-        }
+        User employee = getUser(employeeId);
+        validateIsEmployee(employee, ONLY_EMPLOYEE_ADD_PRODUCTS_TO_RESTAURANT);
 
         Restaurant restaurant = getRestaurantById(restaurantId);
 
@@ -131,29 +121,9 @@ public class RestaurantServiceImpl implements RestaurantService {
                 .map(Cuisine::getName)
                 .collect(Collectors.toSet());
 
-        for (ProductDto productDto : productDtos) {
-            if (!cuisineNames.contains(productDto.getCuisineName())) {
-                throw new IllegalArgumentException(String.format(
-                        "Restaurant: %s don't have the cuisine (%s) of the product you want to add. Restaurant cuisines: %s" ,
-                        restaurant.getName(), productDto.getCuisineName(), String.join(", ", cuisineNames)));
-            }
+        validateCuisines(restaurant, productDtos, cuisineNames);
 
-            if (!restaurant.getName().equals(productDto.getRestaurantName())) {
-                throw new IllegalArgumentException("Wrong restaurant name");
-            }
-        }
-
-
-        List<Product> products = productDtos.stream()
-                .map(productMapper::mapToProduct)
-                .toList();
-
-        products.forEach(product -> product.setAvailable(true));
-
-        for (Product product : products) {
-            restaurant.addProduct(product);
-            restaurantRepository.save(restaurant);
-        }
+        addOrUpdateProducts(restaurant, productDtos);
 
         return restaurantMapper.mapToDto(restaurant);
     }
@@ -161,22 +131,15 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Transactional
     @Override
     public RestaurantDto removeProductFromRestaurant(Long employeeId, Long restaurantId, Long productId) {
-        User employee = userRepository.findById(employeeId)
-                .orElseThrow(() -> new EntityNotFoundException("User not found"));
-
-        if (!"EMPLOYEE".equals(employee.getRole().getName())) {
-            throw new IllegalStateException("Only employee can remove products");
-        }
+        User employee = getUser(employeeId);
+        validateIsEmployee(employee, ONLY_EMPLOYEE_REMOVE_PRODUCT_FROM_RESTAURANT);
 
         Restaurant restaurant = getRestaurantById(restaurantId);
-
         Product product = getProductById(productId);
 
-        if (!(product.getRestaurant().getId() == restaurantId)) {
-            throw new IllegalArgumentException("Product does not belong to the given restaurant");
-        }
-
+        validateIsProductInRestaurant(product, restaurantId);
         product.setAvailable(false);
+
         productRepository.save(product);
 
         return restaurantMapper.mapToDto(restaurant);
@@ -216,13 +179,120 @@ public class RestaurantServiceImpl implements RestaurantService {
                 .toList();
     }
 
+    private void validateRestaurantExists(String restaurantName) {
+        restaurantRepository.findByName(restaurantName)
+                .orElseThrow(() -> new EntityNotFoundException(RESTAURANT_NOT_FOUND));
+    }
+
+    private User getUser(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND));
+    }
+
+    private void validateIsEmployee(User employee, String message) {
+        if (!EMPLOYEE_ROLE.equals(employee.getRole().getName())) {
+            throw new InvalidRoleException(message);
+        }
+    }
+
+    private Set<Cuisine> getCuisinesFromDto(RestaurantCreateDto dto) {
+        Set<Cuisine> cuisines = new HashSet<>();
+
+        for (Long cuisineId : dto.getCuisineIds()) {
+            if (isCuisineExists(cuisineId)) {
+                Cuisine cuisine = getCuisine(cuisineId);
+
+                cuisines.add(cuisine);
+            }
+        }
+
+        return cuisines;
+    }
+
+    private boolean isCuisineExists(Long cuisineId) {
+        return cuisineRepository.findById(cuisineId).isPresent();
+    }
+
+    private Cuisine getCuisine(Long cuisineId) {
+        return cuisineRepository.findById(cuisineId).get();
+    }
+
     private Restaurant getRestaurantById(Long restaurantId) {
         return restaurantRepository.findById(restaurantId)
-                .orElseThrow(() -> new EntityNotFoundException("Restaurant not found"));
+                .orElseThrow(() -> new EntityNotFoundException(RESTAURANT_NOT_FOUND));
+    }
+
+    private void validateCuisines(Restaurant restaurant, List<ProductDto> productDtos, Set<String> cuisineNames) {
+        for (ProductDto productDto : productDtos) {
+            validateRestaurantHaveThisCuisine(restaurant, cuisineNames, productDto);
+
+            validateRestaurantNameEqualToProductRestaurantName(restaurant, productDto);
+        }
+    }
+
+    private void validateRestaurantHaveThisCuisine(Restaurant restaurant, Set<String> cuisineNames, ProductDto productDto) {
+        if (!cuisineNames.contains(productDto.getCuisineName())) {
+            throw new RestaurantNotHaveCuisineException(String.format(RESTAURANT_NOT_HAVE_CUISINE,
+                    restaurant.getName(), productDto.getCuisineName(), String.join(", ", cuisineNames)));
+        }
+    }
+
+    private void validateRestaurantNameEqualToProductRestaurantName(Restaurant restaurant, ProductDto productDto) {
+        if (!restaurant.getName().equals(productDto.getRestaurantName())) {
+            throw new WrongRestaurantNameException(WRONG_RESTAURANT_NAME);
+        }
+    }
+
+    private void addOrUpdateProducts(Restaurant restaurant, List<ProductDto> productDtos) {
+        // Взимат се имената на всички продукти, които ще добавяме
+        List<String> productNames = productDtos.stream()
+                .map(ProductDto::getName)
+                .toList();
+
+        // Взимат се всички съществуващи продукти за този ресторант по име
+        List<Product> existingProducts = productRepository.findAllByNameInAndRestaurantId(productNames, restaurant.getId());
+
+        // Мапване на продуктите по име за бързо търсене
+        Map<String, Product> existingProductMap = existingProducts.stream()
+                .collect(Collectors.toMap(Product::getName, p -> p));
+
+        List<Product> productsToSave = new ArrayList<>();
+
+        for (ProductDto productDto : productDtos) {
+            Product existingProduct = existingProductMap.get(productDto.getName());
+
+            if (existingProduct != null) {
+                existingProduct.setAvailable(true);
+                productsToSave.add(existingProduct);
+            } else {
+                Product newProduct = productMapper.mapToProduct(productDto);
+                newProduct.setAvailable(true);
+                newProduct.setRestaurant(restaurant);
+                productsToSave.add(newProduct);
+                restaurant.addProduct(newProduct);
+            }
+        }
+
+        // Съхраняване на всичко
+        productRepository.saveAll(productsToSave);
+
+        // Накрая се запазва ресторанта, ако има нови продукти добавени
+        restaurantRepository.save(restaurant);
+    }
+
+    private Product getProductByNameAndRestaurantName(String productName, String restaurantName) {
+        return productRepository.findByNameAndRestaurantName(productName, restaurantName)
+                .orElseThrow(() -> new ProductNotInRestaurantException(PRODUCT_IN_THIS_RESTAURANT_NOT_FOUND));
     }
 
     private Product getProductById(Long productId) {
         return productRepository.findById(productId)
-                .orElseThrow(() -> new EntityNotFoundException("Product not found"));
+                .orElseThrow(() -> new EntityNotFoundException(PRODUCT_NOT_FOUND));
+    }
+
+    private void validateIsProductInRestaurant(Product product, Long restaurantId) {
+        if (!(product.getRestaurant().getId() == restaurantId)) {
+            throw new ProductNotInRestaurantException(PRODUCT_IN_THIS_RESTAURANT_NOT_FOUND);
+        }
     }
 }

@@ -1,13 +1,13 @@
-package com.example.fooddelivery.config.user;
+package com.example.fooddelivery.mapper.user;
 
-import com.example.fooddelivery.config.address.AddressMapper;
 import com.example.fooddelivery.dto.address.AddressDto;
-import com.example.fooddelivery.dto.auth.RegisterRequestDto;
 import com.example.fooddelivery.dto.auth.LoginRequestDto;
+import com.example.fooddelivery.dto.auth.RegisterRequestDto;
 import com.example.fooddelivery.dto.user.UserDto;
 import com.example.fooddelivery.dto.user.UserProfileDto;
 import com.example.fooddelivery.entity.user.User;
 import com.example.fooddelivery.enums.Gender;
+import com.example.fooddelivery.mapper.address.AddressMapper;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 

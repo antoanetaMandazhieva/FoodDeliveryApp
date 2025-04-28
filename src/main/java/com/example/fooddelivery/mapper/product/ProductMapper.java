@@ -1,4 +1,4 @@
-package com.example.fooddelivery.config.product;
+package com.example.fooddelivery.mapper.product;
 
 import com.example.fooddelivery.dto.product.ProductDto;
 import com.example.fooddelivery.entity.cuisine.Cuisine;
