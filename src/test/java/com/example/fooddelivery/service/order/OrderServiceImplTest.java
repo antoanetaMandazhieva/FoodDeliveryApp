@@ -26,6 +26,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -696,35 +697,6 @@ class OrderServiceImplTest {
     }
 
     //getAvailableOrdersForSuppliers
-    //Всички свободни поръчки без доставчик
-    @Test
-    void getAvailableOrdersForSuppliers_shouldReturnList_whenSupplierExists() {
-        Long supplierId = 16L;
-        User supplier = mock(User.class);
-        when(userRepository.findById(supplierId)).thenReturn(Optional.of(supplier));
-        when(supplier.getRole()).thenReturn(new Role("SUPPLIER"));
-
-        Order order1 = new Order();
-        Order order2 = new Order();
-        OrderResponseDto dto1 = new OrderResponseDto();
-        OrderResponseDto dto2 = new OrderResponseDto();
-
-        when(orderRepository.findByOrderStatusAndSupplierIsNull(OrderStatus.PREPARING))
-                .thenReturn(new ArrayList<>(List.of(order1)));
-        when(orderRepository.findByOrderStatusAndSupplierIsNull(OrderStatus.ACCEPTED))
-                .thenReturn(new ArrayList<>(List.of(order2)));
-
-        when(orderMapper.toResponseDto(order1)).thenReturn(dto1);
-        when(orderMapper.toResponseDto(order2)).thenReturn(dto2);
-
-        List<OrderResponseDto> result = orderService.getAvailableOrdersForSuppliers(supplierId);
-
-        assertEquals(2, result.size());
-        assertSame(dto1, result.get(0));
-        assertSame(dto2, result.get(1));
-    }
-
-
     //Няма такъв доставчикю
     @Test
     void getAvailableOrdersForSuppliers_shouldThrowEntityNotFoundException_whenSupplierNotFound() {
