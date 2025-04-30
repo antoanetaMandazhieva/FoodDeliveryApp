@@ -62,7 +62,7 @@ class RestaurantControllerTest {
     //getRestaurantByPartName_shouldReturnListOfRestaurants_whenMatchesExist
     //При частично съвпадение на име, връща списък с ресторанти
     @Test
-    void getRestaurantByPartName_shouldReturnListOfRestaurants_whenMatchesExist() throws Exception {
+    void getRestaurantsByPartName_shouldReturnListOfRestaurants_whenMatchesExist() throws Exception {
         String partName = "Pizza";
 
         RestaurantDto restaurant1 = new RestaurantDto();
@@ -73,7 +73,7 @@ class RestaurantControllerTest {
 
         List<RestaurantDto> restaurants = List.of(restaurant1, restaurant2);
 
-        when(restaurantService.getRestaurantByPartName(partName)).thenReturn(restaurants);
+        when(restaurantService.getRestaurantsByPartName(partName)).thenReturn(restaurants);
 
         mockMvc.perform(get("/api/restaurants/part-name/{partName}", partName) // изпраща го като path variable
                         .param("partName", partName) // изпраща го и като request параметър, защото контролерът го очаква така
@@ -85,10 +85,10 @@ class RestaurantControllerTest {
     }
     //При липса на съвпадения с част от име, връща празен списък
     @Test
-    void getRestaurantByPartName_shouldReturnEmptyList_whenNoMatchesExist() throws Exception {
+    void getRestaurantsByPartName_shouldReturnEmptyList_whenNoMatchesExist() throws Exception {
         String partName = "NonExistent";
 
-        when(restaurantService.getRestaurantByPartName(partName)).thenReturn(List.of());
+        when(restaurantService.getRestaurantsByPartName(partName)).thenReturn(List.of());
 
         mockMvc.perform(get("/api/restaurants/part-name/{partName}", partName)
                         .contentType(MediaType.APPLICATION_JSON))
