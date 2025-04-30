@@ -15,43 +15,37 @@ const EmployeePage = () => {
                 w-full sm:w-[90%] md:w-[80%] h-screen'>
                     
 
-                <Link to={`/profile/employee/${employeeId}/add-product`}>
                     <div className='flex justify-center items-center'>
-                        <button className='bg-teal hover:bg-teal-600 text-ivory text-3xl font-quicksand font-bold p-3 rounded-4xl'>
-                            Add Product
-                        </button>
+                        <Link to={`/profile/employee/${employeeId}/add-product`}>
+                            <button className='bg-teal hover:bg-teal-600 text-ivory text-3xl font-quicksand font-bold p-3 rounded-4xl'>
+                                Add Product
+                            </button>
+                        </Link>
                     </div>
-                </Link>
 
-                <Link to={`/profile/employee/${employeeId}/remove-product`}>
                     <div className='flex justify-center items-center'>
-                        <button className='bg-teal hover:bg-teal-600 text-ivory text-3xl font-quicksand font-bold p-3 rounded-4xl'>
-                            Remove Product
-                        </button>
+                        <Link to={`/profile/employee/${employeeId}/remove-product`}>
+                            <button className='bg-teal hover:bg-teal-600 text-ivory text-3xl font-quicksand font-bold p-3 rounded-4xl'>
+                                Remove Product
+                            </button>
+                        </Link>
                     </div>
-                </Link>
 
-                <Link 
-                    to={`/profile/employee/${employeeId}/create-restaurant`}
-                    className='grid-cols-subgrid col-span-2'
-                >
-                    <div className='flex justify-center items-center'>
-                        <button className='bg-teal hover:bg-teal-600 text-ivory text-3xl font-quicksand font-bold p-3 rounded-4xl'>
-                            Create Restaurant
-                        </button>
+                    <div className='flex justify-center items-center grid-cols-subgrid col-span-2'>
+                        <Link to={`/profile/employee/${employeeId}/create-restaurant`}>
+                            <button className='bg-teal hover:bg-teal-600 text-ivory text-3xl font-quicksand font-bold p-3 rounded-4xl'>
+                                Create Restaurant
+                            </button>
+                        </Link>
                     </div>
-                </Link>
 
-                <Link 
-                    to={`/profile/employee/${employeeId}/orders-dashboard`}
-                    className='grid-cols-subgrid col-span-2'
-                >
-                    <div className='flex justify-center items-center'>
-                        <button className='bg-teal hover:bg-teal-600 text-ivory text-3xl font-quicksand font-bold p-3 rounded-4xl'>
-                            Orders Dashboard
-                        </button>
+                    <div className='flex justify-center items-center grid-cols-subgrid col-span-2'>
+                        <Link to={`/profile/employee/${employeeId}/orders-dashboard`}>
+                            <button className='bg-teal hover:bg-teal-600 text-ivory text-3xl font-quicksand font-bold p-3 rounded-4xl'>
+                                Orders Dashboard
+                            </button>
+                        </Link>
                     </div>
-                </Link>
             </div>
         </div>
     );

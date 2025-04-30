@@ -1,14 +1,12 @@
 import Navigation from '../common/Navigation';
 import SearchBar from './SearchBar';
 import CuisinesScroll from './CuisinesScroll';
-
 import { useState, useRef, useEffect } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import RestaurantsSection from './RestaurantsSection';
 import Footer from '../common/Footer';
 import axios from 'axios';
-import { get } from 'react-hook-form';
 
 const Restaurants = () => {
     const [moreIsClicked, setMoreIsClicked] = useState(() => false);
@@ -16,14 +14,14 @@ const Restaurants = () => {
     const [filterIsClicked, setFilterIsClicked] = useState({elementId: '', clicked: false});
     const [sortData, setSortData] = useState({elementId: 'sort-2', value: 'sorted/asc'});
     const [sortIsClicked, setSortIsClicked] = useState({elementId: 'sort-2', clicked: true});
+    const [searchData, setSearchData] = useState('');
+    const [searchQuery, setSearchQuery] = useState('');
     const [restaurants, setRestaurants] = useState([]);
 
     const cuiScrollRef = useRef(null);
     const searchBarRef = useRef(null);
     const restSectionRef = useRef(null);
 
-    // console.log(filterData)
-    // console.log(sortData)
     console.log(restaurants)
 
     /*
@@ -46,6 +44,15 @@ const Restaurants = () => {
     useEffect(() => {
         getSortResults();
     }, [sortData]);
+
+    useEffect(() => {
+        if (searchData) {
+            setRestaurants(searchData);
+        }
+        else {
+            getSortResults();
+        }
+    }, [searchData]);
 
     useEffect(() => {
         const getFilterData = async () => {
@@ -208,6 +215,9 @@ const Restaurants = () => {
                         handleFilterChange={handleFilterChange}
                         moreIsClicked={moreIsClicked}
                         handleMoreIsClicked={() => setMoreIsClicked(prev => !prev)}
+                        searchQuery={searchQuery}
+                        setSearchQuery={setSearchQuery}
+                        setSearchData={setSearchData}
                     />
                 </div>
                 <div className='w-full inset-0 z-20' ref={restSectionRef}>

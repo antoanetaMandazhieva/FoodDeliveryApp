@@ -19,6 +19,11 @@ import AddProduct from './components/forms/AddProduct.jsx'
 import RemoveProduct from './components/forms/RemoveProduct.jsx'
 import EmployeeOrdersDashboard from './components/employee/EmployeeOrdersDashboard.jsx'
 import SupplierPage from './components/supplier/SupplierPage.jsx'
+import AdminPanel from './components/admin/AdminPanel.jsx'
+import ChangeUserRole from './components/forms/ChangeUserRole.jsx'
+import SupplierOrdersDashboard from './components/supplier/SupplierOrdersDashboard.jsx'
+import SupplierAssignedOrders from './components/supplier/SupplierAssignedOrders.jsx'
+import UserTrackOrder from './components/userProfile/UserTrackOrder.jsx'
 
 
 const router = createBrowserRouter([{
@@ -52,6 +57,9 @@ const router = createBrowserRouter([{
     path: '/profile/:userId/orders',
     element: <UserOrdersHistory />
 }, {
+    path: '/profile/:userId/orders/track/:orderId',
+    element: <UserTrackOrder />
+}, {
     path: '/profile/employee/:employeeId',
     element: <EmployeePage />
 }, {
@@ -67,8 +75,20 @@ const router = createBrowserRouter([{
     path: '/profile/employee/:employeeId/orders-dashboard',
     element: <EmployeeOrdersDashboard />
 }, {
-    path: 'profile/supplier/:supplierId/orders-dashboard',
+    path: '/profile/supplier/:supplierId/orders-dashboard',
+    element: <SupplierOrdersDashboard />
+}, {
+    path: '/profile/supplier/:supplierId',
     element: <SupplierPage />
+}, {
+    path: '/profile/supplier/:supplierId/orders-assigned',
+    element: <SupplierAssignedOrders />
+}, {
+    path: '/profile/admin/:adminId', 
+    element: <AdminPanel />
+}, {
+    path: '/profile/admin/:adminId/change-role',
+    element: <ChangeUserRole />
 }])
 
 createRoot(document.getElementById('root')).render(

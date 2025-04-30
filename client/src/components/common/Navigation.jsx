@@ -89,7 +89,7 @@ const Navigation = () => {
                     User Profile
                 </li>
             </Link>}
-            {userRole === 'SUPPLIER' && <Link to={`profile/supplier/${userId}/orders-dashboard`}>
+            {userRole === 'SUPPLIER' && <Link to={`/profile/supplier/${userId}`}>
                 <li className='text-black mx-6 md:text-md lg:text-lg hover:text-peach-400 hover:scale-110 font-playfair'>
                     Courrier
                 </li>
@@ -99,7 +99,7 @@ const Navigation = () => {
                     Employee
                 </li>
             </Link>}
-            {userRole === 'ADMIN' && <Link to='/admin'>
+            {userRole === 'ADMIN' && <Link to={`/profile/admin/${userId}`}>
                 <li className='text-black mx-6 md:text-md lg:text-lg hover:text-peach-400 hover:scale-110 font-playfair'>
                     Admin Panel
                 </li>

@@ -1,11 +1,24 @@
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import debounce from 'lodash/debounce';
+import axios from 'axios';
 
-const SearchBar = ({ sortIsClicked, handleSortChange, filterIsClicked, handleFilterChange, moreIsClicked, handleMoreIsClicked }) => {
+const SearchBar = ({ sortIsClicked, handleSortChange, filterIsClicked, handleFilterChange, moreIsClicked, handleMoreIsClicked, searchQuery, setSearchQuery, setSearchData }) => {
     const [windowWidth, setWindowWidth] = useState(window.innerWidth) 
 
-    const [searchData, setSearchData] = useState(() => '');
+    const debouncedSearchRef = useRef(
+        debounce((query) => {
+            axios.get(`http://localhost:8080/api/restaurants/part-name/${query}`)
+                .then(response => {
+                    console.log("Search response:", response.data);
+                    setSearchData(response.data);
+                })
+                .catch(error => {
+                    console.error("Search error:", error);
+                });
+        }, 700)
+    );
 
     useEffect(() => {
         const handleResize = () => {
@@ -16,12 +29,16 @@ const SearchBar = ({ sortIsClicked, handleSortChange, filterIsClicked, handleFil
         return () => window.removeEventListener('resize', handleResize)
     }, [])
 
-    
 
     const handleSearchChange = (event) => {
         const {value} = event.target;
-
-        setSearchData(() => value);
+        setSearchQuery(value);
+        if (value) {
+            debouncedSearchRef.current(value);
+        }
+        else {
+            setSearchData(null);
+        }
     }
 
     return (
@@ -41,7 +58,7 @@ const SearchBar = ({ sortIsClicked, handleSortChange, filterIsClicked, handleFil
 
                     {/* Sort 1 */} 
 
-                    <button id='sort-1' className='flex flex-col justify-between items-center mr-5' onClick={handleSortChange} disabled={filterIsClicked.clicked} data-value='top-rated'>
+                    <button id='sort-1' className='flex flex-col justify-between items-center mr-5' onClick={handleSortChange} disabled={filterIsClicked.clicked || searchQuery} data-value='top-rated'>
                         <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' 
                             stroke-width='1.5' stroke='currentColor' 
                             className={`fill-none rounded-full max-sm:size-6 sm:size-7 md:size-8 lg:size-9 max-sm:mb-3 hover:bg-peach-400 ${(sortIsClicked.clicked && sortIsClicked.elementId === 'sort-1') ? 'bg-peach-400' : 'bg-peach-100'}`}   
@@ -55,7 +72,7 @@ const SearchBar = ({ sortIsClicked, handleSortChange, filterIsClicked, handleFil
 
                     {/* Sort 2 */}
 
-                    <button id='sort-2' className='flex flex-col justify-between items-center mr-5' onClick={handleSortChange} disabled={filterIsClicked.clicked} data-value='sorted/asc'>
+                    <button id='sort-2' className='flex flex-col justify-between items-center mr-5' onClick={handleSortChange} disabled={filterIsClicked.clicked || searchQuery} data-value='sorted/asc'>
                         <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' 
                             stroke-width='1.5' stroke='currentColor' 
                             className={`rounded-full max-sm:size-6 sm:size-7 md:size-8 lg:size-9 hover:bg-peach-400 ${(sortIsClicked.clicked && sortIsClicked.elementId === 'sort-2') ? 'bg-peach-400' : 'bg-peach-100'}`}
@@ -69,7 +86,7 @@ const SearchBar = ({ sortIsClicked, handleSortChange, filterIsClicked, handleFil
 
                     {/* Sort 3 */}
 
-                    <button id='sort-3' className='flex flex-col justify-between items-center mr-5' onClick={handleSortChange} disabled={filterIsClicked.clicked} data-value='sorted/desc'>
+                    <button id='sort-3' className='flex flex-col justify-between items-center mr-5' onClick={handleSortChange} disabled={filterIsClicked.clicked || searchQuery} data-value='sorted/desc'>
                         <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' 
                             stroke-width='1.5' stroke='currentColor' 
                             className={`fill-ivory rounded-full max-sm:size-6 sm:size-7 md:size-8 lg:size-9 hover:bg-peach-400 ${(sortIsClicked.clicked && sortIsClicked.elementId === 'sort-3') ? 'bg-peach-400' : 'bg-peach-100'}`}
@@ -93,9 +110,10 @@ const SearchBar = ({ sortIsClicked, handleSortChange, filterIsClicked, handleFil
                 focus:outline focus:outline-black'
                 type='text'
                 name='search'
-                value={searchData}
+                value={searchQuery}
                 placeholder={`Search for ${windowWidth >= 768 ? 'restaurant suggestions' : 'restaurants'}`}
                 onChange={handleSearchChange}
+                disabled={filterIsClicked.clicked}
             />
 
             {/* Filters */}
@@ -107,7 +125,7 @@ const SearchBar = ({ sortIsClicked, handleSortChange, filterIsClicked, handleFil
 
                     {/* Filter 1 */}
 
-                    <button id='4' className='flex flex-col justify-between items-center pt-3' onClick={handleFilterChange} disabled={filterIsClicked.elementId !== '4' && filterIsClicked.clicked} data-value='japanese'>
+                    <button id='4' className='flex flex-col justify-between items-center pt-3' onClick={handleFilterChange} disabled={(filterIsClicked.elementId !== '4' && filterIsClicked.clicked) || searchQuery} data-value='japanese'>
                         <svg
                             className={`fill-black rounded-full max-sm:size-6 sm:size-7 md:size-8 lg:size-9 max-sm:mb-3 hover:bg-peach-400 ${(filterIsClicked.clicked && filterIsClicked.elementId === '4') ? 'bg-peach-400' : 'bg-peach-100'}`}
                             version='1.1'
@@ -137,7 +155,7 @@ const SearchBar = ({ sortIsClicked, handleSortChange, filterIsClicked, handleFil
 
                     {/* Filter 2 */}
 
-                    <button id='1' className='flex flex-col justify-between items-center pt-3' onClick={handleFilterChange} disabled={filterIsClicked.elementId !== '1' && filterIsClicked.clicked} data-value='italian'>
+                    <button id='1' className='flex flex-col justify-between items-center pt-3' onClick={handleFilterChange} disabled={(filterIsClicked.elementId !== '1' && filterIsClicked.clicked) || searchQuery} data-value='italian'>
                         <svg className={`fill-none rounded-full max-sm:size-6 sm:size-7 md:size-8 lg:size-9 max-sm:mb-3 hover:bg-peach-400 ${(filterIsClicked.clicked && filterIsClicked.elementId === '1') ? 'bg-peach-400' : 'bg-peach-100'}`}
                             viewBox='0 -0.5 25 25'
                             xmlns='http://www.w3.org/2000/svg'>
@@ -157,7 +175,7 @@ const SearchBar = ({ sortIsClicked, handleSortChange, filterIsClicked, handleFil
 
                     {/* Filter 3 */}
 
-                    <button id='12' className='flex flex-col justify-between items-center pt-3' onClick={handleFilterChange} disabled={filterIsClicked.elementId !== '12' && filterIsClicked.clicked} data-value='seafood'>
+                    <button id='12' className='flex flex-col justify-between items-center pt-3' onClick={handleFilterChange} disabled={(filterIsClicked.elementId !== '12' && filterIsClicked.clicked) || searchQuery} data-value='seafood'>
                         <svg 
                             className={`fill-black rounded-full max-sm:size-6 sm:size-7 md:size-8 lg:size-9 max-sm:mb-3 hover:bg-peach-400 ${(filterIsClicked.clicked && filterIsClicked.elementId === '12') ? 'bg-peach-400' : 'bg-peach-100'}`}
                             version='1.1' id='Layer_1' 

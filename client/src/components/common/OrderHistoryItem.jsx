@@ -2,11 +2,14 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import { getCookie } from '../../util/cookies';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 // ADD TRY/CATCH BLOCKS FOR BUTTONS
 
 const OrderHistoryItem = ({ orderId, clientAddress, clientPhone, 
     restaurantName, totalPrice, orderStatus, createdAt, userRole, userId, deleteAssigned }) => {
+    
+    const navigate = useNavigate();
     
     const buttonsLoad = () => {
         switch (userRole) {
@@ -30,7 +33,7 @@ const OrderHistoryItem = ({ orderId, clientAddress, clientPhone,
                                     });
                                     console.log(data);
                                     toast.success('Cancelled Order', { autoClose: 2000 });
-                                    window.location.reload();
+                                    setTimeout(() => window.location.reload(), 2500);
                                 }
                                 catch (e) {
                                     console.error(e);
@@ -57,7 +60,7 @@ const OrderHistoryItem = ({ orderId, clientAddress, clientPhone,
                                     });
                                     console.log(data);
                                     toast.success('Accepted order', { autoClose: 2000 });
-                                    window.location.reload();
+                                    setTimeout(() => window.location.reload(), 2500);
                                 }
                                 catch (e) {
                                     console.error(e);
@@ -78,7 +81,7 @@ const OrderHistoryItem = ({ orderId, clientAddress, clientPhone,
                                     });
                                     console.log(data);
                                     toast.success('Changed to preparing', { autoClose: 2000 });
-                                    window.location.reload();
+                                    setTimeout(() => window.location.reload(), 2500);
                                 }
                                 catch (e) {
                                     console.error(e);
@@ -99,14 +102,14 @@ const OrderHistoryItem = ({ orderId, clientAddress, clientPhone,
                             className='order-btn bg-peach-400'
                             onClick={ async () => {
                                 try {
-                                    const { data } = await axios.put(`http://localhost:8080/api/orders/${orderId}/assign/${2}`, {
+                                    const { data } = await axios.put(`http://localhost:8080/api/orders/${orderId}/assign/${userId}`, {
                                         headers: {
                                             'Content-Type': 'application/json'
                                         }
                                     });
                                     console.log(data);
                                     toast.success('Assigned order', { autoClose: 2000 });
-                                    window.location.reload();
+                                    setTimeout(() => window.location.reload(), 2500);
                                 }
                                 catch (e) {
                                     console.error(e);
@@ -120,14 +123,14 @@ const OrderHistoryItem = ({ orderId, clientAddress, clientPhone,
                             className='order-btn bg-amber-300'
                             onClick={ async () => {
                                 try {
-                                    const { data } = await axios.put(`http://localhost:8080/api/orders/${orderId}/take?supplierId=${2}`, {
+                                    const { data } = await axios.put(`http://localhost:8080/api/orders/${orderId}/take?supplierId=${userId}`, {
                                         headers: {
                                             'Content-Type': 'application/json'
                                         }
                                     });
                                     console.log(data);
                                     toast.success('Took order', { autoClose: 2000 });
-                                    window.location.reload();
+                                    setTimeout(() => window.location.reload(), 2500);
                                 }
                                 catch (e) {
                                     console.error(e);
@@ -141,14 +144,14 @@ const OrderHistoryItem = ({ orderId, clientAddress, clientPhone,
                             className='order-btn bg-emerald-600'
                             onClick={ async () => {
                                 try {
-                                    const { data } = await axios.put(`http://localhost:8080/api/orders/${orderId}/finish/${2}`, {
+                                    const { data } = await axios.put(`http://localhost:8080/api/orders/${orderId}/finish/${userId}`, {
                                         headers: {
                                             'Content-Type': 'application/json'
                                         }
                                     });
                                     console.log(data);
                                     toast.success('Finished order', { autoClose: 2000 });
-                                    window.location.reload();
+                                    setTimeout(() => window.location.reload(), 2500);
                                 } 
                                 catch (e) {
                                     console.error(e);
