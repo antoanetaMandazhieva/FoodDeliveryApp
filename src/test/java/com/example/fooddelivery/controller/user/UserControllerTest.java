@@ -168,8 +168,9 @@ class UserControllerTest {
                         .param("role", role)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().string(String.format("Successfully changed role for User with ID: %d\nNew role: %s", userId, role.toUpperCase())));
+                .andExpect(content().string("Successfully changed role for User with ID: 2. New role: SUPPLIER."));
     }
+
     //Проверява дали връща грешка ако user не съществува
     @Test
     void changeUserRole_shouldReturnNotFound_whenUserDoesNotExist() throws Exception {

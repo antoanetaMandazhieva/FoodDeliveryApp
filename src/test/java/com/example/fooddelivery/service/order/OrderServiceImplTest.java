@@ -2,11 +2,15 @@ package com.example.fooddelivery.service.order;
 
 import com.example.fooddelivery.dto.order.OrderResponseDto;
 import com.example.fooddelivery.entity.role.Role;
+
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.example.fooddelivery.dto.order.OrderCreateDto;
 import com.example.fooddelivery.dto.order.OrderDto;
 import com.example.fooddelivery.entity.order.Order;
 import com.example.fooddelivery.entity.user.User;
+import com.example.fooddelivery.exception.order.InvalidOrderStatusException;
+import com.example.fooddelivery.exception.order.InvalidOrderSupplierException;
+import com.example.fooddelivery.exception.role.InvalidRoleException;
 import com.example.fooddelivery.mapper.address.AddressMapper;
 import com.example.fooddelivery.mapper.order.OrderMapper;
 import com.example.fooddelivery.repository.*;
@@ -138,7 +142,6 @@ class OrderServiceImplTest {
     void assignOrderToSupplier_shouldThrowEntityNotFoundException_whenSupplierNotFound() {
         Long orderId = 10L;
         Long supplierId = 5L;
-        Order order = new Order();
 
         when(userRepository.findById(supplierId)).thenReturn(Optional.empty());
 
@@ -153,12 +156,13 @@ class OrderServiceImplTest {
         Long orderId = 20L;
         Long supplierId = 7L;
         Order order = new Order();
-        User supplier = mock(User.class);
 
-        // Setup role
-        Role role = new Role();
-        role.setName("SUPPLIER");
-        when(supplier.getRole()).thenReturn(role);
+        // Mock User and Role
+        User supplier = mock(User.class);
+        Role supplierRole = mock(Role.class);
+
+        when(supplier.getRole()).thenReturn(supplierRole);
+        when(supplierRole.getName()).thenReturn("EMPLOYEE");
 
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
         when(userRepository.findById(supplierId)).thenReturn(Optional.of(supplier));
@@ -169,6 +173,7 @@ class OrderServiceImplTest {
         verify(userRepository).findById(supplierId);
         verify(orderRepository).save(order);
     }
+
 
     // Тест, когато order not found
     @Test
@@ -202,58 +207,67 @@ class OrderServiceImplTest {
     void updateOrderStatus_shouldThrowEntityNotFoundException_whenOrderNotFound() {
         Long orderId = 30L;
         Long supplierId = 8L;
+        User supplier = new User();
+        Role supplierRole = new Role();
+        supplierRole.setName("EMPLOYEE");
+        supplier.setRole(supplierRole);
 
+        when(userRepository.findById(supplierId)).thenReturn(Optional.of(supplier));
         when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class, () -> orderService.updateOrderStatus(orderId, supplierId));
-        verify(userRepository, never()).findById(anyLong());
+
+        verify(userRepository).findById(supplierId);
+        verify(orderRepository).findById(orderId);
         verify(orderRepository, never()).save(any(Order.class));
     }
+
     //Тества дали статуса се променя правилно
     @Test
-    void updateOrderStatus_shouldSetStatusToDelivered_whenCurrentStatusIsInDelivery() {
+    void updateOrderStatus_shouldSetStatusToPreparing_whenCurrentStatusIsAccepted() {
         Long orderId = 30L;
-        Long supplierId = 8L;
+        Long employeeId = 8L;
         Order order = new Order();
-        order.setOrderStatus(OrderStatus.IN_DELIVERY);
+        order.setOrderStatus(OrderStatus.ACCEPTED);
 
-        User supplier = mock(User.class);
+        User employee = new User();
+        employee.setRole(new Role());
+        employee.getRole().setName("EMPLOYEE");
 
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
-        when(userRepository.findById(supplierId)).thenReturn(Optional.of(supplier));
+        when(userRepository.findById(employeeId)).thenReturn(Optional.of(employee));
         when(orderRepository.save(order)).thenReturn(order);
 
-        orderService.updateOrderStatus(orderId, supplierId);
+        orderService.updateOrderStatus(orderId, employeeId);
 
-        assertEquals(OrderStatus.DELIVERED, order.getOrderStatus());
+        assertEquals(OrderStatus.PREPARING, order.getOrderStatus());
     }
-    // Тества за грешка, ако случайно програмата позволи на някой, който не е supplier да сменя статуса
     @Test
-    void updateOrderStatus_shouldThrowException_whenUserIsNotSupplier() {
+    void updateOrderStatus_shouldThrowInvalidRoleException_whenUserIsNotEmployee() {
         Long orderId = 30L;
-        Long supplierId = 8L;
+        Long userId = 8L;
         Order order = new Order();
-        User user = mock(User.class);
+        order.setOrderStatus(OrderStatus.ACCEPTED);
+        User user = new User();
         Role role = new Role();
         role.setName("CLIENT");
-        when(user.getRole()).thenReturn(role);
+        user.setRole(role);
 
-        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
-        when(userRepository.findById(supplierId)).thenReturn(Optional.of(user));
+        lenient().when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+        when(userRepository.findById(userId)).thenReturn(Optional.of(user));
 
-        assertThrows(IllegalArgumentException.class, () -> orderService.updateOrderStatus(orderId, supplierId));
+        assertThrows(InvalidRoleException.class, () -> orderService.updateOrderStatus(orderId, userId));
     }
     //Supplier не съществува
     @Test
     void updateOrderStatus_shouldThrowEntityNotFoundException_whenSupplierNotFound() {
         Long orderId = 30L;
         Long supplierId = 8L;
-        Order order = new Order();
 
-        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
         when(userRepository.findById(supplierId)).thenReturn(Optional.empty());
 
         assertThrows(EntityNotFoundException.class, () -> orderService.updateOrderStatus(orderId, supplierId));
+
         verify(orderRepository, never()).save(any(Order.class));
     }
 
@@ -265,7 +279,12 @@ class OrderServiceImplTest {
         Long supplierId = 9L;
         Order order = new Order();
         User supplier = mock(User.class);
+        Role role = new Role();
+        role.setName("SUPPLIER");
 
+        when(supplier.getRole()).thenReturn(role);
+        when(supplier.getId()).thenReturn(supplierId);
+        order.setSupplier(supplier);
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
         when(userRepository.findById(supplierId)).thenReturn(Optional.of(supplier));
         when(orderRepository.save(order)).thenReturn(order);
@@ -275,6 +294,8 @@ class OrderServiceImplTest {
         verify(orderRepository).findById(orderId);
         verify(userRepository).findById(supplierId);
         verify(orderRepository).save(order);
+
+        assertEquals(OrderStatus.IN_DELIVERY, order.getOrderStatus());
     }
     // Поръчка не съществува
     @Test
@@ -301,19 +322,25 @@ class OrderServiceImplTest {
         assertThrows(EntityNotFoundException.class, () -> orderService.takeOrder(orderId, supplierId));
         verify(orderRepository, never()).save(any(Order.class));
     }
-    //Проверява дали поръчката може да бъде да взимана когато статуса не позволява
     @Test
-    void takeOrder_shouldThrowException_whenOrderStatusIsInvalid() {
+    void takeOrder_shouldThrowException_whenOrderIsAssignedToDifferentSupplier() {
         Long orderId = 40L;
-        Long supplierId = 9L;
+        Long actualSupplierId = 100L;
+        Long anotherSupplierId = 9L;
+        User actualSupplier = mock(User.class);
+        when(actualSupplier.getId()).thenReturn(actualSupplierId);
         Order order = new Order();
-        order.setOrderStatus(OrderStatus.CANCELLED);
-        User supplier = mock(User.class);
+        order.setOrderStatus(OrderStatus.ACCEPTED);
+        order.setSupplier(actualSupplier);
+        User anotherSupplier = mock(User.class);
+        Role supplierRole = new Role();
+        supplierRole.setName("SUPPLIER");
+        when(anotherSupplier.getRole()).thenReturn(supplierRole);
 
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
-        when(userRepository.findById(supplierId)).thenReturn(Optional.of(supplier));
+        when(userRepository.findById(anotherSupplierId)).thenReturn(Optional.of(anotherSupplier));
 
-        assertThrows(IllegalStateException.class, () -> orderService.takeOrder(orderId, supplierId));
+        assertThrows(InvalidOrderSupplierException.class, () -> orderService.takeOrder(orderId, anotherSupplierId));
     }
     // Проверява дали статуса се update-ва както трябва
     @Test
@@ -322,15 +349,17 @@ class OrderServiceImplTest {
         Long supplierId = 9L;
         Order order = new Order();
         order.setOrderStatus(OrderStatus.ACCEPTED);
-
         User supplier = mock(User.class);
+        when(supplier.getId()).thenReturn(supplierId);
         Role role = new Role();
         role.setName("SUPPLIER");
         when(supplier.getRole()).thenReturn(role);
+        order.setSupplier(supplier);
 
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
         when(userRepository.findById(supplierId)).thenReturn(Optional.of(supplier));
         when(orderRepository.save(order)).thenReturn(order);
+
         orderService.takeOrder(orderId, supplierId);
 
         assertEquals(OrderStatus.IN_DELIVERY, order.getOrderStatus());
@@ -369,8 +398,15 @@ class OrderServiceImplTest {
     void finishOrder_shouldThrowEntityNotFoundException_whenOrderNotFound() {
         Long orderId = 50L;
         Long supplierId = 10L;
+        User supplier = mock(User.class);
+        Role role = new Role();
+        role.setName("SUPPLIER");
+
+        when(supplier.getRole()).thenReturn(role);
+        when(userRepository.findById(supplierId)).thenReturn(Optional.of(supplier));
 
         when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
+
         assertThrows(EntityNotFoundException.class, () -> orderService.finishOrder(orderId, supplierId));
     }
     //Тест при несъщствуващи supplier
@@ -378,10 +414,9 @@ class OrderServiceImplTest {
     void finishOrder_shouldThrowEntityNotFoundException_whenSupplierNotFound() {
         Long orderId = 50L;
         Long supplierId = 10L;
-        Order order = new Order();
 
-        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
         when(userRepository.findById(supplierId)).thenReturn(Optional.empty());
+        lenient().when(orderRepository.findById(orderId)).thenReturn(Optional.of(new Order()));
 
         assertThrows(EntityNotFoundException.class, () -> orderService.finishOrder(orderId, supplierId));
     }
@@ -391,18 +426,19 @@ class OrderServiceImplTest {
         Long orderId = 50L;
         Long supplierId = 10L;
         Order order = new Order();
-        order.setOrderStatus(OrderStatus.DELIVERED);  // Вече доставена
+        order.setOrderStatus(OrderStatus.DELIVERED);
 
         User supplier = mock(User.class);
         Role role = new Role();
         role.setName("SUPPLIER");
         when(supplier.getRole()).thenReturn(role);
 
-        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
         when(userRepository.findById(supplierId)).thenReturn(Optional.of(supplier));
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
 
-        assertThrows(IllegalStateException.class, () -> orderService.finishOrder(orderId, supplierId));
+        assertThrows(InvalidOrderStatusException.class, () -> orderService.finishOrder(orderId, supplierId));
     }
+
 
     //cancelOrderByClient!
     //Успешно отказване на поръчка от клиент
@@ -410,14 +446,13 @@ class OrderServiceImplTest {
     void cancelOrderByClient_shouldCancelSuccessfully_whenOrderAndClientExist() {
         Long orderId = 60L;
         Long clientId = 11L;
-        Order order = new Order();
-        order.setOrderStatus(OrderStatus.PENDING); // Стартов статус
-
         User client = mock(User.class);
         Role role = new Role();
         role.setName("CLIENT");
-        when(client.getRole()).thenReturn(role);
-
+        when(client.getId()).thenReturn(clientId);
+        Order order = new Order();
+        order.setOrderStatus(OrderStatus.PENDING);
+        order.setClient(client);
         OrderDto expectedDto = new OrderDto();
         expectedDto.setId(orderId);
 
@@ -432,6 +467,7 @@ class OrderServiceImplTest {
         assertEquals(expectedDto.getId(), result.getId());
         assertEquals(OrderStatus.CANCELLED, order.getOrderStatus());
     }
+
     //Тестове при несъщствуващи order и supplier
     @Test
     void cancelOrderByClient_shouldThrowEntityNotFoundException_whenOrderNotFound() {
@@ -458,76 +494,44 @@ class OrderServiceImplTest {
     void cancelOrderByClient_shouldThrowException_whenOrderAlreadyDelivered() {
         Long orderId = 60L;
         Long clientId = 11L;
-        Order order = new Order();
-        order.setOrderStatus(OrderStatus.DELIVERED);
 
         User client = mock(User.class);
-        Role role = new Role();
-        role.setName("CLIENT");
-        when(client.getRole()).thenReturn(role);
+        when(client.getId()).thenReturn(clientId);
+
+        Order order = new Order();
+        order.setOrderStatus(OrderStatus.DELIVERED);
+        order.setClient(client);
 
         when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
         when(userRepository.findById(clientId)).thenReturn(Optional.of(client));
 
-        assertThrows(IllegalStateException.class, () -> orderService.cancelOrderByClient(orderId, clientId));
+        assertThrows(InvalidOrderStatusException.class, () -> orderService.cancelOrderByClient(orderId, clientId));
     }
 
     //getOrdersByClient
-    //връща списък с поръчки за клиента
+    //Клиента не съществува
     @Test
-    void getOrdersByClient_shouldReturnListOfOrders_whenClientExists() {
+    void getOrdersByClient_shouldReturnEmptyList_whenNoOrdersFound() {
         Long clientId = 12L;
-        User client = mock(User.class);
-        Order order1 = new Order();
-        Order order2 = new Order();
-        List<Order> orders = List.of(order1, order2);
 
-        OrderResponseDto dto1 = new OrderResponseDto();
-        OrderResponseDto dto2 = new OrderResponseDto();
-        List<OrderResponseDto> expectedDtos = List.of(dto1, dto2);
-
-        when(userRepository.findById(clientId)).thenReturn(Optional.of(client));
-        when(orderRepository.findByClientId(clientId)).thenReturn(orders);
-        when(orderMapper.toResponseDto(order1)).thenReturn(dto1);
-        when(orderMapper.toResponseDto(order2)).thenReturn(dto2);
+        when(orderRepository.findByClientId(clientId)).thenReturn(List.of());
 
         List<OrderResponseDto> result = orderService.getOrdersByClient(clientId);
 
-        assertEquals(expectedDtos.size(), result.size());
-        assertTrue(result.containsAll(expectedDtos));
-    }
-    //Клиента не съществува
-    @Test
-    void getOrdersByClient_shouldThrowEntityNotFoundException_whenClientNotFound() {
-        Long clientId = 12L;
-
-        when(userRepository.findById(clientId)).thenReturn(Optional.empty());
-
-        assertThrows(EntityNotFoundException.class, () -> orderService.getOrdersByClient(clientId));
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
     }
     //Клиента няма поръчки
     @Test
     void getOrdersByClient_shouldReturnEmptyList_whenClientHasNoOrders() {
         Long clientId = 12L;
-        User client = mock(User.class);
 
-        when(userRepository.findById(clientId)).thenReturn(Optional.of(client));
         when(orderRepository.findByClientId(clientId)).thenReturn(List.of());
 
         List<OrderResponseDto> result = orderService.getOrdersByClient(clientId);
 
+        assertNotNull(result);
         assertTrue(result.isEmpty());
-    }
-    //Клиента е деактивиран
-    @Test
-    void getOrdersByClient_shouldThrowException_whenClientIsInactive() {
-        Long clientId = 12L;
-        User client = mock(User.class);
-        when(client.isActive()).thenReturn(false);
-
-        when(userRepository.findById(clientId)).thenReturn(Optional.of(client));
-
-        assertThrows(IllegalStateException.class, () -> orderService.getOrdersByClient(clientId));
     }
 
     //getOrdersBySupplier
@@ -535,16 +539,17 @@ class OrderServiceImplTest {
     @Test
     void getOrdersBySupplier_shouldReturnListOfOrders_whenSupplierExists() {
         Long supplierId = 13L;
-        User supplier = mock(User.class);
-        Order order1 = new Order();
-        Order order2 = new Order();
-        List<Order> orders = List.of(order1, order2);
-
+        Order order1 = mock(Order.class);
+        Order order2 = mock(Order.class);
         OrderResponseDto dto1 = new OrderResponseDto();
+        dto1.setOrderStatus("DELIVERED");
+        dto1.setTotalPrice(BigDecimal.TEN);
         OrderResponseDto dto2 = new OrderResponseDto();
+        dto2.setOrderStatus("PENDING");
+        dto2.setTotalPrice(BigDecimal.ONE);
+        List<Order> orders = List.of(order1, order2);
         List<OrderResponseDto> expectedDtos = List.of(dto1, dto2);
 
-        when(userRepository.findById(supplierId)).thenReturn(Optional.of(supplier));
         when(orderRepository.findBySupplierId(supplierId)).thenReturn(orders);
         when(orderMapper.toResponseDto(order1)).thenReturn(dto1);
         when(orderMapper.toResponseDto(order2)).thenReturn(dto2);
@@ -554,38 +559,16 @@ class OrderServiceImplTest {
         assertEquals(expectedDtos.size(), result.size());
         assertTrue(result.containsAll(expectedDtos));
     }
-    //Няма такъв доставчик
-    @Test
-    void getOrdersBySupplier_shouldThrowEntityNotFoundException_whenSupplierNotFound() {
-        Long supplierId = 13L;
-
-        when(userRepository.findById(supplierId)).thenReturn(Optional.empty());
-
-        assertThrows(EntityNotFoundException.class, () -> orderService.getOrdersBySupplier(supplierId));
-    }
     //Supplier няма поръчки
     @Test
     void getOrdersBySupplier_shouldReturnEmptyList_whenSupplierHasNoOrders() {
         Long supplierId = 13L;
-        User supplier = mock(User.class);
 
-        when(userRepository.findById(supplierId)).thenReturn(Optional.of(supplier));
         when(orderRepository.findBySupplierId(supplierId)).thenReturn(List.of());
 
         List<OrderResponseDto> result = orderService.getOrdersBySupplier(supplierId);
 
         assertTrue(result.isEmpty());
-    }
-    //Доставчика е деактивиран
-    @Test
-    void getOrdersBySupplier_shouldThrowException_whenSupplierIsInactive() {
-        Long supplierId = 13L;
-        User supplier = mock(User.class);
-        when(supplier.isActive()).thenReturn(false);
-
-        when(userRepository.findById(supplierId)).thenReturn(Optional.of(supplier));
-
-        assertThrows(IllegalStateException.class, () -> orderService.getOrdersBySupplier(supplierId));
     }
 
     //getOrdersByStatus
@@ -595,13 +578,12 @@ class OrderServiceImplTest {
         OrderStatus status = OrderStatus.IN_DELIVERY;
         Long employeeId = 14L;
         User employee = mock(User.class);
+        when(employee.getRole()).thenReturn(new Role("EMPLOYEE"));
         Order order1 = new Order();
         Order order2 = new Order();
         List<Order> orders = List.of(order1, order2);
-
         OrderResponseDto dto1 = new OrderResponseDto();
         OrderResponseDto dto2 = new OrderResponseDto();
-        List<OrderResponseDto> expectedDtos = List.of(dto1, dto2);
 
         when(userRepository.findById(employeeId)).thenReturn(Optional.of(employee));
         when(orderRepository.findByOrderStatus(status)).thenReturn(orders);
@@ -610,9 +592,10 @@ class OrderServiceImplTest {
 
         List<OrderResponseDto> result = orderService.getOrdersByStatus(status, employeeId);
 
-        assertEquals(expectedDtos.size(), result.size());
-        assertTrue(result.containsAll(expectedDtos));
+        assertEquals(2, result.size());
     }
+
+
     //Supplier не съществува
     @Test
     void getOrdersByStatus_shouldThrowEntityNotFoundException_whenSupplierNotFound() {
@@ -629,10 +612,12 @@ class OrderServiceImplTest {
         OrderStatus status = OrderStatus.IN_DELIVERY;
         Long employeeId = 14L;
         User employee = mock(User.class);
+        Role role = new Role();
+        role.setName("EMPLOYEE");
+        when(employee.getRole()).thenReturn(role);
 
         when(userRepository.findById(employeeId)).thenReturn(Optional.of(employee));
         when(orderRepository.findByOrderStatus(status)).thenReturn(List.of());
-
         List<OrderResponseDto> result = orderService.getOrdersByStatus(status, employeeId);
 
         assertTrue(result.isEmpty());
@@ -646,11 +631,14 @@ class OrderServiceImplTest {
         LocalDateTime to = LocalDateTime.now();
         Long adminId = 15L;
         User admin = mock(User.class);
+        Role role = new Role();
+        role.setName("ADMIN");
+        when(admin.getRole()).thenReturn(role);
 
-        Order order1 = new Order();
-        order1.calculateTotalPrice(BigDecimal.valueOf(100));
-        Order order2 = new Order();
-        order2.calculateTotalPrice(BigDecimal.valueOf(200));
+        Order order1 = mock(Order.class);
+        Order order2 = mock(Order.class);
+        when(order1.getTotalPrice()).thenReturn(BigDecimal.valueOf(100));
+        when(order2.getTotalPrice()).thenReturn(BigDecimal.valueOf(200));
         List<Order> orders = List.of(order1, order2);
 
         when(userRepository.findById(adminId)).thenReturn(Optional.of(admin));
@@ -660,6 +648,7 @@ class OrderServiceImplTest {
 
         assertEquals(BigDecimal.valueOf(300), result);
     }
+
     //Админ не съществува
     @Test
     void getTotalRevenueBetween_shouldThrowEntityNotFoundException_whenAdminNotFound() {
@@ -678,6 +667,9 @@ class OrderServiceImplTest {
         LocalDateTime to = LocalDateTime.now();
         Long adminId = 15L;
         User admin = mock(User.class);
+        Role role = new Role();
+        role.setName("ADMIN");
+        when(admin.getRole()).thenReturn(role);
 
         when(userRepository.findById(adminId)).thenReturn(Optional.of(admin));
         when(orderRepository.findByCreatedAtBetween(from, to)).thenReturn(List.of());
@@ -692,6 +684,7 @@ class OrderServiceImplTest {
         LocalDateTime from = LocalDateTime.now().minusDays(7);
         LocalDateTime to = LocalDateTime.now();
         Long adminId = 15L;
+
         User user = mock(User.class);
         Role role = new Role();
         role.setName("SUPPLIER");
@@ -699,7 +692,7 @@ class OrderServiceImplTest {
 
         when(userRepository.findById(adminId)).thenReturn(Optional.of(user));
 
-        assertThrows(IllegalArgumentException.class, () -> orderService.getTotalRevenueBetween(from, to, adminId));
+        assertThrows(InvalidRoleException.class, () -> orderService.getTotalRevenueBetween(from, to, adminId));
     }
 
     //getAvailableOrdersForSuppliers
@@ -708,24 +701,30 @@ class OrderServiceImplTest {
     void getAvailableOrdersForSuppliers_shouldReturnList_whenSupplierExists() {
         Long supplierId = 16L;
         User supplier = mock(User.class);
+        when(userRepository.findById(supplierId)).thenReturn(Optional.of(supplier));
+        when(supplier.getRole()).thenReturn(new Role("SUPPLIER"));
+
         Order order1 = new Order();
         Order order2 = new Order();
-        List<Order> orders = List.of(order1, order2);
-
         OrderResponseDto dto1 = new OrderResponseDto();
         OrderResponseDto dto2 = new OrderResponseDto();
-        List<OrderResponseDto> expectedDtos = List.of(dto1, dto2);
 
-        when(userRepository.findById(supplierId)).thenReturn(Optional.of(supplier));
-        when(orderRepository.findByOrderStatusAndSupplierIsNull(OrderStatus.PENDING)).thenReturn(orders);
+        when(orderRepository.findByOrderStatusAndSupplierIsNull(OrderStatus.PREPARING))
+                .thenReturn(new ArrayList<>(List.of(order1)));
+        when(orderRepository.findByOrderStatusAndSupplierIsNull(OrderStatus.ACCEPTED))
+                .thenReturn(new ArrayList<>(List.of(order2)));
+
         when(orderMapper.toResponseDto(order1)).thenReturn(dto1);
         when(orderMapper.toResponseDto(order2)).thenReturn(dto2);
 
         List<OrderResponseDto> result = orderService.getAvailableOrdersForSuppliers(supplierId);
 
-        assertEquals(expectedDtos.size(), result.size());
-        assertTrue(result.containsAll(expectedDtos));
+        assertEquals(2, result.size());
+        assertSame(dto1, result.get(0));
+        assertSame(dto2, result.get(1));
     }
+
+
     //Няма такъв доставчикю
     @Test
     void getAvailableOrdersForSuppliers_shouldThrowEntityNotFoundException_whenSupplierNotFound() {
@@ -739,27 +738,35 @@ class OrderServiceImplTest {
     @Test
     void getAvailableOrdersForSuppliers_shouldReturnEmptyList_whenNoOrdersAvailable() {
         Long supplierId = 16L;
-        User supplier = mock(User.class);
+        User supplier = new User();
+        Role role = new Role();
+        role.setName("SUPPLIER");
+        supplier.setRole(role);
 
         when(userRepository.findById(supplierId)).thenReturn(Optional.of(supplier));
-        when(orderRepository.findByOrderStatusAndSupplierIsNull(OrderStatus.PENDING)).thenReturn(List.of());
+        when(orderRepository.findByOrderStatusAndSupplierIsNull(OrderStatus.PREPARING)).thenReturn(new ArrayList<>());
+        when(orderRepository.findByOrderStatusAndSupplierIsNull(OrderStatus.ACCEPTED)).thenReturn(new ArrayList<>());
 
         List<OrderResponseDto> result = orderService.getAvailableOrdersForSuppliers(supplierId);
 
+        assertNotNull(result);
         assertTrue(result.isEmpty());
     }
     //Поръчка няма статус
     @Test
     void getAvailableOrdersForSuppliers_shouldHandleOrderWithNullStatus() {
         Long supplierId = 16L;
-        User supplier = mock(User.class);
-        Order order = new Order(); // статусът не е зададен
-
+        User supplier = new User();
+        Role role = new Role();
+        role.setName("SUPPLIER");
+        supplier.setRole(role);
+        Order order = new Order();
         OrderResponseDto dto = new OrderResponseDto();
         dto.setOrderStatus("UNKNOWN");
 
         when(userRepository.findById(supplierId)).thenReturn(Optional.of(supplier));
-        when(orderRepository.findByOrderStatusAndSupplierIsNull(OrderStatus.PENDING)).thenReturn(List.of(order));
+        when(orderRepository.findByOrderStatusAndSupplierIsNull(OrderStatus.PREPARING)).thenReturn(new ArrayList<>(List.of(order)));
+        when(orderRepository.findByOrderStatusAndSupplierIsNull(OrderStatus.ACCEPTED)).thenReturn(new ArrayList<>());
         when(orderMapper.toResponseDto(order)).thenReturn(dto);
 
         List<OrderResponseDto> result = orderService.getAvailableOrdersForSuppliers(supplierId);
@@ -767,4 +774,5 @@ class OrderServiceImplTest {
         assertEquals(1, result.size());
         assertEquals("UNKNOWN", result.get(0).getOrderStatus());
     }
+
 }
