@@ -7,7 +7,6 @@ import com.example.fooddelivery.enums.Category;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
-import java.util.Objects;
 
 @Entity
 @Table(name = "Products")
@@ -106,5 +105,4 @@ public class Product extends IdEntity {
     public void setCuisine(Cuisine cuisine) {
         this.cuisine = cuisine;
     }
-
 }

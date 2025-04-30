@@ -27,8 +27,8 @@ public class RestaurantController {
 
     // Tested!
     @GetMapping("part-name/{partName}")
-    public ResponseEntity<List<RestaurantDto>> getRestaurantByPartName(String partName) {
-        return ResponseEntity.ok(restaurantService.getRestaurantByPartName(partName));
+    public ResponseEntity<List<RestaurantDto>> getRestaurantsByPartName(@PathVariable String partName) {
+        return ResponseEntity.ok(restaurantService.getRestaurantsByPartName(partName));
     }
 
     // Tested!

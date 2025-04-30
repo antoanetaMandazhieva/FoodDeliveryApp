@@ -78,7 +78,7 @@ public class RestaurantServiceImplTest {
     }
 
     @Test
-    void testGetRestaurantByPartName_returnsMatchingRestaurants() {
+    void testGetRestaurantsByPartName_returnsMatchingRestaurants() {
         String partName = "Grill";
         Restaurant restaurant = new Restaurant();
         restaurant.setName("Grill House");
@@ -90,7 +90,7 @@ public class RestaurantServiceImplTest {
                 .thenReturn(List.of(restaurant));
         when(restaurantMapper.mapToDto(restaurant)).thenReturn(dto);
 
-        List<RestaurantDto> result = restaurantService.getRestaurantByPartName(partName);
+        List<RestaurantDto> result = restaurantService.getRestaurantsByPartName(partName);
 
         assertEquals(1, result.size());
         assertEquals("Grill House", result.get(0).getName());

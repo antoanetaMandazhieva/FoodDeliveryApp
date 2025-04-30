@@ -66,7 +66,8 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     // Tested!
     @Override
-    public List<RestaurantDto> getRestaurantByPartName(String partName) {
+    @Transactional
+    public List<RestaurantDto> getRestaurantsByPartName(String partName) {
         return restaurantRepository.findByNameIgnoreCaseContaining(partName).stream()
                 .map(restaurantMapper::mapToDto)
                 .toList();
