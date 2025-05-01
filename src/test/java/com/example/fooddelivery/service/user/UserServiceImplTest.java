@@ -42,18 +42,11 @@ class UserServiceImplTest {
     @Mock private OrderRepository orderRepository;
     @Mock private OrderMapper orderMapper;
 
+    // Тези мапери ще бъдат или реални, или mock в зависимост от нуждите на теста
     private AddressMapper addressMapper;
     private UserMapper userMapper;
 
     private UserServiceImpl userService;
-
-    @BeforeEach
-    void baseSetUp() {
-        userRepository = mock(UserRepository.class);
-        roleRepository = mock(RoleRepository.class);
-        orderRepository = mock(OrderRepository.class);
-        orderMapper = mock(OrderMapper.class);
-    }
 
     void setUpWithRealMappers() {
         addressMapper = new AddressMapper(new ModelMapper());
@@ -82,6 +75,8 @@ class UserServiceImplTest {
                 addressMapper
         );
     }
+    //Ако потребител с дадено ID съществува ще бъде намерен от userRepository, ще бъде конвертиран с userMapper в UserProfileDto
+    //и ще бъде върнат резултатът.
 
     @Test
     void getUserById_shouldReturnUserProfileDto_whenUserExists() {
@@ -89,6 +84,7 @@ class UserServiceImplTest {
         setUpWithMockMappers();
         Long userId = 1L;
 
+        // Създаваме тестов потребител и DTO с очаквани стойности
         User user = new User();
         user.setUsername("testUser");
         user.setEmail("test@example.com");
@@ -97,6 +93,7 @@ class UserServiceImplTest {
         dto.setUsername("testUser");
         dto.setEmail("test@example.com");
 
+        // Подготвяме mock поведение
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(userMapper.mapToUserProfileDto(user)).thenReturn(dto);
 
@@ -117,6 +114,7 @@ class UserServiceImplTest {
         setUpWithMockMappers();
         Long userId = 99L;
 
+        // Потребителят не съществува
         when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
@@ -124,12 +122,14 @@ class UserServiceImplTest {
 
         assertEquals("User not found.", ex.getMessage());
         verify(userRepository).findById(userId);
-        verifyNoInteractions(userMapper);
+        verifyNoInteractions(userMapper); // мапърът не трябва да се използва
     }
 
     @Test
     void getAllUsers_shouldReturnMappedUserDtos() {
         setUpWithRealMappers();
+
+        // Създаваме два потребителя с различни роли
         Role userRole = new Role();
         userRole.setName("USER");
 
@@ -157,9 +157,9 @@ class UserServiceImplTest {
     @Test
     void updateUser_shouldUpdateFieldsAndAddNewAddress() {
         setUpWithMockMappers();
-
         Long userId = 1L;
 
+        // DTO с нови данни, които трябва да заменят старите
         AddressDto addressDto = new AddressDto();
         addressDto.setStreet("New Street");
         addressDto.setCity("New City");
@@ -174,6 +174,7 @@ class UserServiceImplTest {
         dto.setGender(Gender.MALE);
         dto.setAddresses(Set.of(addressDto));
 
+        // DTO с нови данни, които трябва да заменят старите
         User existingUser = new User();
         existingUser.setUsername("oldUsername");
         existingUser.setEmail("old@example.com");
@@ -193,7 +194,7 @@ class UserServiceImplTest {
         mappedAddress.setStreet("New Street");
         mappedAddress.setCity("New City");
 
-        // Стъбване на зависимости
+        // Mock поведение
         when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
         when(addressMapper.mapToAddress(addressDto)).thenReturn(mappedAddress);
         when(userRepository.save(any(User.class))).thenReturn(existingUser); // важно!
@@ -254,6 +255,7 @@ class UserServiceImplTest {
         setUpWithMockMappers();
         Long userId = 1L;
 
+        // Създаваме адрес DTO, който вече съществува
         AddressDto dtoAddress = new AddressDto();
         dtoAddress.setStreet("Same Street");
         dtoAddress.setCity("Same City");
@@ -268,6 +270,7 @@ class UserServiceImplTest {
         dto.setGender(Gender.MALE);
         dto.setAddresses(Set.of(dtoAddress));
 
+        // Създаваме потребител, който вече има този адрес
         User user = new User();
         user.setUsername("user");
         user.setEmail("email@example.com");
@@ -288,6 +291,7 @@ class UserServiceImplTest {
 
         UserProfileDto result = userService.updateUser(userId, dto);
 
+        // Проверка - броят на адресите трябва да е 1
         assertEquals(1, user.getAddresses().size());
         verify(userRepository).save(user);
         assertEquals(dto, result);

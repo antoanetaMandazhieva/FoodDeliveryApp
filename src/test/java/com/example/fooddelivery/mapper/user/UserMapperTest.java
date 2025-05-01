@@ -41,11 +41,14 @@ public class UserMapperTest {
         RegisterRequestDto registerRequestDto = new RegisterRequestDto();
         registerRequestDto.setGender(Gender.MALE.name());
 
+        // Мокваме резултата от мапването
         User mappedUser = new User();
         when(modelMapper.map(registerRequestDto, User.class)).thenReturn(mappedUser);
 
+        // Извикваме метода за мапване
         User result = userMapper.mapToUser(registerRequestDto);
 
+        // Проверяваме дали резултатът е валиден и дали gender е коректно мапнато
         assertThat(result).isNotNull();
         assertThat(result.getGender()).isEqualTo(Gender.MALE);
         verify(modelMapper).map(registerRequestDto, User.class);
@@ -55,11 +58,14 @@ public class UserMapperTest {
     void mapToUser_fromLoginRequestDto_shouldMapCorrectly() {
         LoginRequestDto loginRequestDto = new LoginRequestDto();
 
+        // Мокваме резултата от мапването
         User mappedUser = new User();
         when(modelMapper.map(loginRequestDto, User.class)).thenReturn(mappedUser);
 
+        // Извикваме метода за мапване
         User result = userMapper.mapToUser(loginRequestDto);
 
+        // Проверяваме дали резултатът не е null
         assertThat(result).isNotNull();
         verify(modelMapper).map(loginRequestDto, User.class);
     }
@@ -72,23 +78,25 @@ public class UserMapperTest {
         addressDto.setStreet("Main Street");
         addressDto.setCity("Sofia");
 
+        // Мокваме резултата от мапването
         UserProfileDto userProfileDto = new UserProfileDto();
-        userProfileDto.setAddresses(new HashSet<>()); // <- важно
+        userProfileDto.setAddresses(new HashSet<>()); // Инициализираме адресите като празен сет
         when(modelMapper.map(user, UserProfileDto.class)).thenReturn(userProfileDto);
 
+        // Инициализираме адресите като празен сет
         Address address = new Address();
         user.addAddress(address);
         when(addressMapper.toDto(address)).thenReturn(addressDto);
 
-        // Act
+        // Извикваме метода за мапване
         UserProfileDto result = userMapper.mapToUserProfileDto(user);
 
-        // Assert
+        // Проверяваме дали адресите са мапнати правилно
         assertThat(result).isNotNull();
         assertThat(result.getAddresses())
                 .isNotNull()
-                .hasSize(1)
-                .allSatisfy(addr -> {
+                .hasSize(1) // Проверка дали има точно 1 адрес
+                .allSatisfy(addr -> { // Проверка дали всеки адрес е коректен
                     assertThat(addr.getStreet()).isEqualTo("Main Street");
                     assertThat(addr.getCity()).isEqualTo("Sofia");
                 });
@@ -105,14 +113,18 @@ public class UserMapperTest {
         role.setName("CLIENT");
         user.setRole(role);
 
+        // Мокваме резултата от мапването
         UserDto userDto = new UserDto();
         when(modelMapper.map(user, UserDto.class)).thenReturn(userDto);
 
+        // Извикваме метода за мапване
         UserDto result = userMapper.mapToUserDto(user);
 
+        // Проверяваме дали ролята е правилно мапната
         assertThat(result).isNotNull();
-        assertThat(result.getRole()).isEqualTo("CLIENT");
+        assertThat(result.getRole()).isEqualTo("CLIENT");  // Проверка дали ролята е мапната правилно
 
+        // Проверка дали ModelMapper е извикан
         verify(modelMapper).map(user, UserDto.class);
     }
     @Test
@@ -121,28 +133,13 @@ public class UserMapperTest {
         RegisterRequestDto registerRequestDto = new RegisterRequestDto();
         registerRequestDto.setGender(null);
 
+        // Мокваме резултата от мапването
         User mappedUser = new User();
         when(modelMapper.map(registerRequestDto, User.class)).thenReturn(mappedUser);
 
+        // Проверка дали ще бъде хвърлена NullPointerException (или IllegalArgumentException, в зависимост от имплементацията)
         assertThatThrownBy(() -> userMapper.mapToUser(registerRequestDto))
-                .isInstanceOf(NullPointerException.class); // или IllegalArgumentException, зависи от твоята имплементация
+                .isInstanceOf(NullPointerException.class);
     }
-    /*
-    @Test
-    @DisplayName("mapToUserDto(User) should handle null role")
-    void mapToUserDto_shouldHandleNullRole() {
-        User user = new User();
-        user.setRole(null); // <- важно
-
-        UserDto userDto = new UserDto();
-        when(modelMapper.map(user, UserDto.class)).thenReturn(userDto);
-
-        UserDto result = userMapper.mapToUserDto(user);
-
-        assertThat(result).isNotNull();
-        assertThat(result.getRole()).isNull(); // role няма да бъде сетнат
-        verify(modelMapper).map(user, UserDto.class);
-    }*/
-
 }
 

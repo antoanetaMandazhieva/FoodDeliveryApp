@@ -22,19 +22,23 @@ public class ReviewMapperTest {
     }
     @Test
     void mapToSupplierReviewDto_whenValidReview_shouldMapAllFieldsCorrectly() {
+        // Създаване и настройка на обект SupplierReview
         SupplierReview review = new SupplierReview();
-        setField(review, "id", 1L);
+        setField(review, "id", 1L); // Използваме reflection, за да зададем полето 'id'
         review.setRating(5);
         review.setComment("Excellent service");
 
+        // Създаване и настройка на обект User
         User reviewer = new User();
-        setField(reviewer, "id", 100L);
+        setField(reviewer, "id", 100L);  // Използваме reflection, за да зададем полето 'id'
         review.setReviewer(reviewer);
 
+        // Мапване на SupplierReview към SupplierReviewDto
         SupplierReviewDto dto = reviewMapper.mapToDto(review);
 
+        ///Предявяваме мапването е успешно и всички полета са коректно прехвърлени
         assertNotNull(dto);
-        assertEquals(1L, dto.getId());
+        assertEquals(1L, dto.getId()); // Проверяваме дали 'id' е мапнато правилно
         assertEquals(100L, dto.getReviewerId());
         assertEquals(5, dto.getRating());
         assertEquals("Excellent service", dto.getComment());
@@ -42,14 +46,15 @@ public class ReviewMapperTest {
     @Test
     void mapToRestaurantReviewDto_whenValidReview_shouldMapAllFieldsCorrectly() {
         RestaurantReview review = new RestaurantReview();
-        setField(review, "id", 2L);
+        setField(review, "id", 2L); // Използваме reflection, за да зададем полето 'id'
         review.setRating(4);
         review.setComment("Very good food");
 
         User reviewer = new User();
-        setField(reviewer, "id", 200L);
+        setField(reviewer, "id", 200L); // Използваме reflection, за да зададем полето 'id'
         review.setReviewer(reviewer);
 
+        // Мапване на RestaurantReview към RestaurantReviewDto
         RestaurantReviewDto dto = reviewMapper.mapToDto(review);
 
         assertNotNull(dto);
@@ -60,18 +65,21 @@ public class ReviewMapperTest {
     }
     @Test
     void mapToSupplierReviewDto_whenReviewerIsNull_shouldThrowException() {
+        // Създаване на обект SupplierReview с null reviewer
         SupplierReview review = new SupplierReview();
         setField(review, "id", 3L);
         review.setReviewer(null);
-
+        // Очакваме да бъде хвърлена NullPointerException, когато се опитаме да мапнем
         assertThrows(NullPointerException.class, () -> reviewMapper.mapToDto(review));
     }
     @Test
     void mapToRestaurantReviewDto_whenReviewerIsNull_shouldThrowException() {
+        // Създаване на обект SupplierReview с null review
         RestaurantReview review = new RestaurantReview();
         setField(review, "id", 4L);
         review.setReviewer(null);
 
+        // Очакваме да бъде хвърлена NullPointerException, когато се опитаме да мапнем
         assertThrows(NullPointerException.class, () -> reviewMapper.mapToDto(review));
     }
     @Test
@@ -82,9 +90,10 @@ public class ReviewMapperTest {
         review.setComment("Average");
 
         User reviewer = new User();
-        setField(reviewer, "id", 500L);
+        setField(reviewer, "id", 500L); // Използваме reflection, за да зададем полето 'id' за рецензента
         review.setReviewer(reviewer);
 
+        // Създаване на съществуващ SupplierReviewDto с предварително зададени ID и reviewerId
         SupplierReviewDto dto = new SupplierReviewDto();
         setField(dto, "id", 99L);          // Existing ID
         setField(dto, "reviewerId", 999L); // Existing ReviewerId
@@ -93,8 +102,8 @@ public class ReviewMapperTest {
         SupplierReviewDto mappedDto = reviewMapper.mapToDto(review);
 
         assertNotNull(mappedDto);
-        assertEquals(5L, mappedDto.getId());
-        assertEquals(500L, mappedDto.getReviewerId());
+        assertEquals(5L, mappedDto.getId()); // Уверяваме се, че 'id' остава 5L
+        assertEquals(500L, mappedDto.getReviewerId()); // Уверяваме се, че 'reviewerId' остава 500L
     }
     @Test
     void mapToRestaurantReviewDto_whenIdAndReviewerIdAlreadySet_shouldNotOverrideThem() {
@@ -107,16 +116,19 @@ public class ReviewMapperTest {
         setField(reviewer, "id", 600L);
         review.setReviewer(reviewer);
 
+        // Създаване на съществуващ RestaurantReviewDto с предварително зададени ID и reviewerId
         RestaurantReviewDto dto = new RestaurantReviewDto();
         setField(dto, "id", 88L);
         setField(dto, "reviewerId", 888L);
 
+        // Мапване на рецензията към DTO
         RestaurantReviewDto mappedDto = reviewMapper.mapToDto(review);
 
         assertNotNull(mappedDto);
-        assertEquals(6L, mappedDto.getId());
-        assertEquals(600L, mappedDto.getReviewerId());
+        assertEquals(6L, mappedDto.getId());  // Уверяваме се, че 'id' остава 6L
+        assertEquals(600L, mappedDto.getReviewerId());  // Уверяваме се, че 'reviewerId' остава 600L
     }
+    // Помощен метод за задаване на стойности на полета чрез reflection
     private void setField(Object target, String fieldName, Object value) {
         try {
             Field field = null;

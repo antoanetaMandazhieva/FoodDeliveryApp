@@ -36,12 +36,15 @@ public class RestaurantReviewServiceImplTest {
     private ReviewMapper reviewMapper;
 
     @InjectMocks
-    private RestaurantReviewServiceImpl reviewService;
+    private RestaurantReviewServiceImpl reviewService; // Внедряване на мока в сървиса
+
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        // Инициализиране на мока и инжектиране на зависимостите преди всеки тест
     }
+    // Помощен метод за задаване на ID на обекти
     private void setId(Object obj, long id) {
         try {
             Field field = obj.getClass().getSuperclass().getDeclaredField("id");
@@ -61,24 +64,29 @@ public class RestaurantReviewServiceImplTest {
         RestaurantReview savedReview = new RestaurantReview();
         RestaurantReviewDto dto = new RestaurantReviewDto();
 
+        // Мокване на различни методи
         when(userRepository.findById(1L)).thenReturn(Optional.of(client));
         when(restaurantRepository.findById(2L)).thenReturn(Optional.of(restaurant));
         when(reviewRepository.save(any(RestaurantReview.class))).thenReturn(savedReview);
         when(reviewMapper.mapToDto(any(RestaurantReview.class))).thenReturn(dto);
         when(reviewRepository.findByRestaurantId(2L)).thenReturn(List.of(savedReview));
 
+        // Извикване на метода за добавяне на ревю
         RestaurantReviewDto result = reviewService.addReview(1L, 2L, 5, "Excellent!");
 
+        // Проверка на резултата
         assertEquals(dto, result);
-        verify(reviewRepository).save(any(RestaurantReview.class));
+        verify(reviewRepository).save(any(RestaurantReview.class));  // Проверка дали save методът е извикан
         verify(reviewMapper).mapToDto(any(RestaurantReview.class));
         verify(restaurantRepository, times(2)).findById(2L); // once in addReview, once in updateAverageRating
         verify(restaurantRepository).save(any(Restaurant.class));
     }
     @Test
     void addReview_shouldThrowWhenClientNotFound() {
+        // Мокване на липсващ клиент
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
+        // Проверка дали се хвърля правилното изключение
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
                 () -> reviewService.addReview(1L, 2L, 5, "Nice"));
 
@@ -89,13 +97,14 @@ public class RestaurantReviewServiceImplTest {
         User client = new User();
         setId(client, 1L);
 
-        when(userRepository.findById(1L)).thenReturn(Optional.of(client));
-        when(restaurantRepository.findById(2L)).thenReturn(Optional.empty());
+        when(userRepository.findById(1L)).thenReturn(Optional.of(client)); // Мокване на съществуващ клиент
+        when(restaurantRepository.findById(2L)).thenReturn(Optional.empty()); // Мокване на липсващ ресторант
 
+        // Проверка дали се хвърля правилното изключение
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
                 () -> reviewService.addReview(1L, 2L, 5, "Nice"));
 
-        assertEquals("Restaurant not found.", ex.getMessage());
+        assertEquals("Restaurant not found.", ex.getMessage()); // Проверка на съобщението на изключението
     }
     @Test
     void getReviewsForRestaurant_shouldReturnMappedDtos() {
@@ -108,12 +117,15 @@ public class RestaurantReviewServiceImplTest {
         setId(review1, 1L);
         setId(review2, 2L);
 
+        // Мокване на методите за извличане на ревюта
         when(reviewRepository.findByRestaurantId(restaurantId)).thenReturn(List.of(review1, review2));
         when(reviewMapper.mapToDto(review1)).thenReturn(dto1);
         when(reviewMapper.mapToDto(review2)).thenReturn(dto2);
 
+        // Извикване на метода за вземане на ревюта
         List<RestaurantReviewDto> result = reviewService.getReviewsForRestaurant(restaurantId);
 
+        // Проверка на резултата
         assertEquals(2, result.size());
         assertEquals(dto1, result.get(0));
         assertEquals(dto2, result.get(1));

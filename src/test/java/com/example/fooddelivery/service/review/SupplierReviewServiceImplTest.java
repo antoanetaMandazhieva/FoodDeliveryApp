@@ -46,15 +46,18 @@ public class SupplierReviewServiceImplTest {
         int rating = 5;
         String comment = "Great!";
 
+        // Създаваме потребител клиент
         User client = new User();
         ReflectionTestUtils.setField(client, "id", clientId);
 
+        // Създаваме потребител доставчик с роля SUPPLIER
         User supplier = new User();
         ReflectionTestUtils.setField(supplier, "id", supplierId);
         Role role = new Role();
         role.setName("SUPPLIER");
         supplier.setRole(role);
 
+        // Подготвяме мокнати обекти за запазено ревю и DTO
         SupplierReview savedReview = new SupplierReview();
         SupplierReviewDto dto = new SupplierReviewDto();
 
@@ -65,6 +68,7 @@ public class SupplierReviewServiceImplTest {
 
         SupplierReviewDto result = reviewService.addReview(clientId, supplierId, rating, comment);
 
+        // Проверяваме, че всички нужни методи са били извикани и е върнат очакваният резултат
         assertEquals(dto, result);
         verify(userRepository).findById(supplierId);
         verify(userRepository).findById(clientId);
@@ -74,8 +78,11 @@ public class SupplierReviewServiceImplTest {
     @Test
     void addReview_shouldThrow_whenSupplierNotFound() {
         Long supplierId = 99L;
+
+        // Мокваме липсващ доставчик
         when(userRepository.findById(supplierId)).thenReturn(Optional.empty());
 
+        // Проверяваме, че се хвърля EntityNotFoundException с правилното съобщение
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
                 () -> reviewService.addReview(1L, supplierId, 5, "Test"));
 
@@ -86,6 +93,7 @@ public class SupplierReviewServiceImplTest {
         Long supplierId = 2L;
         Long clientId = 1L;
 
+        // Създаваме потребител, който няма роля SUPPLIER
         User supplier = new User();
         ReflectionTestUtils.setField(supplier, "id", supplierId);
         Role role = new Role();
@@ -94,6 +102,7 @@ public class SupplierReviewServiceImplTest {
 
         when(userRepository.findById(supplierId)).thenReturn(Optional.of(supplier));
 
+        // Очакваме InvalidRoleException при опит за добавяне на ревю
         InvalidRoleException ex = assertThrows(InvalidRoleException.class,
                 () -> reviewService.addReview(clientId, supplierId, 5, "Bad"));
 
@@ -103,6 +112,7 @@ public class SupplierReviewServiceImplTest {
     void addReview_shouldThrow_whenClientReviewsThemselves() {
         Long id = 5L;
 
+        // Създаваме потребител, който е и клиент, и доставчик
         User supplier = new User();
         ReflectionTestUtils.setField(supplier, "id", id);
         Role role = new Role();
@@ -111,6 +121,7 @@ public class SupplierReviewServiceImplTest {
 
         when(userRepository.findById(id)).thenReturn(Optional.of(supplier));
 
+        // Очакваме SameClientAndSupplierException
         SameClientAndSupplierException ex = assertThrows(SameClientAndSupplierException.class,
                 () -> reviewService.addReview(id, id, 4, "Self-review"));
 
@@ -121,12 +132,14 @@ public class SupplierReviewServiceImplTest {
         Long clientId = 1L;
         Long supplierId = 2L;
 
+        // Създаваме валиден доставчик с роля SUPPLIER
         User supplier = new User();
         ReflectionTestUtils.setField(supplier, "id", supplierId);
         Role role = new Role();
         role.setName("SUPPLIER");
         supplier.setRole(role);
 
+        // Мокваме липсващ клиент
         when(userRepository.findById(supplierId)).thenReturn(Optional.of(supplier));
         when(userRepository.findById(clientId)).thenReturn(Optional.empty());
 
@@ -188,6 +201,7 @@ public class SupplierReviewServiceImplTest {
         verify(reviewMapper).mapToDto(review1);
         verify(reviewMapper).mapToDto(review2);
     }
+    //Помощен метод за задаване на стойност на private поле чрез reflection.
     private void setField(Object target, String fieldName, Object value) throws Exception {
         Class<?> current = target.getClass();
         while (current != null) {
