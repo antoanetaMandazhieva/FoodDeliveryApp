@@ -1,4 +1,4 @@
-package com.example.fooddelivery.mappers.OrderMapper;
+package com.example.fooddelivery.mapper.order;
 
 import com.example.fooddelivery.dto.order.OrderDto;
 import com.example.fooddelivery.dto.order.OrderProductDto;
@@ -11,7 +11,6 @@ import com.example.fooddelivery.entity.restaurant.Restaurant;
 import com.example.fooddelivery.entity.user.User;
 import com.example.fooddelivery.enums.OrderStatus;
 import com.example.fooddelivery.mapper.address.AddressMapper;
-import com.example.fooddelivery.mapper.order.OrderMapper;
 import com.example.fooddelivery.mapper.ordered_item.OrderedItemMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,7 +22,6 @@ import com.example.fooddelivery.entity.address.Address;
 import com.example.fooddelivery.dto.address.AddressDto;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;

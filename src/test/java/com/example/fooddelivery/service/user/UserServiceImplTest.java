@@ -9,6 +9,8 @@ import com.example.fooddelivery.entity.order.Order;
 import com.example.fooddelivery.entity.role.Role;
 import com.example.fooddelivery.entity.user.User;
 import com.example.fooddelivery.enums.Gender;
+import com.example.fooddelivery.exception.role.InvalidRoleException;
+import com.example.fooddelivery.exception.user.FieldAlreadyTakenException;
 import com.example.fooddelivery.mapper.address.AddressMapper;
 import com.example.fooddelivery.mapper.order.OrderMapper;
 import com.example.fooddelivery.mapper.user.UserMapper;
@@ -24,7 +26,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.nio.file.AccessDeniedException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -45,7 +46,6 @@ class UserServiceImplTest {
     private UserMapper userMapper;
 
     private UserServiceImpl userService;
-    private boolean useRealMappers = false;
 
     @BeforeEach
     void baseSetUp() {
@@ -122,7 +122,7 @@ class UserServiceImplTest {
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
                 () -> userService.getUserById(userId));
 
-        assertEquals("User not found", ex.getMessage());
+        assertEquals("User not found.", ex.getMessage());
         verify(userRepository).findById(userId);
         verifyNoInteractions(userMapper);
     }
@@ -159,6 +159,7 @@ class UserServiceImplTest {
         setUpWithMockMappers();
 
         Long userId = 1L;
+
         AddressDto addressDto = new AddressDto();
         addressDto.setStreet("New Street");
         addressDto.setCity("New City");
@@ -182,6 +183,7 @@ class UserServiceImplTest {
         existingUser.setDateOfBirth(LocalDate.of(1990, 1, 1));
         existingUser.setGender(Gender.FEMALE);
         existingUser.setRole(new Role());
+
         Address existingAddress = new Address();
         existingAddress.setStreet("Old Street");
         existingAddress.setCity("Old City");
@@ -191,12 +193,16 @@ class UserServiceImplTest {
         mappedAddress.setStreet("New Street");
         mappedAddress.setCity("New City");
 
+        // Стъбване на зависимости
         when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
         when(addressMapper.mapToAddress(addressDto)).thenReturn(mappedAddress);
-        when(userMapper.mapToUserProfileDto(any(User.class))).thenReturn(dto);
+        when(userRepository.save(any(User.class))).thenReturn(existingUser); // важно!
+        when(userMapper.mapToUserProfileDto(any())).thenReturn(dto); // важно!
 
+        // Извикване на метода
         UserProfileDto updated = userService.updateUser(userId, dto);
 
+        // Проверки
         assertEquals("newUsername", existingUser.getUsername());
         assertEquals("new@example.com", existingUser.getEmail());
         assertEquals(Gender.MALE, existingUser.getGender());
@@ -204,6 +210,8 @@ class UserServiceImplTest {
         verify(userRepository).save(existingUser);
         assertEquals(dto, updated);
     }
+
+
     @Test
     void updateUser_shouldThrowIfUserNotFound() {
         setUpWithMockMappers();
@@ -215,7 +223,7 @@ class UserServiceImplTest {
                 () -> userService.updateUser(userId, new UserProfileDto())
         );
 
-        assertEquals("User not found", exception.getMessage());
+        assertEquals("User not found.", exception.getMessage());
     }
     @Test
     void updateUser_shouldThrowIfUsernameTaken() {
@@ -235,11 +243,11 @@ class UserServiceImplTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(existingUser));
         when(userRepository.findByUsername("takenUsername")).thenReturn(Optional.of(otherUser));
 
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
+        FieldAlreadyTakenException ex = assertThrows(
+                FieldAlreadyTakenException.class,
                 () -> userService.updateUser(userId, dto)
         );
-        assertEquals("Username is already taken", ex.getMessage());
+        assertEquals("Username is already taken.", ex.getMessage());
     }
     @Test
     void updateUser_shouldNotAddDuplicateAddress() {
@@ -311,7 +319,7 @@ class UserServiceImplTest {
                 () -> userService.deleteUser(userId)
         );
 
-        assertEquals("User not found", ex.getMessage());
+        assertEquals("User not found.", ex.getMessage());
         verify(userRepository).findById(userId);
         verify(userRepository, never()).delete(any());
     }
@@ -360,12 +368,12 @@ class UserServiceImplTest {
 
         when(userRepository.findById(adminId)).thenReturn(Optional.of(requester));
 
-        AccessDeniedException ex = assertThrows(
-                AccessDeniedException.class,
+        InvalidRoleException ex = assertThrows(
+                InvalidRoleException.class,
                 () -> userService.changeUserRole(adminId, userId, "ADMIN")
         );
 
-        assertEquals("Only admins can change roles", ex.getMessage());
+        assertEquals("Only ADMINS can change roles.", ex.getMessage());
         verify(userRepository, never()).save(any());
     }
     @Test
@@ -388,12 +396,12 @@ class UserServiceImplTest {
         when(userRepository.findById(userId)).thenReturn(Optional.of(user));
         when(roleRepository.findByName("UNKNOWN")).thenReturn(Optional.empty());
 
-        IllegalArgumentException ex = assertThrows(
-                IllegalArgumentException.class,
+        InvalidRoleException ex = assertThrows(
+                InvalidRoleException.class,
                 () -> userService.changeUserRole(adminId, userId, "UNKNOWN")
         );
 
-        assertEquals("Invalid role", ex.getMessage());
+        assertEquals("Invalid role.", ex.getMessage());
         verify(userRepository, never()).save(any());
     }
     @Test
@@ -453,6 +461,9 @@ class UserServiceImplTest {
 
         User supplier = new User();
         supplier.setUsername(supplierUsername);
+        Role supplierRole = new Role();
+        supplierRole.setName("SUPPLIER");
+        supplier.setRole(supplierRole);
         ReflectionTestUtils.setField(supplier, "id", supplierId);
 
         Order order = new Order();
@@ -491,7 +502,7 @@ class UserServiceImplTest {
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class,
                 () -> userService.getOrdersBySupplierUsername(supplierUsername, workerId));
 
-        assertEquals("Supplier not found", ex.getMessage());
+        assertEquals("User not found.", ex.getMessage());
         verify(userRepository).findById(workerId);
         verify(userRepository).findByUsername(supplierUsername);
     }

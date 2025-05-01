@@ -100,7 +100,7 @@ public class OrderControllerTest {
         mockMvc.perform(put("/api/orders/{orderId}/accept", orderId)
                         .param("employeeId", employeeId.toString()))
                 .andExpect(status().isOk())
-                .andExpect(content().string("Order accepted successfully"));
+                .andExpect(content().string("Order accepted successfully."));
 
         verify(orderService).acceptOrder(orderId, employeeId);
     }
@@ -129,7 +129,7 @@ public class OrderControllerTest {
         mockMvc.perform(put("/api/orders/{orderId}/take", orderId)
                         .param("supplierId", supplierId.toString()))
                 .andExpect(status().isOk())
-                .andExpect(content().string("Order taken successfully and is now in delivery"));
+                .andExpect(content().string("Order taken successfully and is now in delivery."));
 
         verify(orderService).takeOrder(orderId, supplierId);
     }

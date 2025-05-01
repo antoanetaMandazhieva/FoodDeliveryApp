@@ -17,6 +17,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.lang.reflect.Field;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -132,45 +135,72 @@ public class SupplierReviewServiceImplTest {
 
         assertEquals("User not found.", ex.getMessage());
     }
-   /* @Test
-    void getReviewsForSupplier_shouldReturnMappedDto() {
-        Long supplierId = 10L;
+    @Test
+    void getReviewsForSupplier_shouldReturnMappedDto() throws Exception {
+        Long supplierId = 1L;
 
+        // Review 1
         SupplierReview review1 = new SupplierReview();
-        SupplierReview review2 = new SupplierReview();
+        User reviewer1 = new User();
+        setField(reviewer1, "id", 1001L);
+        review1.setReviewer(reviewer1);
+        review1.setRating(5);
+        review1.setComment("Excellent");
+        setField(review1, "createdAt", LocalDateTime.now());
+        setField(review1, "id", 101L);
 
+        // Review 2
+        SupplierReview review2 = new SupplierReview();
+        User reviewer2 = new User();
+        setField(reviewer2, "id", 1002L);
+        review2.setReviewer(reviewer2);
+        review2.setRating(3);
+        review2.setComment("Okay");
+        setField(review2, "createdAt", LocalDateTime.now());
+        setField(review2, "id", 102L);
+
+        // DTOs
         SupplierReviewDto dto1 = new SupplierReviewDto();
-        dto1.setId(1L);
-        dto1.setReviewerId(100L);
+        dto1.setId(101L);
+        dto1.setReviewerId(1001L);
         dto1.setRating(5);
-        dto1.setComment("Great service");
+        dto1.setComment("Excellent");
 
         SupplierReviewDto dto2 = new SupplierReviewDto();
-        dto2.setId(2L);
-        dto2.setReviewerId(101L);
-        dto2.setRating(4);
-        dto2.setComment("Good overall");
+        dto2.setId(102L);
+        dto2.setReviewerId(1002L);
+        dto2.setRating(3);
+        dto2.setComment("Okay");
 
         when(reviewRepository.findBySupplierId(supplierId)).thenReturn(List.of(review1, review2));
-        when(reviewMapper.mapToDto(review1)).thenReturn(dto1); // важен ред
-        when(reviewMapper.mapToDto(review2)).thenReturn(dto2); // важен ред
+        when(reviewMapper.mapToDto(review1)).thenReturn(dto1);
+        when(reviewMapper.mapToDto(review2)).thenReturn(dto2);
 
+        // Act
         List<SupplierReviewDto> result = reviewService.getReviewsForSupplier(supplierId);
 
+        // Assert
         assertEquals(2, result.size());
+        assertEquals(dto1.getId(), result.get(0).getId());
+        assertEquals(dto2.getId(), result.get(1).getId());
 
-        assertTrue(result.stream().anyMatch(dto ->
-                Long.valueOf(1L).equals(dto.getId()) &&
-                        Long.valueOf(100L).equals(dto.getReviewerId()) &&
-                        dto.getRating() == 5 &&
-                        "Great service".equals(dto.getComment())
-        ), "Expected dto1 not found");
+        verify(reviewRepository).findBySupplierId(supplierId);
+        verify(reviewMapper).mapToDto(review1);
+        verify(reviewMapper).mapToDto(review2);
+    }
+    private void setField(Object target, String fieldName, Object value) throws Exception {
+        Class<?> current = target.getClass();
+        while (current != null) {
+            try {
+                Field field = current.getDeclaredField(fieldName);
+                field.setAccessible(true);
+                field.set(target, value);
+                return;
+            } catch (NoSuchFieldException ignored) {
+                current = current.getSuperclass();
+            }
+        }
+        throw new NoSuchFieldException("Field '" + fieldName + "' not found in class hierarchy.");
+    }
 
-        assertTrue(result.stream().anyMatch(dto ->
-                Long.valueOf(2L).equals(dto.getId()) &&
-                        Long.valueOf(101L).equals(dto.getReviewerId()) &&
-                        dto.getRating() == 4 &&
-                        "Good overall".equals(dto.getComment())
-        ), "Expected dto2 not found");
-    }*/
 }

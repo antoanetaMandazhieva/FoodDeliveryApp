@@ -12,6 +12,8 @@ import com.example.fooddelivery.entity.role.Role;
 import com.example.fooddelivery.entity.user.User;
 import com.example.fooddelivery.enums.Category;
 import com.example.fooddelivery.exception.restaurant.ProductNotInRestaurantException;
+import com.example.fooddelivery.exception.restaurant.RestaurantNotHaveCuisineException;
+import com.example.fooddelivery.exception.restaurant.WrongRestaurantNameException;
 import com.example.fooddelivery.exception.role.InvalidRoleException;
 import com.example.fooddelivery.mapper.address.AddressMapper;
 import com.example.fooddelivery.mapper.product.ProductMapper;
@@ -122,14 +124,22 @@ public class RestaurantServiceImplTest {
         assertEquals("Salad", result.get(0).getName());
     }
     private void setField(Object target, String fieldName, Object value) {
-        try {
-            Field field = target.getClass().getDeclaredField(fieldName);
-            field.setAccessible(true);
-            field.set(target, value);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        Class<?> current = target.getClass();
+        while (current != null) {
+            try {
+                Field field = current.getDeclaredField(fieldName);
+                field.setAccessible(true);
+                field.set(target, value);
+                return;
+            } catch (NoSuchFieldException e) {
+                current = current.getSuperclass(); // продължава нагоре в йерархията
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException("Cannot access field: " + fieldName, e);
+            }
         }
+        throw new RuntimeException("Field not found: " + fieldName);
     }
+
 
     @Test
     void testGetAllAvailableProductsFromRestaurant_whenRestaurantNotFound_throwsException() {
@@ -183,6 +193,7 @@ public class RestaurantServiceImplTest {
 
         assertEquals("Product: %s not found in Restaurant: %s.", exception.getMessage());
     }
+
     @Test
     void createRestaurant_shouldCreateSuccessfully() {
         Long employeeId = 1L;
@@ -239,7 +250,7 @@ public class RestaurantServiceImplTest {
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () ->
                 restaurantService.createRestaurant(dto, 1L));
 
-        assertEquals("User not found", ex.getMessage());
+        assertEquals("User not found.", ex.getMessage());
     }
 
     @Test
@@ -254,10 +265,10 @@ public class RestaurantServiceImplTest {
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+        InvalidRoleException ex = assertThrows(InvalidRoleException.class, () ->
                 restaurantService.createRestaurant(dto, 1L));
 
-        assertEquals("Only employees can create restaurants", ex.getMessage());
+        assertEquals("Only EMPLOYEES can create restaurants.", ex.getMessage());
     }
 
     @Test
@@ -271,14 +282,14 @@ public class RestaurantServiceImplTest {
         employee.setRole(role);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(employee));
-        when(cuisineRepository.findById(99L)).thenReturn(Optional.empty());
 
-        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () ->
+        when(cuisineRepository.findById(99L))
+                .thenReturn(Optional.of(new Cuisine()))  // isCuisineExists
+                .thenThrow(new EntityNotFoundException("Cuisine not found")); // getCuisine
+
+        assertThrows(EntityNotFoundException.class, () ->
                 restaurantService.createRestaurant(dto, 1L));
-
-        assertEquals("Cuisine not found", ex.getMessage());
     }
-
     @Test
     void addProductsToRestaurant_shouldAddProductsSuccessfully() {
         User employee = new User();
@@ -350,7 +361,7 @@ public class RestaurantServiceImplTest {
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () ->
                 restaurantService.addProductsToRestaurant(1L, 10L, List.of(new ProductDto())));
 
-        assertEquals("User not found", ex.getMessage());
+        assertEquals("User not found.", ex.getMessage());
     }
 
     @Test
@@ -389,7 +400,7 @@ public class RestaurantServiceImplTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(employee));
         when(restaurantRepository.findById(10L)).thenReturn(Optional.of(restaurant));
 
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+        RestaurantNotHaveCuisineException ex = assertThrows(RestaurantNotHaveCuisineException.class, () ->
                 restaurantService.addProductsToRestaurant(1L, 10L, List.of(productDto)));
 
         assertTrue(ex.getMessage().contains("don't have the cuisine"));
@@ -416,9 +427,208 @@ public class RestaurantServiceImplTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(employee));
         when(restaurantRepository.findById(10L)).thenReturn(Optional.of(restaurant));
 
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+        WrongRestaurantNameException ex = assertThrows(WrongRestaurantNameException.class, () ->
                 restaurantService.addProductsToRestaurant(1L, 10L, List.of(productDto)));
 
-        assertEquals("Wrong restaurant name", ex.getMessage());
+        assertEquals("Wrong restaurant name.", ex.getMessage());
+    }
+    @Test
+    void removeProductFromRestaurant_shouldMarkProductAsUnavailable() {
+        Long employeeId = 1L;
+        Long restaurantId = 10L;
+        Long productId = 100L;
+
+        // Създаваме служител с роля EMPLOYEE
+        Role role = new Role();
+        setField(role, "name", "EMPLOYEE");
+        User employee = new User();
+        setField(employee, "role", role);
+
+        // Създаваме ресторант
+        Restaurant restaurant = new Restaurant();
+        setField(restaurant, "id", restaurantId);
+        restaurant.setName("Test Restaurant");
+
+        // Създаваме продукт, който е част от ресторанта
+        Product product = new Product();
+        setField(product, "id", productId);
+        product.setRestaurant(restaurant);
+        product.setAvailable(true);
+
+        // DTO за връщане
+        RestaurantDto restaurantDto = new RestaurantDto();
+        restaurantDto.setName("Test Restaurant");
+
+        when(userRepository.findById(employeeId)).thenReturn(Optional.of(employee));
+        when(restaurantRepository.findById(restaurantId)).thenReturn(Optional.of(restaurant));
+        when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+        when(restaurantMapper.mapToDto(restaurant)).thenReturn(restaurantDto);
+
+        RestaurantDto result = restaurantService.removeProductFromRestaurant(employeeId, restaurantId, productId);
+
+        assertNotNull(result);
+        assertEquals("Test Restaurant", result.getName());
+        assertFalse(product.isAvailable()); // проверка, че е маркиран като недостъпен
+
+        verify(productRepository).save(product);
+    }
+    @Test
+    void removeProductFromRestaurant_shouldThrowWhenUserNotFound() {
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () ->
+                restaurantService.removeProductFromRestaurant(1L, 2L, 3L));
+
+        assertEquals("User not found.", ex.getMessage());
+    }
+    @Test
+    void removeProductFromRestaurant_shouldThrowWhenUserIsNotEmployee() {
+        User user = new User();
+        Role role = new Role();
+        role.setName("CLIENT");
+        user.setRole(role);
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+
+        InvalidRoleException ex = assertThrows(InvalidRoleException.class, () ->
+                restaurantService.removeProductFromRestaurant(1L, 2L, 3L));
+
+        assertEquals("Only EMPLOYEES can remove product from restaurant.", ex.getMessage());
+    }
+    @Test
+    void removeProductFromRestaurant_shouldThrowWhenRestaurantNotFound() {
+        User employee = mockEmployee();
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(employee));
+        when(restaurantRepository.findById(2L)).thenReturn(Optional.empty());
+
+        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () ->
+                restaurantService.removeProductFromRestaurant(1L, 2L, 3L));
+
+        assertEquals("Restaurant not found.", ex.getMessage());
+    }
+    @Test
+    void removeProductFromRestaurant_shouldThrowWhenProductNotFound() {
+        User employee = mockEmployee();
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(employee));
+        when(restaurantRepository.findById(2L)).thenReturn(Optional.of(new Restaurant()));
+        when(productRepository.findById(3L)).thenReturn(Optional.empty());
+
+        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () ->
+                restaurantService.removeProductFromRestaurant(1L, 2L, 3L));
+
+        assertEquals("Product not found.", ex.getMessage());
+    }
+    private User mockEmployee() {
+        User employee = new User();
+        Role role = new Role();
+        role.setName("EMPLOYEE");
+        employee.setRole(role);
+        return employee;
+    }
+    @Test
+    void getRestaurantsByCuisine_shouldReturnRestaurantsForGivenCuisineId() {
+        Long cuisineId = 1L;
+        Restaurant restaurant = new Restaurant();
+        restaurant.setName("Italian Bistro");
+
+        RestaurantDto dto = new RestaurantDto();
+        dto.setName("Italian Bistro");
+
+        when(restaurantRepository.findAllByCuisineId(cuisineId)).thenReturn(List.of(restaurant));
+        when(restaurantMapper.mapToDto(restaurant)).thenReturn(dto);
+
+        List<RestaurantDto> result = restaurantService.getRestaurantsByCuisine(cuisineId);
+
+        assertEquals(1, result.size());
+        assertEquals("Italian Bistro", result.get(0).getName());
+    }
+
+    @Test
+    void getRestaurantsByCuisine_shouldReturnEmptyListWhenNoRestaurantsMatch() {
+        when(restaurantRepository.findAllByCuisineId(99L)).thenReturn(Collections.emptyList());
+
+        List<RestaurantDto> result = restaurantService.getRestaurantsByCuisine(99L);
+
+        assertTrue(result.isEmpty());
+    }
+    @Test
+    void getRestaurantsByNameAsc_shouldReturnRestaurantsSortedByNameAscending() {
+        Restaurant r1 = new Restaurant();
+        r1.setName("Gamma");
+
+        Restaurant r2 = new Restaurant();
+        r2.setName("Alpha");
+
+        // Връщаме списък от ресторанти в произволен ред
+        when(restaurantRepository.findAll()).thenReturn(List.of(r1, r2));
+
+        // Мапваме всеки Restaurant към RestaurantDto с неговото име
+        when(restaurantMapper.mapToDto(any(Restaurant.class))).thenAnswer(invocation -> {
+            Restaurant restaurant = invocation.getArgument(0);
+            RestaurantDto dto = new RestaurantDto();
+            dto.setName(restaurant.getName());
+            return dto;
+        });
+
+        List<RestaurantDto> result = restaurantService.getRestaurantsByNameAsc();
+
+        // Проверяваме, че резултатите са сортирани по име във възходящ ред
+        assertEquals(List.of("Alpha", "Gamma"), result.stream().map(RestaurantDto::getName).toList());
+    }
+
+    @Test
+    void getRestaurantsByNameDesc_shouldReturnRestaurantsSortedByNameDescending() {
+        Restaurant r1 = new Restaurant();
+        r1.setName("Gamma");
+
+        Restaurant r2 = new Restaurant();
+        r2.setName("Alpha");
+
+        // Връщаме списък от ресторанти в произволен ред
+        when(restaurantRepository.findAll()).thenReturn(List.of(r1, r2));
+
+        // Всеки път, когато се извика mapToDto, връщаме нов RestaurantDto с правилното име
+        when(restaurantMapper.mapToDto(any(Restaurant.class))).thenAnswer(invocation -> {
+            Restaurant restaurant = invocation.getArgument(0);
+            RestaurantDto dto = new RestaurantDto();
+            dto.setName(restaurant.getName());
+            return dto;
+        });
+
+        List<RestaurantDto> result = restaurantService.getRestaurantsByNameDesc();
+
+        // Проверяваме, че резултатите са сортирани по име в низходящ ред
+        assertEquals(List.of("Gamma", "Alpha"), result.stream().map(RestaurantDto::getName).toList());
+    }
+
+    @Test
+    void getTopRatedRestaurants_shouldReturnRestaurantsWithRatingAboveThreshold() {
+        Restaurant r1 = new Restaurant();
+        r1.setName("Top Grill");
+        r1.setAverageRating(BigDecimal.valueOf(4.7));
+
+        Restaurant r2 = new Restaurant();
+        r2.setName("Pizza Palace");
+        r2.setAverageRating(BigDecimal.valueOf(3.8));
+
+        // ВАЖНО: Списъкът трябва да е в низходящ ред по рейтинг!
+        when(restaurantRepository.findAllByAverageRatingGreaterThanOrderByAverageRatingDesc(3.5))
+                .thenReturn(List.of(r1, r2));
+
+        // Мапваме всеки обект към DTO с правилното име
+        when(restaurantMapper.mapToDto(any(Restaurant.class))).thenAnswer(invocation -> {
+            Restaurant restaurant = invocation.getArgument(0);
+            RestaurantDto dto = new RestaurantDto();
+            dto.setName(restaurant.getName());
+            return dto;
+        });
+
+        List<RestaurantDto> result = restaurantService.getTopRatedRestaurants();
+
+        assertEquals(2, result.size());
+        assertEquals("Top Grill", result.get(0).getName()); // Първи трябва да е с най-висок рейтинг
+        assertEquals("Pizza Palace", result.get(1).getName());
     }
 }
