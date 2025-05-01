@@ -7,6 +7,8 @@ const MenuSection = ({ products, order, addToOrder }) => {
     const salads = products.filter(product => product.category === 'SALADS');
     const mains = products.filter(product => product.category === 'MAIN');
     const desserts = products.filter(product => product.category === 'DESSERTS');
+    const drinks = products.filter(product => product.category === 'DRINKS');
+    const alcohols = products.filter(product => product.category === 'ALCOHOLS');
     
     console.log(order);
 
@@ -48,6 +50,31 @@ const MenuSection = ({ products, order, addToOrder }) => {
                     addToOrder={addToOrder}
                 />
             </div>
+
+            {/* DRINKS */}
+
+            <div id='drinks-section' className='flex flex-col justify-around'>
+                <h1 className='text-5xl font-bold font-quicksand'>
+                    Drinks
+                </h1>
+                <ProductsSection 
+                    products={drinks}
+                    addToOrder={addToOrder}
+                />
+            </div>
+
+            {/* ALCOHOLS */}
+
+            <div id='alcohols-section' className='flex flex-col justify-around'>
+                <h1 className='text-5xl font-bold font-quicksand'>
+                    Alcohols
+                </h1>
+                <ProductsSection 
+                    products={alcohols}
+                    addToOrder={addToOrder}
+                />
+            </div>
+
         </section>
     );
 }

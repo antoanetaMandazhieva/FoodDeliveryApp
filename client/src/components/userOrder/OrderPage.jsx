@@ -1,14 +1,17 @@
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import Navigation from '../common/Navigation';
 import CreateBubbles from '../common/CreateBubbles';
 import UserOrderItem from './UserOrderItem';
 import axios from 'axios';
 import { set } from 'react-hook-form';
+import { ToastContainer, toast } from 'react-toastify';
 
 const OrderPage = () => {
     const { state } = useLocation();
     const { userId } = useParams();
+
+    const navigate = useNavigate();
     
     const [order, setOrder] = useState(state);
     const [addresses, setAddresses] = useState([]);
@@ -17,7 +20,7 @@ const OrderPage = () => {
         products: order.length > 0 && order.map(product => ({productId: product.id, quantity: product.count})),
     });
     
-    const restaurantName = order[0].restaurantName;
+    const restaurantName = order[0] ? order[0].restaurantName : '';
     console.log(requestData)
     console.log(order)
 
@@ -69,10 +72,12 @@ const OrderPage = () => {
                     }
                 }
             );
+            toast.success('Order Placed', { autoClose: 2000 })
+            setTimeout(() => navigate(`/profile/${userId}/orders/track/${data.id}`), 2500);
             console.log(data);
+
         } catch (e) {
-            console.warn(e.message);
-            alert('Could not post request')
+            toast.error(e.response.data.message, { autoClose: 2000 });
         }
     }
 
@@ -139,6 +144,7 @@ const OrderPage = () => {
     return (
         <div className='h-screen w-full bg-peach-400 overflow-y-scroll'>
             <Navigation />
+            <ToastContainer />
             <main className='flex flex-col justify-around items-center relative'>
                 {order.length <= 0
                     ? <h1 className='text-7xl text-ivory font-playfair font-bold place-self-center'>
