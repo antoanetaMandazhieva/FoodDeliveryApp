@@ -192,6 +192,10 @@ public class OrderServiceImpl implements OrderService {
             throw new InvalidOrderSupplierException(ORDER_NOT_FOR_SUPPLIER);
         }
 
+        if (order.getOrderStatus() != OrderStatus.PREPARING) {
+            throw new InvalidOrderStatusException(NOT_PREPARING_STATUS);
+        }
+
         order.setOrderStatus(OrderStatus.IN_DELIVERY);
         orderRepository.save(order);
     }

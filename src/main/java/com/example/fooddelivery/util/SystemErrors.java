@@ -47,11 +47,12 @@ public class SystemErrors {
         public static final String WRONG_ORDER_STATUS_TO_CANCEL_ORDER = "Cannot cancel order with status: %s. " +
                                                                         "Only PENDING orders can be cancelled.";
         public static final String ORDER_NOT_FOR_CLIENT = "This order does not belong to the client.";
-        public static final String NOT_PENDING_STATUS = "You cannot accept order which are not with PENDING status.";
+        public static final String NOT_PENDING_STATUS = "You cannot accept orders which are not with PENDING status.";
         public static final String CONCURRENTLY_TAKEN_ORDER = "Order was taken by another supplier.";
         public static final String CONCURRENTLY_MODIFIED_ORDER = "Order was modified by another employee. Please try again.";
         public static final String ONLY_ADMIN_CHECK_TOTAL_REVENUE = "Only ADMINS can see total revenue between dates";
         public static final String UNDERAGE_USER_CANNOT_ORDER_ALCOHOL = "You are underage and cannot order alcohol.";
+        public static final String NOT_PREPARING_STATUS = "You cannot take orders which are not with PREPARING status.";
     }
 
     public static final class Restaurant {
