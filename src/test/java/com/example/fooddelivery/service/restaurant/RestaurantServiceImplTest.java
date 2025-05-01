@@ -12,6 +12,8 @@ import com.example.fooddelivery.entity.role.Role;
 import com.example.fooddelivery.entity.user.User;
 import com.example.fooddelivery.enums.Category;
 import com.example.fooddelivery.exception.restaurant.ProductNotInRestaurantException;
+import com.example.fooddelivery.exception.restaurant.RestaurantNotHaveCuisineException;
+import com.example.fooddelivery.exception.restaurant.WrongRestaurantNameException;
 import com.example.fooddelivery.exception.role.InvalidRoleException;
 import com.example.fooddelivery.mapper.address.AddressMapper;
 import com.example.fooddelivery.mapper.product.ProductMapper;
@@ -183,6 +185,7 @@ public class RestaurantServiceImplTest {
 
         assertEquals("Product: %s not found in Restaurant: %s.", exception.getMessage());
     }
+
     @Test
     void createRestaurant_shouldCreateSuccessfully() {
         Long employeeId = 1L;
@@ -239,7 +242,7 @@ public class RestaurantServiceImplTest {
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () ->
                 restaurantService.createRestaurant(dto, 1L));
 
-        assertEquals("User not found", ex.getMessage());
+        assertEquals("User not found.", ex.getMessage());
     }
 
     @Test
@@ -254,10 +257,10 @@ public class RestaurantServiceImplTest {
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+        InvalidRoleException ex = assertThrows(InvalidRoleException.class, () ->
                 restaurantService.createRestaurant(dto, 1L));
 
-        assertEquals("Only employees can create restaurants", ex.getMessage());
+        assertEquals("Only EMPLOYEES can create restaurants.", ex.getMessage());
     }
 
     @Test
@@ -271,14 +274,14 @@ public class RestaurantServiceImplTest {
         employee.setRole(role);
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(employee));
-        when(cuisineRepository.findById(99L)).thenReturn(Optional.empty());
 
-        EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () ->
+        when(cuisineRepository.findById(99L))
+                .thenReturn(Optional.of(new Cuisine()))  // isCuisineExists
+                .thenThrow(new EntityNotFoundException("Cuisine not found")); // getCuisine
+
+        assertThrows(EntityNotFoundException.class, () ->
                 restaurantService.createRestaurant(dto, 1L));
-
-        assertEquals("Cuisine not found", ex.getMessage());
     }
-
     @Test
     void addProductsToRestaurant_shouldAddProductsSuccessfully() {
         User employee = new User();
@@ -350,7 +353,7 @@ public class RestaurantServiceImplTest {
         EntityNotFoundException ex = assertThrows(EntityNotFoundException.class, () ->
                 restaurantService.addProductsToRestaurant(1L, 10L, List.of(new ProductDto())));
 
-        assertEquals("User not found", ex.getMessage());
+        assertEquals("User not found.", ex.getMessage());
     }
 
     @Test
@@ -389,7 +392,7 @@ public class RestaurantServiceImplTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(employee));
         when(restaurantRepository.findById(10L)).thenReturn(Optional.of(restaurant));
 
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+        RestaurantNotHaveCuisineException ex = assertThrows(RestaurantNotHaveCuisineException.class, () ->
                 restaurantService.addProductsToRestaurant(1L, 10L, List.of(productDto)));
 
         assertTrue(ex.getMessage().contains("don't have the cuisine"));
@@ -416,9 +419,9 @@ public class RestaurantServiceImplTest {
         when(userRepository.findById(1L)).thenReturn(Optional.of(employee));
         when(restaurantRepository.findById(10L)).thenReturn(Optional.of(restaurant));
 
-        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () ->
+        WrongRestaurantNameException ex = assertThrows(WrongRestaurantNameException.class, () ->
                 restaurantService.addProductsToRestaurant(1L, 10L, List.of(productDto)));
 
-        assertEquals("Wrong restaurant name", ex.getMessage());
+        assertEquals("Wrong restaurant name.", ex.getMessage());
     }
 }
