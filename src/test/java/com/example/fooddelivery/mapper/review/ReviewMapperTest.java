@@ -1,11 +1,10 @@
-package com.example.fooddelivery.config.review;
+package com.example.fooddelivery.mapper.review;
 
 import com.example.fooddelivery.dto.review.RestaurantReviewDto;
 import com.example.fooddelivery.dto.review.SupplierReviewDto;
 import com.example.fooddelivery.entity.review.RestaurantReview;
 import com.example.fooddelivery.entity.review.SupplierReview;
 import com.example.fooddelivery.entity.user.User;
-import com.example.fooddelivery.mapper.review.ReviewMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.modelmapper.ModelMapper;
@@ -13,6 +12,7 @@ import org.modelmapper.ModelMapper;
 import java.lang.reflect.Field;
 
 import static org.junit.jupiter.api.Assertions.*;
+
 public class ReviewMapperTest {
     private ReviewMapper reviewMapper;
 

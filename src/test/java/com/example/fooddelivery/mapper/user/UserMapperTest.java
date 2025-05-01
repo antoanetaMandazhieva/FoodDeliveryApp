@@ -1,4 +1,4 @@
-package com.example.fooddelivery.config.user;
+package com.example.fooddelivery.mapper.user;
 
 import com.example.fooddelivery.dto.address.AddressDto;
 import com.example.fooddelivery.dto.auth.LoginRequestDto;
@@ -10,7 +10,6 @@ import com.example.fooddelivery.entity.role.Role;
 import com.example.fooddelivery.entity.user.User;
 import com.example.fooddelivery.enums.Gender;
 import com.example.fooddelivery.mapper.address.AddressMapper;
-import com.example.fooddelivery.mapper.user.UserMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
