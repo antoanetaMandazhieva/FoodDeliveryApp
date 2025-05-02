@@ -43,6 +43,7 @@ public class RestaurantServiceImplTest {
     @Mock private ProductMapper productMapper;
     @Mock private AddressMapper addressMapper;
 
+    // Създава инстанция на класа, която автоматично инжектира мокнатите зависимости
     @InjectMocks
     private RestaurantServiceImpl restaurantService;
 
@@ -613,7 +614,6 @@ public class RestaurantServiceImplTest {
         r2.setName("Pizza Palace");
         r2.setAverageRating(BigDecimal.valueOf(3.8));
 
-        // ВАЖНО: Списъкът трябва да е в низходящ ред по рейтинг!
         when(restaurantRepository.findAllByAverageRatingGreaterThanOrderByAverageRatingDesc(3.5))
                 .thenReturn(List.of(r1, r2));
 
