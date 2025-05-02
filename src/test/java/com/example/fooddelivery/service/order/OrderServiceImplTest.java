@@ -59,6 +59,7 @@ class OrderServiceImplTest {
         User client = mock(User.class);
         when(client.getId()).thenReturn(clientId);
         Address address = new Address();
+
         when(addressMapper.mapToAddress(any())).thenReturn(address);
         when(addressRepository.findByStreetAndCityAndCountryAndUserId(any(), any(), any(), any()))
                 .thenReturn(Optional.of(address));
@@ -282,6 +283,7 @@ class OrderServiceImplTest {
         User supplier = mock(User.class);
         Role role = new Role();
         role.setName("SUPPLIER");
+        order.setOrderStatus(OrderStatus.PREPARING);
 
         when(supplier.getRole()).thenReturn(role);
         when(supplier.getId()).thenReturn(supplierId);
@@ -349,7 +351,7 @@ class OrderServiceImplTest {
         Long orderId = 40L;
         Long supplierId = 9L;
         Order order = new Order();
-        order.setOrderStatus(OrderStatus.ACCEPTED);
+        order.setOrderStatus(OrderStatus.PREPARING);
         User supplier = mock(User.class);
         when(supplier.getId()).thenReturn(supplierId);
         Role role = new Role();
