@@ -598,7 +598,6 @@ class OrderServiceImplTest {
         assertEquals(2, result.size());
     }
 
-
     //Supplier не съществува
     @Test
     void getOrdersByStatus_shouldThrowEntityNotFoundException_whenSupplierNotFound() {
@@ -748,5 +747,4 @@ class OrderServiceImplTest {
         assertEquals(1, result.size());
         assertEquals("UNKNOWN", result.get(0).getOrderStatus());
     }
-
 }
