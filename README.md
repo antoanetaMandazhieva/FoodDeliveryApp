@@ -50,9 +50,6 @@ Samo Levski<br>
 - `dto` – пренася структурирани данни между слоевете.
 - `mapper` – преобразува entity <-> dto чрез ModelMapper.
 - `config`, `exception`, `util` – конфигурации, грешки и помощни компоненти.
-<br>
-![ER Diagram](images/ERdiagram.png)
-<br>
 
 ---
 
@@ -86,6 +83,8 @@ Samo Levski<br>
 | `discounts`    | Отстъпки към поръчки                                                     |
 | `reviews`      | Ревюта за ресторанти и доставчици                                        |
 | `cuisines`     | Видове кухни (италианска, китайска и др.)                               |
+
+![ER Diagram](images/er.png)
 
 ---
 
