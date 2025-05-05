@@ -51,7 +51,7 @@ Samo Levski<br>
 - `mapper` – преобразува entity <-> dto чрез ModelMapper.
 - `config`, `exception`, `util` – конфигурации, грешки и помощни компоненти.
 <br>
-![DATABASE ER DIAGRAM](images/er.png)
+![DATABASE ER DIAGRAM](images/ERdiagram.png)
 ---
 
 ## 4. Основни класове и пакети
