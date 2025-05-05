@@ -53,6 +53,7 @@ Samo Levski<br>
 <br>
 ![ER Diagram](images/ERdiagram.png)
 <br>
+
 ---
 
 ## 4. Основни класове и пакети
